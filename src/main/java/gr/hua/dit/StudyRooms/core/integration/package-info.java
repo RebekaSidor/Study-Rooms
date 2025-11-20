@@ -1,0 +1,1 @@
+package gr.hua.dit.StudyRooms.core.integration;
