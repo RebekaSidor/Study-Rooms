@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Register</title>
+</head>
+<body>
+<h1>Registration Form</h1>
+<!-- REGISTRATION FORM -->
+
+    <!-- TODO action & method -->
+    <!-- TODO Fields -->
+    <!-- TODO Button -->
+    <form th:action="@{/register}" method="POST" th:object="${person}">
+
+        <!-- Example field -->
+        <label> STUDENT </label>
+        <br/>
+
+        <label>Library ID</label>
+        <input type="text" name="LibraryId" th:field="*{LibraryId}" />
+        <br/>
+
+        <label>First Name</label>
+        <input type="text" name="firstName" th:field="*{firstName}" />
+        <br/>
+
+        <label>Last Name</label>
+        <input type="text" name="lastName" th:field="*{lastName}" />
+        <br/>
+
+        <label>Email Address</label>
+        <input type="text" name="emailAddress" th:field="*{emailAddress}" />
+        <br/>
+
+        <label>Mobile Phone Number</label>
+        <input type="text" name="mobilePhoneNumber" th:field="*{mobilePhoneNumber}" />
+        <br/>
+
+        <label>Password</label>
+        <input type="password" name="passwordHash" th:field="*{passwordHash}" />
+        <br/>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
