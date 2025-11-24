@@ -8,6 +8,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.Instant;
 
 @Entity
 @Table(name = "person")
@@ -39,6 +42,10 @@ public class Person {
     @Column(name = "password_hash")
     private String passwordHash;
 
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
     public Person() {
 
     }
@@ -55,6 +62,7 @@ public class Person {
         this.emailAddress = emailAddress;
         this.type = type;
         this.passwordHash = passwordHash;
+        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -119,6 +127,14 @@ public class Person {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 
     @Override

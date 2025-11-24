@@ -3,6 +3,10 @@ package gr.hua.dit.StudyRooms.web.rest;
 import gr.hua.dit.StudyRooms.core.model.Person;
 import gr.hua.dit.StudyRooms.core.model.PersonType;
 import gr.hua.dit.StudyRooms.core.repository.PersonRepository;
+import gr.hua.dit.StudyRooms.core.service.PersonService;
+import gr.hua.dit.StudyRooms.core.service.model.CreatePersonRequest;
+import gr.hua.dit.StudyRooms.core.service.model.CreatePersonResult;
+import gr.hua.dit.StudyRooms.core.service.model.PersonView;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,11 +19,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Controller
 public class RegistrationController {
 
-    private final PersonRepository personRepository;
+    private final PersonService personService;
 
-    public RegistrationController(PersonRepository personRepository) {
-        if (personRepository == null) throw new NullPointerException();
-        this.personRepository = personRepository;
+    public RegistrationController(PersonService personService) {
+        if (personService == null) throw new NullPointerException();
+        this.personService = personService;
     }
 
 
@@ -27,21 +31,23 @@ public class RegistrationController {
     @GetMapping("/register")
     public String showRegistrationForm(final Model model){
 
-        model.addAttribute("person", new Person(null, "","", "", "", "", PersonType.STUDENT , ""));
+        model.addAttribute("person", new CreatePersonRequest(PersonType.STUDENT, "","", "", "", "", ""));
 
         return "register";//html template
     }
 
     @PostMapping("/register")
     public String handleRegistrationFormSubmission(
-        @ModelAttribute("person") Person person,
+        @ModelAttribute("person") CreatePersonRequest createPersonRequest,
         final Model model
     ){
-        System.out.println(person.toString());
-        person = this.personRepository.save(person);
-        System.out.println(person.toString());
-        model.addAttribute("person", person);
 
-        return "redirect:/login";//registration successful
+        final CreatePersonResult createPersonResult = this.personService.createPerson(createPersonRequest);
+        if (createPersonResult.created()) {
+            return "/login"; // registration successful - redirect to login form(not yet ready)
+        }
+        model.addAttribute("createPersonRequest", createPersonRequest); //Pass the same form data.
+        model.addAttribute("errorMessage", createPersonResult.reason()); //Show an error message!
+        return "register";
     }
 }

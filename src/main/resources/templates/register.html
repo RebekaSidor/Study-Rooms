@@ -5,42 +5,52 @@
 </head>
 <body>
 <h1>Registration Form</h1>
-<!-- REGISTRATION FORM -->
+<form th:action="@{/register}" method="POST" th:object="${person}"> <!-- /register apo to Mapping sto RegistrationController -->
 
-    <!-- TODO action & method -->
-    <!-- TODO Fields -->
-    <!-- TODO Button -->
-    <form th:action="@{/register}" method="POST" th:object="${person}">
+    <!-- Prothemata "th", me ayta ta prothemata syndeoyme Java objects me UI -->
 
-        <!-- Example field -->
-        <label> STUDENT </label>
-        <br/>
+    <div th:if="${errorMessage != null}">
+        <p style="color: red" th:text="${errorMessage}"></p>
+    </div>
 
-        <label>Library ID</label>
-        <input type="text" name="LibraryId" th:field="*{LibraryId}" />
-        <br/>
+    <label>I am:</label>
+    <select name="type" th:field="*{type}">
+        <option value="LIB_STAFF">Library Staff</option>
+        <option value="STUDENT">Student</option>
+    </select>
+    <br/> <!-- new line -->
 
-        <label>First Name</label>
-        <input type="text" name="firstName" th:field="*{firstName}" />
-        <br/>
+    <label>LIBRARY ID</label>
+    <input th:field="*{libraryId}" />
+    <br/>
 
-        <label>Last Name</label>
-        <input type="text" name="lastName" th:field="*{lastName}" />
-        <br/>
+    <label>First Name: </label>
+    <input th:field="*{firstName}" />
+    <br/>
 
-        <label>Email Address</label>
-        <input type="text" name="emailAddress" th:field="*{emailAddress}" />
-        <br/>
+    <label>Last Name: </label>
+    <input th:field="*{lastName}" />
+    <br/>
 
-        <label>Mobile Phone Number</label>
-        <input type="text" name="mobilePhoneNumber" th:field="*{mobilePhoneNumber}" />
-        <br/>
+    <label>Email Address: </label>
+    <input th:field="*{emailAddress}" />
+    <br/>
 
-        <label>Password</label>
-        <input type="password" name="passwordHash" th:field="*{passwordHash}" />
-        <br/>
+    <label>Mobile Phone Number: </label>
+    <input th:field="*{mobilePhoneNumber}" />
+    <br/>
 
-        <button type="submit">Submit</button>
-    </form>
+    <label>Password: </label>
+    <input type="password" th:field="*{rawPassword}" />
+    <br/>
+
+    <!-- ID, createdAt are auto generated -->
+
+    <button type="submit" class="btn btn-primary">Register</button>
+
+    <!-- USEFUL LINKS -->
+    <a th:href="@{/login}">Already have an account? Sign in</a>
+
+</form>
 </body>
 </html>

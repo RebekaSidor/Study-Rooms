@@ -1,1 +1,0 @@
-package gr.hua.dit.StudyRooms.web.rest;
