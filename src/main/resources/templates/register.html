@@ -1,68 +1,101 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="https://www.thymeleaf.org" lang="en" dir="ltr">
 <head>
+    <meta charset="UFT-8" />
     <title>Register</title>
+    <!--BOOTSTRAP -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <!-- CUSTOM STYLE -->
+    <style>
+        .form-container {
+            margin: 0 auto;
+            max-width: 600px;
+            box-shadow: 12px 12px 0px black;
+            border: 4px solid black !important;
+        }
+        .form-control, .form-select {
+            border: 2px solid #6d6d6d;
+            border-radius: 0;
+        }
+        .form-label {
+            text-transform: uppercase;
+            margin-bottom: 2px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: #7c7c7c;
+            font-size: 12px;
+        }
+        .form-container .btn-primary {
+            background: black;
+            border: 0;
+            padding: 0.5em 4em;
+        }
+    </style>
 </head>
 <body>
-<h1>Registration Form</h1>
-<form th:action="@{/register}" method="POST" th:object="${person}"> <!-- /register apo to Mapping sto RegistrationController -->
 
-    <!-- Prothemata "th", me ayta ta prothemata syndeoyme Java objects me UI -->
+<header class="text-center p-4">
+    <h1>Office Hours <small>/ Student Registration</small></h1>
+</header>
 
-    <div th:if="${errorMessage != null}">
-        <p style="color: red" th:text="${errorMessage}"></p>
+<section>
+    <div class="form-container p-4">
+
+        <!-- REGISTRATION FORM -->
+        <form th:action="@{/register}" method="post" th:object="${createPersonRequest}"> <!-- /register apo to Mapping sto RegistrationController -->
+
+            <!-- ERROR MESSAGE -->
+            <div class="text-center mb-3" th:if="${errorMessage != null}">
+                <p class="text-danger m-0 p-0" th:text="${errorMessage}"></p>
+            </div>
+
+            <!-- Prothemata "th", me ayta syndeoyme Java objects me UI -->
+
+
+            <div class="mb-3">
+                <label class="form-label">LIBRARY ID</label>
+                <input type="text" name="libId" th:field="*{libraryId}" class="form-control" placeholder="Example: lib2023001 (without @lib.gr)" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">First Name</label>
+                <input type="text" name="firstName" th:field="*{firstName}" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Last Name</label>
+                <input type="text" name="lastName" th:field="*{lastName}" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="emailAddress" th:field="*{emailAddress}" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Mobile Phone Number</label>
+                <input type="tel" name="mobilePhoneNumber" th:field="*{mobilePhoneNumber}" class="form-control" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="rawPassword" th:field="*{rawPassword}" class="form-control" required />
+            </div>
+            <!-- ID are auto generated-->
+
+            <div class="mb-4">
+                <button type="submit" class="btn btn-primary">Register</button>
+            </div>
+
+            <!-- USEFUL LINKS -->
+            <p class="m-0 p-0">
+                <a th:href="@{/login}">Already have an account? Sign in</a>
+            </p>
+
+        </form>
+
     </div>
-
-<<<<<<< HEAD
-    <label>I am:</label>
-    <select name="type" th:field="*{type}">
-        <option value="LIB_STAFF">Library Staff</option>
-        <option value="STUDENT">Student</option>
-    </select>
-    <br/> <!-- new line -->
-=======
-        <label>Library ID</label>
-        <input type="text" name="libraryId" th:field="*{libraryId}" />
-        <br/>
->>>>>>> ad7ddd5605801c153e804b920bb90ce2aec37bca
-
-    <label>LIBRARY ID</label>
-    <input th:field="*{libraryId}" />
-    <br/>
-
-    <label>First Name: </label>
-    <input th:field="*{firstName}" />
-    <br/>
-
-    <label>Last Name: </label>
-    <input th:field="*{lastName}" />
-    <br/>
-
-<<<<<<< HEAD
-    <label>Email Address: </label>
-    <input th:field="*{emailAddress}" />
-    <br/>
-=======
-        <label>Mobile Phone Number</label>
-        <input type="text" name="mobilePhoneNumber " th:field="*{mobilePhoneNumber}" />
-        <br/>
->>>>>>> ad7ddd5605801c153e804b920bb90ce2aec37bca
-
-    <label>Mobile Phone Number: </label>
-    <input th:field="*{mobilePhoneNumber}" />
-    <br/>
-
-    <label>Password: </label>
-    <input type="password" th:field="*{rawPassword}" />
-    <br/>
-
-    <!-- ID, createdAt are auto generated -->
-
-    <button type="submit" class="btn btn-primary">Register</button>
-
-    <!-- USEFUL LINKS -->
-    <a th:href="@{/login}">Already have an account? Sign in</a>
-
-</form>
+</section>
 </body>
 </html>
