@@ -13,12 +13,18 @@
         <p style="color: red" th:text="${errorMessage}"></p>
     </div>
 
+<<<<<<< HEAD
     <label>I am:</label>
     <select name="type" th:field="*{type}">
         <option value="LIB_STAFF">Library Staff</option>
         <option value="STUDENT">Student</option>
     </select>
     <br/> <!-- new line -->
+=======
+        <label>Library ID</label>
+        <input type="text" name="libraryId" th:field="*{libraryId}" />
+        <br/>
+>>>>>>> ad7ddd5605801c153e804b920bb90ce2aec37bca
 
     <label>LIBRARY ID</label>
     <input th:field="*{libraryId}" />
@@ -32,9 +38,15 @@
     <input th:field="*{lastName}" />
     <br/>
 
+<<<<<<< HEAD
     <label>Email Address: </label>
     <input th:field="*{emailAddress}" />
     <br/>
+=======
+        <label>Mobile Phone Number</label>
+        <input type="text" name="mobilePhoneNumber " th:field="*{mobilePhoneNumber}" />
+        <br/>
+>>>>>>> ad7ddd5605801c153e804b920bb90ce2aec37bca
 
     <label>Mobile Phone Number: </label>
     <input th:field="*{mobilePhoneNumber}" />
