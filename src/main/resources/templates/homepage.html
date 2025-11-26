@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html
+        xmlns:th="https://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{base}">
+
+<head>
+    <title>Home</title>
+</head>
+
+<body>
+
+<header layout:fragment="header">
+    <h1>🌐 Study Rooms</h1>
+</header>
+
+<section layout:fragment="main">
+
+    <div class="mb-4">
+        <img src="https://www.cornell.edu/academics/assets/img/library/2024_1357_SH_0214-N.jpg" style="width: 100%" />
+    </div>
+
+    <div>
+        <p>Here will be added description :)</p>
+    </div>
+
+    <div class="text-center mt-4">
+        <p><a th:href="@{/login}">Log in</a></p>
+        <p><a th:href="@{/register}">Register</a></p>
+    </div>
+
+</section>
+
+</body>
+</html>

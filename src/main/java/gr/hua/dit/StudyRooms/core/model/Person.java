@@ -13,7 +13,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.Instant;
 
 @Entity
-@Table(name = "person")
+@Table(name = "PERSON")
 public class Person {
 
     @Id

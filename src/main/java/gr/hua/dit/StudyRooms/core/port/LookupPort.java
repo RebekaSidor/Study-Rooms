@@ -5,7 +5,7 @@ import gr.hua.dit.StudyRooms.core.model.PersonType;
 import java.util.Optional;
 
 /**
- * Poert to external service for managing lookups
+ * Port to external service for managing lookups
  */
 public interface LookupPort {
 

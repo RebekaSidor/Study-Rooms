@@ -22,5 +22,4 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
 
     boolean existsByLibraryIdIgnoreCase(final String libraryId);
 
-
 }
