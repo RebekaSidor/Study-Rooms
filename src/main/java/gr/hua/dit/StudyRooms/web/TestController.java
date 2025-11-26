@@ -35,7 +35,7 @@ public class TestController {
         }
 
         final var people = this.personRepository
-                .findByLibraryIdStartsWithAndType("lib2025", PersonType.STUDENT);
+                .findByLibraryId("lib2025");
 
         final String stringToServe = String.join(
                 "\n", people.stream().map(Person::toString).toList());
