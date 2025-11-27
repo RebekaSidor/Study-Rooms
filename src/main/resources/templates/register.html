@@ -25,6 +25,14 @@
         </div>
 
         <div class="mb-3">
+            <label class="form-label">I am:</label>
+            <select name="type" th:field="*{type}" class="form-select">
+                <option value="LIB_STAFF">Library Staff</option>
+                <option value="STUDENT">Student</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
             <label class="form-label">HUA ID</label>
             <input type="text" name="huaId" th:field="*{libraryId}" class="form-control" placeholder="Example: lib2023001 (without @lib.gr)" required />
         </div>

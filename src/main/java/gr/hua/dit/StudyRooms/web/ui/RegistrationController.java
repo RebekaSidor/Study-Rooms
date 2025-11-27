@@ -4,6 +4,7 @@ import gr.hua.dit.StudyRooms.core.model.PersonType;
 import gr.hua.dit.StudyRooms.core.service.PersonService;
 import gr.hua.dit.StudyRooms.core.service.model.CreatePersonRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreatePersonResult;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,22 +27,30 @@ public class RegistrationController {
 
     //html
     @GetMapping("/register")
-    public String showRegistrationForm(final Model model){
-
+    public String showRegistrationForm(final Authentication authentication, final Model model){
+        if (AuthController.isAuthenticated(authentication)) {
+            return "redirect:/profile";
+        }
         model.addAttribute("createPersonRequest", new CreatePersonRequest(PersonType.STUDENT, "","", "", "", "", ""));
 
         return "register";//html template
     }
 
     @PostMapping("/register")
-    public String handleRegistrationFormSubmission(
-        @ModelAttribute("createPersonRequest") CreatePersonRequest createPersonRequest,
-        final Model model
+    public String handleFormSubmission(
+            final Authentication authentication,
+            @ModelAttribute("createPersonRequest") final CreatePersonRequest createPersonRequest,
+            final Model model
     ){
+
+        if (AuthController.isAuthenticated(authentication)) {
+            return "redirect:/profile"; // already logged in
+        }
+        // TODO Form validation + UI errors
 
         final CreatePersonResult createPersonResult = this.personService.createPerson(createPersonRequest);
         if (createPersonResult.created()) {
-            return "/login"; // registration successful - redirect to login form(not yet ready)
+            return "redirect:/login"; // registration successful - redirect to login form(not yet ready)
         }
         model.addAttribute("createPersonRequest", createPersonRequest); //Pass the same form data.
         model.addAttribute("errorMessage", createPersonResult.reason()); //Show an error message!

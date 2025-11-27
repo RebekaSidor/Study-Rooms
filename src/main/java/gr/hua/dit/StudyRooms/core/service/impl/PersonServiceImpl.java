@@ -12,6 +12,7 @@ import gr.hua.dit.StudyRooms.core.service.model.CreatePersonResult;
 import gr.hua.dit.StudyRooms.core.service.model.PersonView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
@@ -25,20 +26,24 @@ public class PersonServiceImpl implements PersonService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PersonServiceImpl.class);
 
+    private  final PasswordEncoder passwordEncoder;
     private final LookupPort lookupPort;
     private final SmsNotificationPort smsNotificationPort;
     private final PersonRepository personRepository;
     private final PersonMapper personMapper;
 
-    public PersonServiceImpl(final LookupPort lookupPort,
+    public PersonServiceImpl(final PasswordEncoder passwordEncoder,
+                             final LookupPort lookupPort,
                              final SmsNotificationPort smsNotificationPort,
                              final PersonRepository personRepository,
                              final PersonMapper personMapper) {
+        if (passwordEncoder == null) throw new NullPointerException();
         if (lookupPort == null) throw new NullPointerException();
         if (smsNotificationPort == null) throw new NullPointerException();
         if (personRepository == null) throw new NullPointerException();
         if (personMapper == null) throw new NullPointerException();
 
+        this.passwordEncoder = passwordEncoder;
         this.lookupPort = lookupPort;
         this.smsNotificationPort = smsNotificationPort;
         this.personRepository = personRepository;
@@ -97,7 +102,7 @@ public class PersonServiceImpl implements PersonService {
         // ---------------------------------
 
         // TODO encode password! raw to hash!
-        final String hashedPassword = rawPassword; // TODO BUD! Encode
+        final String hashedPassword = this.passwordEncoder.encode(rawPassword);
 
         // Instantiate person.
         // ---------------------------------
