@@ -11,6 +11,11 @@ import gr.hua.dit.StudyRooms.core.service.model.CreatePersonResult;
 public interface PersonService {
 
 
-    CreatePersonResult createPerson(final CreatePersonRequest createPersonRequest);
+    CreatePersonResult createPerson(final CreatePersonRequest createPersonRequest, final boolean notify);
+
+    default CreatePersonResult createPerson(final CreatePersonRequest createPersonRequest){
+        return this.createPerson(createPersonRequest,true);
+    }
+
 }
 

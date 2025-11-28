@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -61,7 +62,7 @@ public class InitializationService {
                 )
         );
         for (final var CreatePersonRequest : createPersonRequestList) {
-            this.personService.createPerson(CreatePersonRequest);
+            this.personService.createPerson(CreatePersonRequest, false);//do not send sms
         }
         LOGGER.info("Database initialization completed successfully");
 
