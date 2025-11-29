@@ -90,5 +90,4 @@ public class Reservation {
                 ", createdAt=" + createdAt +
                 '}';
     }
-
 }
