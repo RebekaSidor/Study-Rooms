@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Study Spaces</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        th, td {
+            border: 1px solid #999;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        button {
+            background-color: #ffb6c1;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #ff99aa;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Study Spaces</h1>
+
+<h2>📘 Rooms</h2>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Capacity</th>
+        <th>Available</th>
+        <th>Opening</th>
+        <th>Closing</th>
+    </tr>
+
+    <tr th:each="room : ${rooms}">
+        <td th:text="${room.studySpaceId}"></td>
+        <td>
+            <a th:href="@{/availability/{id}(id=${room.studySpaceId})}" th:text="${room.name}"></a>
+        </td>
+        <td th:text="${room.capacity}"></td>
+        <td th:text="${room.available}"></td>
+        <td th:text="${room.openingTime}"></td>
+        <td th:text="${room.closingTime}"></td>
+    </tr>
+</table>
+
+<h2>🪑 Seats</h2>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Available</th>
+        <th>Opening</th>
+        <th>Closing</th>
+    </tr>
+
+    <tr th:each="seat : ${seats}">
+        <td th:text="${seat.studySpaceId}"></td>
+        <td>
+            <a th:href="@{/availability/{id}(id=${seat.studySpaceId})}" th:text="${seat.name}"></a>
+        </td>
+        <td th:text="${seat.available}"></td>
+        <td th:text="${seat.openingTime}"></td>
+        <td th:text="${seat.closingTime}"></td>
+    </tr>
+</table>
+
+<br>
+<a href="/mainpage"><button>Back to Main Page</button></a>
+
+</body>
+</html>
+

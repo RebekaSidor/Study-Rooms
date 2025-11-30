@@ -13,6 +13,7 @@ import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * Default implementation of {@link StudySpaceService}.
@@ -32,6 +33,15 @@ public class StudySpaceServiceImpl implements StudySpaceService {
     }
 
     @Override
+    public List<StudySpaceView> getAllStudySpaces() {
+        return studySpaceRepository.findAll()
+                .stream()
+                .map(studySpaceMapper::convertStudySpaceToStudySpaceView)
+                .toList();
+    }
+
+
+    @Override
     public CreateStudySpaceResult createStudySpace(final CreateStudySpaceRequest request) {
         if (request == null) throw new NullPointerException();
 
@@ -45,6 +55,8 @@ public class StudySpaceServiceImpl implements StudySpaceService {
         studySpace.setOpeningTime(request.openingTime() != null ? request.openingTime() : LocalTime.of(8,0));
         studySpace.setClosingTime(request.closingTime() != null ? request.closingTime() : LocalTime.of(20,0));
 
+
+
         // Αποθήκευση στη βάση
         studySpace = this.studySpaceRepository.save(studySpace);
 
@@ -52,5 +64,11 @@ public class StudySpaceServiceImpl implements StudySpaceService {
         final StudySpaceView studySpaceView = this.studySpaceMapper.convertStudySpaceToStudySpaceView(studySpace);
 
         return CreateStudySpaceResult.success(studySpaceView);
+
+    }
+    @Override
+    public StudySpace getStudySpaceById(String studySpaceId) {
+        return studySpaceRepository.findByStudySpaceId(studySpaceId)
+                .orElse(null); // ή throw exception αν θες
     }
 }

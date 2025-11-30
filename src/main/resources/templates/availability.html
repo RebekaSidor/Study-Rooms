@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${studySpace.name} + ' Availability'">Availability</title>
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.5/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.5/main.min.js'></script>
+</head>
+<body>
+<h1 th:text="${studySpace.name} + ' Availability Calendar'"></h1>
+<div id='calendar'></div>
+
+<script th:inline="javascript">
+    var reservations = /*[[${reservations}]]*/ [];
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'timeGridWeek',
+            slotMinTime: '08:00:00',
+            slotMaxTime: '20:00:00',
+            events: reservations.map(r => ({
+                title: 'Reserved',
+                start: r.startTime,
+                end: r.endTime,
+                color: 'red'
+            })),
+            businessHours: {
+                daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
+                startTime: '08:00',
+                endTime: '20:00'
+            }
+        });
+        calendar.render();
+    });
+</script>
+</body>
+</html>

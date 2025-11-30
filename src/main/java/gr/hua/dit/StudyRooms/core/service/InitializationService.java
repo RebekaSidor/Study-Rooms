@@ -105,8 +105,12 @@ public class InitializationService {
                         "1234"
                 )
         );
-        for (final var CreatePersonRequest : createPersonRequestList) {
-            this.personService.createPerson(CreatePersonRequest, false);//do not send sms
+        for (final var createPersonRequest : createPersonRequestList) {
+            try {
+                this.personService.createPerson(createPersonRequest, false); // do not send sms
+            } catch (Exception e) {
+                LOGGER.warn("Η δημιουργία του ατόμου {} απέτυχε: {}", createPersonRequest.libraryId(), e.getMessage());
+            }
         }
 
         // INITIALIZE STUDY SPACES
@@ -176,13 +180,13 @@ public class InitializationService {
                         "r2025001",
                         "lib2025002",
                         "s003",
-                        LocalDateTime.now()
+                        LocalTime.of(10, 0)
                 ),
                 new CreateReservationRequest(
                         "r2025002",
                         "lib2025002",
                         "r003",
-                        LocalDateTime.now()
+                        LocalTime.of(14, 0)
                 )
         );
         for (final var CreateReservationRequest : CreateReservationRequestlist) {

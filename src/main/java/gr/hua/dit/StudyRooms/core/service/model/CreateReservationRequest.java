@@ -7,6 +7,6 @@ public record CreateReservationRequest(
         String reservationId,
         String studentId,
         String studySpaceId,
-        java.time.LocalDateTime now
+        java.time.LocalTime timeslot
 )
 {}

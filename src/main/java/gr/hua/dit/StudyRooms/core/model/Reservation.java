@@ -19,14 +19,17 @@ public class Reservation {
     @Column(name = "student_id")
     private String studentId;
 
-    @Column(name = "study_space_id")
-    private String studySpaceId;
-
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    //TODO timeslot list
+    @Column(name = "timeslot")
+    private String timeslot;
+
+    // Σύνδεση με StudySpace
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "study_space_id", referencedColumnName = "id")
+    private StudySpace studySpace;
 
     public Reservation() {
 
@@ -36,49 +39,26 @@ public class Reservation {
         this.id = id;
         this.reservationId = reservationId;
         this.studentId = studentId;
-        this.studySpaceId = studySpaceId;
+
         this.createdAt = createdAt;
     }
 
-    public Long getId() {
-        return id;
-    }
+    // Getters & Setters
+    public Long getId() { return id; }
+    public String getReservationId() { return reservationId; }
+    public void setReservationId(String reservationId) { this.reservationId = reservationId; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getStudentId() { return studentId; }
+    public void setStudentId(String studentId) { this.studentId = studentId; }
 
-    public String getReservationId() {
-        return reservationId;
-    }
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 
-    public void setReservationId(String reservationId) {
-        this.reservationId = reservationId;
-    }
+    public String getTimeslot() { return timeslot; }
+    public void setTimeslot(String timeslot) { this.timeslot = timeslot; }
 
-    public String getStudentId() {
-        return studentId;
-    }
-
-    public void setStudentId(String studentId) {
-        this.studentId = studentId;
-    }
-
-    public String getStudySpaceId() {
-        return studySpaceId;
-    }
-
-    public void setStudySpaceId(String studySpaceId) {
-        this.studySpaceId = studySpaceId;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
+    public StudySpace getStudySpace() { return studySpace; }
+    public void setStudySpace(StudySpace studySpace) { this.studySpace = studySpace; }
 
     @Override
     public String toString() {
@@ -86,7 +66,7 @@ public class Reservation {
                 "id=" + id +
                 ", reservationId='" + reservationId + '\'' +
                 ", studentId='" + studentId + '\'' +
-                ", studySpaceId='" + studySpaceId + '\'' +
+
                 ", createdAt=" + createdAt +
                 '}';
     }

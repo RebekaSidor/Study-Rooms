@@ -7,6 +7,7 @@ public record ReservationView(
         long id,
         String reservationId,
         String studentId,
-        String studySpaceId
+        String studySpaceId,
+        String timeslot
 )
 {}

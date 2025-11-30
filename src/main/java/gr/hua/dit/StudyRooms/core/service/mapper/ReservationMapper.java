@@ -9,16 +9,26 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ReservationMapper {
+    /**
+     * Μετατρέπει ένα Reservation entity σε ReservationView για το UI.
+     */
     public ReservationView convertReservationToReservationView(final Reservation reservation) {
         if (reservation == null) {
             return null;
+        }
+
+        // Παίρνουμε το id του StudySpace από το ManyToOne
+        String studySpaceId = null;
+        if (reservation.getStudySpace() != null) {
+            studySpaceId = reservation.getStudySpace().getStudySpaceId();
         }
 
         return new ReservationView(
                 reservation.getId(),
                 reservation.getReservationId(),
                 reservation.getStudentId(),
-                reservation.getStudySpaceId()
+                studySpaceId,
+                reservation.getTimeslot() // η ώρα κράτησης
         );
     }
 }
