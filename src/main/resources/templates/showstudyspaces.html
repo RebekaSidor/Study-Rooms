@@ -102,7 +102,21 @@
 </table>
 
 <br>
-<a href="/mainpage"><button>Back to Main Page</button></a>
+<div>
+    <a th:if="${from} == 'homepage'" th:href="@{/}">
+        <button>Back to Homepage</button>
+    </a>
+
+    <a th:if="${from} == 'mainpage'" th:href="@{/mainpage}">
+        <button>Back to Main Page</button>
+    </a>
+
+    <!-- Αν δεν δόθηκε from -->
+    <a th:if="${from} == null" th:href="@{/mainpage}">
+        <button>Back</button>
+    </a>
+</div>
+
 
 </body>
 </html>

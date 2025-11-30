@@ -5,6 +5,7 @@ import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -17,8 +18,9 @@ public class StudySpaceController {
         this.studySpaceService = studySpaceService;
     }
 
-    @GetMapping("/studyspaces")
-    public String showStudySpaces(Model model) {
+    @GetMapping("/showstudyspaces")
+    public String showStudySpaces(@RequestParam(required = false) String from,
+                                  Model model) {
         List<StudySpaceView> all = studySpaceService.getAllStudySpaces();
 
         List<StudySpaceView> rooms = all.stream()
@@ -31,6 +33,7 @@ public class StudySpaceController {
 
         model.addAttribute("rooms", rooms);
         model.addAttribute("seats", seats);
+        model.addAttribute("from", from);
 
         return "showstudyspaces";
     }
