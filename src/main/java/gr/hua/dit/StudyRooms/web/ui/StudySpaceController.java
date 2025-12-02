@@ -19,8 +19,10 @@ public class StudySpaceController {
     }
 
     @GetMapping("/showstudyspaces")
-    public String showStudySpaces(@RequestParam(required = false) String from,
-                                  Model model) {
+    public String showStudySpaces(
+            @RequestParam(value = "from", required = false, defaultValue = "mainpage") String from,
+            Model model) {
+
         List<StudySpaceView> all = studySpaceService.getAllStudySpaces();
 
         List<StudySpaceView> rooms = all.stream()

@@ -11,7 +11,7 @@
 <body>
 
 <header layout:fragment="header">
-    <h1>Office Hours <small>/ Profile</small></h1>
+    <h1>Study Rooms <small>/ Profile</small></h1>
 </header>
 
 <section layout:fragment="main">
@@ -25,14 +25,26 @@
         <hr>
 
         <ul>
-            <li>
-                <a th:href="@{/profile}">Profile</a>
-            </li>
-            <li>
-                <a th:href="@{/logout}">Logout</a>
-            </li>
+            <li><a href="/my-reservations">My Reservations</a></li>
+            <li><a th:href="@{/showstudyspaces(from='profile')}">View Study Spaces</a></li>
+            <li><a th:href="@{/logout}">Logout</a></li>
         </ul>
     </div>
+
+    <div>
+        <a th:if="${from} == 'homepage'" th:href="@{/}">
+            <button>Back to Homepage</button>
+        </a>
+
+        <a th:if="${from} == 'profile'" th:href="@{/profile}">
+            <button>Back to Profile</button>
+        </a>
+
+        <a th:if="${from} == null" th:href="@{/}">
+            <button>Back</button>
+        </a>
+    </div>
+
 
 </section>
 

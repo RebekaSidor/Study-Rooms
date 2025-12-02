@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Reservations</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #ccc; text-align: center; }
+        th { background-color: #f4f4f4; }
+        h1 { margin-bottom: 20px; }
+    </style>
+</head>
+
+<body>
+
+<h1>My Reservations</h1>
+
+<table>
+    <thead>
+    <tr>
+        <th>Reservation ID</th>
+        <th>Study Space</th>
+        <th>Start</th>
+        <th>End</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="res : ${reservations}">
+        <td th:text="${res.reservationId}"></td>
+        <td th:text="${res.studySpaceId}"></td>
+        <td th:text="${res.startTime}"></td>
+        <td th:text="${res.endTime}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<br>
+
+<a th:href="@{/}">
+    <button>Back to Home</button>
+</a>
+
+</body>
+</html>

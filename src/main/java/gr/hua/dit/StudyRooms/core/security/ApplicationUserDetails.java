@@ -14,23 +14,23 @@ import java.util.Collections;
 public final class ApplicationUserDetails implements UserDetails {
 
     private final long  personId;
-    private final String emailAddress;
+    private final String libraryId;
     private final String passwordHash;
     private final PersonType type;
 
     public ApplicationUserDetails(final long personId,
-                                  final String emailAddress,
+                                  final String libraryId,
                                   final String passwordHash,
                                   final PersonType type) {
         if (personId <= 0) throw new IllegalArgumentException();
-        if (emailAddress == null) throw new NullPointerException();
-        if (emailAddress.isBlank()) throw new IllegalArgumentException();
+        if (libraryId == null) throw new NullPointerException();
+        if (libraryId .isBlank()) throw new IllegalArgumentException();
         if (passwordHash == null) throw new NullPointerException();
         if (passwordHash.isBlank()) throw new IllegalArgumentException();
         if (type == null) throw new NullPointerException();
 
         this.personId = personId;
-        this.emailAddress = emailAddress;
+        this.libraryId = libraryId;
         this.passwordHash = passwordHash;
         this.type = type;
     }
@@ -58,7 +58,7 @@ public final class ApplicationUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.emailAddress;
+        return this.libraryId;
     }
 
     @Override
@@ -79,5 +79,9 @@ public final class ApplicationUserDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public PersonType getType() {
+        return type;
     }
 }

@@ -1,5 +1,7 @@
 package gr.hua.dit.StudyRooms.core.service.model;
 
+import java.time.LocalDateTime;
+
 /**
  * ReservationView (DTO) that includes only inform to be exposed.
  */
@@ -8,6 +10,7 @@ public record ReservationView(
         String reservationId,
         String studentId,
         String studySpaceId,
-        String timeslot
+        LocalDateTime startTime,
+        LocalDateTime endTime
 )
 {}

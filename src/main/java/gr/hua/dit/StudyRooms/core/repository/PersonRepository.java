@@ -10,6 +10,9 @@ import java.util.Optional;
 
 @Repository
 public interface PersonRepository extends JpaRepository<Person, Long> {
+
+    Person findTopByOrderByLibraryIdDesc();
+
     Optional<Person> findByLibraryId(String libraryId);
 
     Optional<Person> findByEmailAddressIgnoreCase(final String emailAddress);

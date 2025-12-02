@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Reservation Successful</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+        }
+
+        .box {
+            border: 2px solid #4CAF50;
+            padding: 20px;
+            border-radius: 10px;
+            background: #F0FFF0;
+            width: 50%;
+        }
+
+        .btn {
+            background: #4CAF50;
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Reservation Successful 🎉</h1>
+
+<div class="box">
+    <p><strong>Reservation ID:</strong>
+        <span th:text="${reservation.reservationId}"></span>
+    </p>
+
+    <p><strong>Study Space:</strong>
+        <span th:text="${reservation.studySpaceId}"></span>
+    </p>
+
+    <p><strong>Start:</strong>
+        <span th:text="${reservation.startTime}"></span>
+    </p>
+
+    <p><strong>End:</strong>
+        <span th:text="${reservation.endTime}"></span>
+    </p>
+</div>
+
+<br>
+
+<a th:href="@{/}">
+    <button class="btn">Back to Homepage</button>
+</a>
+
+<a th:href="@{'/availability/' + ${reservation.studySpaceId}}">
+    <button class="btn">Back to Availability</button>
+</a>
+
+</body>
+</html>

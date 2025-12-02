@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Reservation Failed</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 30px; }
+        .box {
+            border: 2px solid #ff4d4d;
+            padding: 20px;
+            border-radius: 10px;
+            background: #ffe6e6;
+            width: 50%;
+        }
+        .btn {
+            background: #007bff;
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Reservation Failed ❌</h1>
+
+<div class="box">
+    <p style="color:#ff0000; font-weight: bold;" th:text="${error}"></p>
+</div>
+
+<br>
+
+<a th:href="@{/}">
+    <button class="btn">Return to Homepage</button>
+</a>
+
+</body>
+</html>

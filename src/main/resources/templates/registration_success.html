@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Registration Successful</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            text-align: center;
+        }
+        .box {
+            display: inline-block;
+            padding: 25px 30px;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            margin-top: 40px;
+        }
+        h2 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+        a button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        a button:hover {
+            background-color: #43a047;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Registration Successful!</h2>
+
+    <p>Your Library ID is:</p>
+    <h3 th:text="${newLibraryId}"></h3>
+
+    <p>You can now log in using your email and password.</p>
+
+    <a th:href="@{/login}">
+        <button>Go to Login</button>
+    </a>
+</div>
+
+</body>
+</html>

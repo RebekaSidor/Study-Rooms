@@ -24,15 +24,13 @@ public class ApplicationUserDetailsService implements UserDetailsService {
         if (username == null) throw new NullPointerException();
         if (username.isBlank()) throw new IllegalArgumentException();
 
-        return this.personRepository.findByEmailAddressIgnoreCase(username.strip())
-                .map(person -> {
-                    return new ApplicationUserDetails(
+        return this.personRepository.findByLibraryId(username.strip())
+                .map(person -> new ApplicationUserDetails(
                         person.getId(),
-                        person.getEmailAddress(),
+                        person.getLibraryId(),  // username = libId
                         person.getPasswordHash(),
-                        person.getType());
-                    }
-                )
-                .orElseThrow(() -> new UsernameNotFoundException("User "  + username + " not found"));
+                        person.getType()))
+                .orElseThrow(() -> new UsernameNotFoundException("User " + username + " not found"));
     }
+
 }

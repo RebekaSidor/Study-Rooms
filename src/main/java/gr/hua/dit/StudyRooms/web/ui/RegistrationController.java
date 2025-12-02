@@ -27,6 +27,7 @@ public class RegistrationController {
 
     //html
     @GetMapping("/register")
+
     public String showRegistrationForm(final Authentication authentication, final Model model){
         if (AuthController.isAuthenticated(authentication)) {
             return "redirect:/profile";
@@ -35,6 +36,13 @@ public class RegistrationController {
 
         return "register";//html template
     }
+
+    //se periptvsh pou kapoios mpei kateu8eian sto registration_succes apo to browser na t bgalei error
+    @GetMapping("/registration_success")
+    public String registrationSuccess() {
+        return "registration_success";
+    }
+
 
     @PostMapping("/register")
     public String handleFormSubmission(
@@ -46,14 +54,18 @@ public class RegistrationController {
         if (AuthController.isAuthenticated(authentication)) {
             return "redirect:/profile"; // already logged in
         }
-        // TODO Form validation + UI errors
 
-        final CreatePersonResult createPersonResult = this.personService.createPerson(createPersonRequest);
+        final CreatePersonResult createPersonResult = this.personService.createPerson(createPersonRequest, false);
+
         if (createPersonResult.created()) {
-            return "redirect:/login"; // registration successful - redirect to login form(not yet ready)
+            String newLibraryId = createPersonResult.personView().libraryId();
+            model.addAttribute("newLibraryId", newLibraryId);
+            return "registration_success"; // <-- SUCCESS PAGE
         }
+
         model.addAttribute("createPersonRequest", createPersonRequest); //Pass the same form data.
         model.addAttribute("errorMessage", createPersonResult.reason()); //Show an error message!
         return "register";
     }
+
 }

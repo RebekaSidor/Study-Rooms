@@ -11,4 +11,6 @@ public interface StudySpaceService {
     CreateStudySpaceResult createStudySpace(final CreateStudySpaceRequest createStudySpace);
     List<StudySpaceView> getAllStudySpaces();
     StudySpace getStudySpaceById(String studySpaceId);
+    long countAll();
+
 }

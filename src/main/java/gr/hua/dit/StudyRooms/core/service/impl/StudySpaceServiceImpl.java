@@ -71,4 +71,9 @@ public class StudySpaceServiceImpl implements StudySpaceService {
         return studySpaceRepository.findByStudySpaceId(studySpaceId)
                 .orElse(null); // ή throw exception αν θες
     }
+    @Override
+    public long countAll() {
+        return studySpaceRepository.count();
+    }
+
 }

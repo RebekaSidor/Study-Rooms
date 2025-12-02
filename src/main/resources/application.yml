@@ -8,8 +8,13 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create-drop   # dev only
+      ddl-auto: update   # krataei tous xrhstes
     open-in-view: false
     properties:
       hibernate.dialect: org.hibernate.dialect.H2Dialect
       hibernate.format_sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console

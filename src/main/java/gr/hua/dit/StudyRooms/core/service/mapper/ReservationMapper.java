@@ -17,18 +17,16 @@ public class ReservationMapper {
             return null;
         }
 
-        // Παίρνουμε το id του StudySpace από το ManyToOne
-        String studySpaceId = null;
-        if (reservation.getStudySpace() != null) {
-            studySpaceId = reservation.getStudySpace().getStudySpaceId();
-        }
 
         return new ReservationView(
                 reservation.getId(),
                 reservation.getReservationId(),
                 reservation.getStudentId(),
-                studySpaceId,
-                reservation.getTimeslot() // η ώρα κράτησης
+                reservation.getStudySpaceId(),
+                reservation.getStartTime(),
+                reservation.getEndTime()
         );
+
     }
+
 }

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Available Seats</title>
+</head>
+<body>
+
+<h1>Available Seats</h1>
+
+<a href="/login">
+    <button>Login for Reservation</button>
+</a>
+<br><br>
+
+<a href="/anonymous/rooms">Δες διαθέσιμα δωμάτια</a>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Seat Name</th>
+        <th>Available</th>
+        <th>Action</th>
+    </tr>
+
+    <tr th:each="seat : ${seats}">
+        <td th:text="${seat.name}"></td>
+        <td th:text="${seat.available}"></td>
+
+        <td>
+            <a th:href="@{/login}">
+                <button>Book (Login Required)</button>
+            </a>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>
+uelvml>

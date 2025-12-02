@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
     <title>Study Spaces</title>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -66,6 +68,7 @@
         <th>Available</th>
         <th>Opening</th>
         <th>Closing</th>
+        <th>Reserve</th>
     </tr>
 
     <tr th:each="room : ${rooms}">
@@ -77,6 +80,14 @@
         <td th:text="${room.available}"></td>
         <td th:text="${room.openingTime}"></td>
         <td th:text="${room.closingTime}"></td>
+        <td>
+            <div sec:authorize="hasRole('STUDENT')">
+                <a th:href="@{'/reserve/' + ${room.studySpaceId}}">
+
+                <button>Reserve</button>
+                </a>
+            </div>
+        </td>
     </tr>
 </table>
 
@@ -88,16 +99,26 @@
         <th>Available</th>
         <th>Opening</th>
         <th>Closing</th>
+        <th>Reserve</th>
     </tr>
 
     <tr th:each="seat : ${seats}">
         <td th:text="${seat.studySpaceId}"></td>
         <td>
-            <a th:href="@{/availability/{id}(id=${seat.studySpaceId})}" th:text="${seat.name}"></a>
+            <a th:href="@{/availability/{id}(id=${seat.studySpaceId})}"
+               th:text="${seat.name}"></a>
         </td>
         <td th:text="${seat.available}"></td>
         <td th:text="${seat.openingTime}"></td>
         <td th:text="${seat.closingTime}"></td>
+
+        <td>
+            <div sec:authorize="hasRole('STUDENT')">
+                <a th:href="@{'/reserve/' + ${seat.studySpaceId}}">
+                    <button>Reserve</button>
+              </a>
+         </div>
+        </td>
     </tr>
 </table>
 
@@ -107,14 +128,10 @@
         <button>Back to Homepage</button>
     </a>
 
-    <a th:if="${from} == 'mainpage'" th:href="@{/mainpage}">
-        <button>Back to Main Page</button>
+    <a th:if="${from} == 'profile'" th:href="@{/profile}">
+        <button>Back to Profile</button>
     </a>
 
-    <!-- Αν δεν δόθηκε from -->
-    <a th:if="${from} == null" th:href="@{/mainpage}">
-        <button>Back</button>
-    </a>
 </div>
 
 

@@ -1,37 +1,101 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text="${studySpace.name} + ' Availability'">Availability</title>
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.5/main.min.css' rel='stylesheet' />
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.5/main.min.js'></script>
+    <title>Study Space Availability</title>
+
+    <!-- FULLCALENDAR -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.5/main.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.5/main.min.js"></script>
+
+    <style>
+        .reserve-btn {
+            padding: 10px;
+            background: green;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .login-btn {
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
 </head>
+
 <body>
-<h1 th:text="${studySpace.name} + ' Availability Calendar'"></h1>
-<div id='calendar'></div>
+
+<h1 th:text="'Availability for space: ' + ${studySpace.studySpaceId}"></h1>
+
+<!-- ANONYMOUS USER -->
+<div th:if="${role == null}">
+    <a th:href="@{/login}">
+        <button class="login-btn">Login to reserve</button>
+    </a>
+</div>
+
+<!-- STUDENT USER -->
+<div th:if="${role == 'STUDENT'}">
+
+    <h2>Make a Reservation</h2>
+
+    <!-- FORM -->
+    <form th:action="@{'/reserve/' + ${studySpace.studySpaceId}}" method="post">
+
+        <label>Date:</label>
+        <input type="date" name="date" required>
+
+        <br><br>
+
+        <label>Start Time:</label>
+        <input type="time" name="start" required>
+
+        <br><br>
+
+        <label>End Time:</label>
+        <input type="time" name="end" required>
+
+        <br><br>
+
+        <button type="submit" class="reserve-btn">Reserve</button>
+
+    </form>
+</div>
+
+<!-- STAFF USER -->
+<div th:if="${role == 'LIB_STAFF'}">
+    <p style="color:red; font-weight:bold;">Staff members cannot make reservations.</p>
+</div>
+
+<br><br>
+
+<h2>Calendar</h2>
+<div id="calendar"></div>
 
 <script th:inline="javascript">
     var reservations = /*[[${reservations}]]*/ [];
 
-    document.addEventListener('DOMContentLoaded', function() {
-        var calendarEl = document.getElementById('calendar');
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'timeGridWeek',
-            slotMinTime: '08:00:00',
-            slotMaxTime: '20:00:00',
+    document.addEventListener("DOMContentLoaded", function () {
+        var calendar = new FullCalendar.Calendar(document.getElementById("calendar"), {
+            initialView: "timeGridWeek",
+            slotMinTime: "08:00:00",
+            slotMaxTime: "20:00:00",
+
             events: reservations.map(r => ({
                 title: 'Reserved',
                 start: r.startTime,
                 end: r.endTime,
                 color: 'red'
-            })),
-            businessHours: {
-                daysOfWeek: [1, 2, 3, 4, 5, 6, 7],
-                startTime: '08:00',
-                endTime: '20:00'
-            }
+            }))
         });
+
         calendar.render();
     });
 </script>
+
 </body>
 </html>

@@ -29,9 +29,12 @@ public class SecurityConfig {
         http
                 .securityMatcher("/**")
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/register").permitAll() // Public
-                        .requestMatchers("/profile", "/logout").authenticated() // Private
-                        .anyRequest().permitAll() // the rest
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/", "/login", "/register", "/anonymous/**", "/availability/**").permitAll()
+                        .requestMatchers("/reservation/**").hasRole("STUDENT")
+                        .requestMatchers("/profile", "/logout").authenticated()
+                        .anyRequest().authenticated()
+
                 )
                 .formLogin(form -> form
                         .loginPage("/login") // custom login page (see login.html)
@@ -47,9 +50,10 @@ public class SecurityConfig {
                         .invalidateHttpSession(true)
                         .permitAll()
                 )
-                // Disable basic security.
-                .httpBasic(basic -> {});
-
+//                // Disable basic security.
+//                .httpBasic(basic -> {});
+                .csrf(csrf -> csrf.disable())
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()));
         return http.build();
     }
 
