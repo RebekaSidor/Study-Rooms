@@ -1,5 +1,6 @@
 package gr.hua.dit.StudyRooms.config;
 
+import gr.hua.dit.StudyRooms.core.security.LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -17,6 +18,13 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableMethodSecurity // enables @PreAuthorize
 public class SecurityConfig {
+
+    private final LoginSuccessHandler loginSuccessHandler;
+
+    public SecurityConfig(LoginSuccessHandler loginSuccessHandler) {
+        this.loginSuccessHandler = loginSuccessHandler;
+    }
+
 
     // TODO API Security (stateless - JWT based)
 
@@ -39,7 +47,7 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/login") // custom login page (see login.html)
                         .loginProcessingUrl("/login") // POST request target (handled by Spring Security)
-                        .defaultSuccessUrl("/profile", true)
+                        .successHandler(loginSuccessHandler)
                         .failureUrl("/login?error")
                         .permitAll()
                 )

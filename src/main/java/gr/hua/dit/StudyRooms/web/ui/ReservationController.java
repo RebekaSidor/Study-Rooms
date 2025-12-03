@@ -9,7 +9,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
 
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,10 +20,15 @@ import java.util.List;
 public class ReservationController {
 
     private final ReservationService reservationService;
+    private final ReservationRepository reservationRepository;
 
-    public ReservationController(ReservationService reservationService) {
+
+    public ReservationController(ReservationService reservationService,
+                                 ReservationRepository reservationRepository) {
         this.reservationService = reservationService;
+        this.reservationRepository = reservationRepository;
     }
+
 
     @GetMapping("/my-reservations")
     public String showMyReservations(Authentication auth, Model model) {
@@ -85,6 +93,20 @@ public class ReservationController {
             return "reservation_error";
         }
 
+        // ⭐ NEW: CHECK IF USER HAS ANOTHER RESERVATION AT THE SAME TIME ⭐
+
+        boolean userConflict = reservationRepository
+                .existsByStudentIdAndEndTimeAfterAndStartTimeBefore(
+                        user.getUsername(),
+                        startTime,
+                        endTime
+                );
+
+        if (userConflict) {
+            model.addAttribute("error", "You already have another reservation at this time.");
+            return "reservation_error";
+        }
+
         // Δημιουργία request
         CreateReservationRequest request = new CreateReservationRequest(
                 "res-" + System.currentTimeMillis(),   // reservationId
@@ -104,5 +126,48 @@ public class ReservationController {
         model.addAttribute("reservation", result.reservationView());
         return "reservation_success";
     }
+
+    @PostMapping("/cancel/{id}")
+    public String cancelReservation(@PathVariable("id") long id, Authentication auth, Model model) {
+        // prepei na einai logged in
+        if(auth == null || !auth.isAuthenticated()){
+            return "redirect:/login";
+        }
+
+        ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
+
+        // fere oles tis krathseis toy user
+        List<Reservation> myReservations = reservationService.getReservationsForStudent(user.getUsername());
+
+        // elegxos - an h krathsh den anhkei se auton apagoreyetai
+        boolean owns = myReservations.stream().anyMatch(reservation -> reservation.getId() == id);
+        if(!owns) {
+            model.addAttribute("error", "You are not allowed to delete this reservation.");
+            return "reservation_error";
+        }
+
+        // DELETE
+        reservationService.deleteReservation(id);
+
+        return "redirect:/my-reservations?cancelSuccess";
+    }
+
+    @GetMapping("/my-reservations/upcoming")
+    public String showUpcomingReservations(Authentication auth, Model model) {
+        ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
+        var reservations = reservationService.getUpcomingReservations(user.getUsername());
+        model.addAttribute("reservations", reservations);
+        return "my_reservations_upcoming";
+    }
+
+    @GetMapping("/my-reservations/past")
+    public String showPastReservations(Authentication auth, Model model) {
+        ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
+        var reservations = reservationService.getPastReservations(user.getUsername());
+        model.addAttribute("reservations", reservations);
+        return "my_reservations_past";
+    }
+
+
 }
 

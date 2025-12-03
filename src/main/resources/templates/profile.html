@@ -31,6 +31,17 @@
         </ul>
     </div>
 
+    <hr>
+
+    <h3>Edit Profile</h3>
+
+    <ul>
+        <li><a th:href="@{/profile/change-email}">Change Email</a></li>
+        <li><a th:href="@{/profile/change-phone}">Change Phone</a></li>
+        <li><a th:href="@{/profile/change-password}">Change Password</a></li>
+    </ul>
+
+
     <div>
         <a th:if="${from} == 'homepage'" th:href="@{/}">
             <button>Back to Homepage</button>

@@ -15,5 +15,9 @@ public interface PersonService {
         return this.createPerson(createPersonRequest,true);
     }
 
+    String updateEmail(String libraryId, String newEmail);
+    String updatePhone(String libraryId, String newPhone);
+    String updatePassword(String libraryId, String newPassword);
+
 }
 

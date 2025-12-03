@@ -17,22 +17,27 @@ public final class ApplicationUserDetails implements UserDetails {
     private final String libraryId;
     private final String passwordHash;
     private final PersonType type;
+    private final String emailAddress;
 
     public ApplicationUserDetails(final long personId,
                                   final String libraryId,
                                   final String passwordHash,
-                                  final PersonType type) {
+                                  final PersonType type,
+                                  final  String emailAddress) {
         if (personId <= 0) throw new IllegalArgumentException();
         if (libraryId == null) throw new NullPointerException();
         if (libraryId .isBlank()) throw new IllegalArgumentException();
         if (passwordHash == null) throw new NullPointerException();
         if (passwordHash.isBlank()) throw new IllegalArgumentException();
         if (type == null) throw new NullPointerException();
+        if (emailAddress == null) throw new NullPointerException();
+        if (emailAddress.isBlank()) throw new IllegalArgumentException();
 
         this.personId = personId;
         this.libraryId = libraryId;
         this.passwordHash = passwordHash;
         this.type = type;
+        this.emailAddress = emailAddress;
     }
 
     public long personId() {
@@ -59,6 +64,10 @@ public final class ApplicationUserDetails implements UserDetails {
     @Override
     public String getUsername() {
         return this.libraryId;
+    }
+
+    public String getEmailAddress() {
+        return this.emailAddress;
     }
 
     @Override

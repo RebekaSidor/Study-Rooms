@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Statistics</title>
+</head>
+<body>
+
+<h1>Library Statistics</h1>
+
+<p>Total Reservations: <span th:text="${totalReservations}"></span></p>
+<p>Active Users (last 30 days): <span th:text="${activeUsers}"></span></p>
+<p>Fully Booked Rooms Today: <span th:text="${fullyBookedToday}"></span></p>
+
+<h3>Reservations Per Room:</h3>
+
+<table border="1">
+    <tr><th>Room</th><th>Total Reservations</th></tr>
+    <tr th:each="entry : ${reservationsPerRoom}">
+        <td th:text="${entry.key}"></td>
+        <td th:text="${entry.value}"></td>
+    </tr>
+</table>
+
+<br>
+<a th:href="@{/staff/home}" class="btn">← Back</a>
+
+
+</body>
+</html>

@@ -123,4 +123,90 @@ public class PersonServiceImpl implements PersonService {
 
         return CreatePersonResult.success(personView);
     }
+
+    @Override
+    public String updateEmail(String libraryId, String newEmail) {
+
+        if (newEmail == null || newEmail.isBlank()) {
+            return "Email cannot be empty.";
+        }
+
+        if (!newEmail.toLowerCase().endsWith("@lib.gr")) {
+            return "Email must end with @lib.gr";
+        }
+
+        if (personRepository.existsByEmailAddressIgnoreCase(newEmail)) {
+            return "This email is already used.";
+        }
+
+        Person person = personRepository.findByLibraryId(libraryId).orElse(null);
+        if (person == null) {
+            return "User not found.";
+        }
+
+        person.setEmailAddress(newEmail);
+        personRepository.save(person);
+
+        return null; // SUCCESS
+    }
+
+
+
+
+    @Override
+    public String updatePhone(String libraryId, String newPhone) {
+
+        if (newPhone == null || newPhone.isBlank()) {
+            return "Phone number cannot be empty.";
+        }
+
+        if (!newPhone.matches("\\d+")) {
+            return "Phone number must contain only digits.";
+        }
+
+        if (newPhone.length() != 10) {
+            return "Phone number must be exactly 10 digits.";
+        }
+
+        if (personRepository.existsByMobilePhoneNumber(newPhone)) {
+            return "This phone number already belongs to another user.";
+        }
+
+        Person person = personRepository.findByLibraryId(libraryId).orElse(null);
+        if (person == null) {
+            return "User not found.";
+        }
+
+        person.setMobilePhoneNumber(newPhone);
+        personRepository.save(person);
+
+        return null; // SUCCESS
+    }
+
+
+
+    @Override
+    public String updatePassword(String libraryId, String newPassword) {
+
+        if (newPassword == null || newPassword.isBlank()) {
+            return "Password cannot be empty.";
+        }
+
+        if (newPassword.length() < 6) {
+            return "Password must be at least 6 characters.";
+        }
+
+        Person person = personRepository.findByLibraryId(libraryId).orElse(null);
+        if (person == null) {
+            return "User not found.";
+        }
+
+        person.setPasswordHash(passwordEncoder.encode(newPassword));
+        personRepository.save(person);
+
+        return null; // SUCCESS
+    }
+
+
+
 }

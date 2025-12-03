@@ -29,7 +29,8 @@ public class ApplicationUserDetailsService implements UserDetailsService {
                         person.getId(),
                         person.getLibraryId(),  // username = libId
                         person.getPasswordHash(),
-                        person.getType()))
+                        person.getType(),
+                        person.getEmailAddress()))
                 .orElseThrow(() -> new UsernameNotFoundException("User " + username + " not found"));
     }
 

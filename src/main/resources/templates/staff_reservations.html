@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>All Reservations</title>
+    <style>
+        body { font-family: Arial; padding: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #ccc; text-align: center; }
+        th { background-color: #e5e5e5; }
+        h1 { margin-bottom: 20px; }
+        .back { margin-top: 20px; padding: 8px 16px; background: #555;
+            color: white; text-decoration: none; border-radius: 5px; }
+        .back:hover { background: #333; }
+        .cancel-btn {
+            background: #d9534f;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .cancel-btn:hover {
+            background: #b52b27;
+        }
+    </style>
+
+    </style>
+</head>
+
+<body>
+
+<h1>All Reservations</h1>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Student</th>
+        <th>Study Space</th>
+        <th>Start</th>
+        <th>End</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="res : ${reservations}">
+        <td th:text="${res.reservationId}"></td>
+        <td th:text="${res.studentId}"></td>
+        <td th:text="${res.studySpaceId}"></td>
+        <td th:text="${res.startTime}"></td>
+        <td th:text="${res.endTime}"></td>
+
+        <!-- Staff cancel button -->
+        <td>
+            <div th:with="
+        now=${T(java.time.LocalDateTime).now()},
+        isCompleted=${res.endTime.isBefore(now)},
+        isOngoing=${res.startTime.isBefore(now) and res.endTime.isAfter(now)}
+    ">
+
+                <!-- Completed -->
+                <span th:if="${isCompleted}" style="color:gray;">Completed</span>
+
+                <!-- Ongoing -->
+                <span th:if="${isOngoing}" style="color:orange;">Ongoing</span>
+
+                <!-- Future → allow cancel -->
+                <form th:if="${!isCompleted and !isOngoing}"
+                      th:action="@{'/staff/reservations/cancel/' + ${res.id}}"
+                      method="post"
+                      onsubmit="return confirm('Are you sure you want to cancel this reservation?');">
+
+                    <button class="cancel-btn">Cancel</button>
+                </form>
+
+            </div>
+        </td>
+
+
+    </tr>
+    </tbody>
+</table>
+
+<a href="/staff/home" class="back">Back</a>
+
+</body>
+</html>

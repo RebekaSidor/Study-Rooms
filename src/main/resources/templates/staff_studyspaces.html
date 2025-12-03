@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Manage Study Spaces</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        th { background: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h1>Manage Study Spaces</h1>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Capacity</th>
+        <th>Available</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="s : ${spaces}">
+        <td th:text="${s.studySpaceId}"></td>
+        <td th:text="${s.name}"></td>
+        <td th:text="${s.type}"></td>
+        <td th:text="${s.capacity}"></td>
+        <td th:text="${s.available}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<a th:href="@{/staff/home}">
+    <button>Back</button>
+</a>
+
+</body>
+</html>

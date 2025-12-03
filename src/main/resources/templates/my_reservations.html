@@ -8,12 +8,32 @@
         th, td { padding: 12px; border: 1px solid #ccc; text-align: center; }
         th { background-color: #f4f4f4; }
         h1 { margin-bottom: 20px; }
+        .cancel-btn {
+            padding: 6px 14px;
+            background: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
     </style>
 </head>
 
 <body>
 
 <h1>My Reservations</h1>
+
+<!-- Success message -->
+<div th:if="${param.cancelSuccess}">
+    <p style="color: green; font-weight: bold;">
+        Reservation cancelled successfully.
+    </p>
+</div>
+
+<p>
+    <a th:href="@{/my-reservations/upcoming}">Upcoming Reservations</a> |
+    <a th:href="@{/my-reservations/past}">Past Reservations</a>
+</p>
 
 <table>
     <thead>
@@ -22,6 +42,7 @@
         <th>Study Space</th>
         <th>Start</th>
         <th>End</th>
+        <th>Status</th>
     </tr>
     </thead>
 
@@ -31,6 +52,42 @@
         <td th:text="${res.studySpaceId}"></td>
         <td th:text="${res.startTime}"></td>
         <td th:text="${res.endTime}"></td>
+        <td>
+            <span th:if="${res.endTime.isBefore(T(java.time.LocalDateTime).now())}"
+                  style="color: gray; font-weight: bold;">
+                Completed
+            </span>
+
+                    <span th:if="${res.startTime.isAfter(T(java.time.LocalDateTime).now())}"
+                          style="color: green; font-weight: bold;">
+                Upcoming
+            </span>
+
+                    <span th:if="${res.startTime.isBefore(T(java.time.LocalDateTime).now())
+                         and res.endTime.isAfter(T(java.time.LocalDateTime).now())}"
+                          style="color: blue; font-weight: bold;">
+                Ongoing
+            </span>
+        </td>
+
+
+        <!-- CANCEL BUTTON -->
+        <td th:if="${res.startTime.isAfter(T(java.time.LocalDateTime).now())}">
+            <form th:action="@{'/cancel/' + ${res.id}}" method="post">
+                <button
+                        type="submit"
+                        class="cancel-btn"
+                        onclick="return confirm('Are you sure you want to cancel this reservation?');">
+                    Cancel
+                </button>
+            </form>
+        </td>
+
+        <td th:unless="${res.startTime.isAfter(T(java.time.LocalDateTime).now())}">
+            <span style="color: #999;">-</span>
+        </td>
+
+
     </tr>
     </tbody>
 </table>

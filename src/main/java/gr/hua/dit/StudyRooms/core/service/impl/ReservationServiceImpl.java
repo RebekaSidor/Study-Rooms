@@ -11,8 +11,11 @@ import gr.hua.dit.StudyRooms.core.service.model.CreateReservationResult;
 import gr.hua.dit.StudyRooms.core.service.model.ReservationView;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ReservationServiceImpl implements ReservationService {
@@ -64,6 +67,19 @@ public class ReservationServiceImpl implements ReservationService {
             return CreateReservationResult.fail("This timeslot is already reserved.");
         }
 
+        // CHECK IF STUDENT HAS ANOTHER RESERVATION OVERLAPPING
+        boolean studentHasOverlap =
+                reservationRepository.existsByStudentIdAndEndTimeAfterAndStartTimeBefore(
+                        request.studentId(),
+                        request.startTime(),
+                        request.endTime()
+                );
+
+        if (studentHasOverlap) {
+            throw new IllegalStateException("You already have a reservation at that time.");
+        }
+
+
         // 3. Δημιουργία Reservation
         Reservation reservation = new Reservation();
         reservation.setReservationId("R" + System.currentTimeMillis());
@@ -98,6 +114,97 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public List<Reservation> getReservationsForStudent(String studentId) {
         return reservationRepository.findByStudentId(studentId);
+    }
+
+    @Override
+    public void deleteReservation(long id) {
+        reservationRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Reservation> getUpcomingReservations(String studentId) {
+        LocalDateTime now = LocalDateTime.now();
+        return reservationRepository.findByStudentId(studentId)
+                .stream()
+                .filter(r -> r.getStartTime().isAfter(now))
+                .toList();
+    }
+
+    @Override
+    public List<Reservation> getPastReservations(String studentId) {
+        LocalDateTime now = LocalDateTime.now();
+        return reservationRepository.findByStudentId(studentId)
+                .stream()
+                .filter(r -> r.getEndTime().isBefore(now))
+                .toList();
+    }
+
+    @Override
+    public List<ReservationView> getAllReservations() {
+        return reservationRepository.findAll()
+                .stream()
+                .map(reservationMapper::convertReservationToReservationView)
+                .toList();
+    }
+
+    @Override
+    public long countAllReservations() {
+        return reservationRepository.count();
+    }
+
+    @Override
+    public long countActiveUsers() {
+        LocalDateTime now = LocalDateTime.now().minusDays(30);
+        return reservationRepository.countDistinctStudentIdByStartTimeAfter(now);
+    }
+
+    @Override
+    public Map<String, Long> getReservationsPerRoom() {
+
+        List<Object[]> results = reservationRepository.countReservationsGroupByStudySpaceId();
+
+        Map<String, Long> map = new HashMap<>();
+
+        for (Object[] row : results) {
+            String studySpaceId = (String) row[0];
+            Long total = (Long) row[1];
+            map.put(studySpaceId, total);
+        }
+
+        return map;
+    }
+
+
+    @Override
+    public long getFullyBookedRoomsToday() {
+        LocalDate today = LocalDate.now();
+        LocalDateTime from = today.atStartOfDay();
+        LocalDateTime to = today.atTime(23,59);
+
+        return reservationRepository.countFullyBookedRooms(from, to);
+    }
+
+    @Override
+    public List<ReservationView> getReservationsByStudentId(String studentId) {
+
+        List<Reservation> reservations = reservationRepository.findByStudentId(studentId);
+
+        return reservations.stream()
+                .map(reservationMapper::convertReservationToReservationView)
+                .toList();
+    }
+
+
+    @Override
+    public List<ReservationView> getReservationsForStudentView(String studentId) {
+
+        // Βρες τις κρατήσεις του χρήστη
+        var reservations = reservationRepository.findByStudentId(studentId);
+
+        // Μετατροπή σε ReservationView
+        return reservations.stream()
+                .map(reservationMapper::convertReservationToReservationView)
+                .toList();
     }
 
 }

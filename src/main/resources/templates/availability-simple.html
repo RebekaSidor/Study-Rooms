@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Availability</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        .btn-back, .btn-reserve {
+            padding: 10px 20px;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Back button */
+        .btn-back {
+            background-color: #e0e0e0;
+            color: #333;
+            border: 1px solid #bdbdbd;
+        }
+
+        .btn-back:hover {
+            background-color: #c7c7c7;
+        }
+
+        /* Make Reservation button */
+        .btn-reserve {
+            background-color: #6bb4ff;
+            color: white;
+            border: none;
+        }
+
+        .btn-reserve:hover {
+            background-color: #4a98e0;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Availability for <span th:text="${date}"></span></h1>
+<h3>
+    Study Space:
+    <span th:text="${studySpace.name}"></span>
+    (<span th:text="${studySpaceId}"></span>)
+</h3>
+
+<hr>
+
+<form method="get">
+    <input type="date" name="date" th:value="${date}">
+    <button type="submit">Check</button>
+</form>
+
+<hr>
+
+<table>
+    <thead>
+    <tr>
+        <th>From</th>
+        <th>To</th>
+        <th>Status</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="row : ${intervals}"
+        th:class="${row.reserved} ? 'reserved' : 'available'">
+        <td th:text="${row.start}"></td>
+        <td th:text="${row.end}"></td>
+        <td>
+            <span th:if="${row.reserved}">Reserved</span>
+            <span th:unless="${row.reserved}">Available</span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<div style="margin: 20px 0;">
+
+    <!-- Buttons Section -->
+    <div style="margin: 20px 0; display: flex; gap: 10px;">
+
+        <!-- Back Button -->
+        <a th:href="@{/showstudyspaces}" class="btn-back">Back</a>
+
+        <!-- Make Reservation Button -->
+        <a th:href="@{'/reserve/' + ${studySpaceId}}" class="btn-reserve">Make a Reservation</a>
+
+    </div>
+
+
+</div>
+
+
+</body>
+</html>

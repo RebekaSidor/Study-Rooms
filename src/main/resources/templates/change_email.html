@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Change Email</title>
+</head>
+<body>
+
+<h2>Change Email</h2>
+
+<p th:if="${error}" th:text="${error}" style="color:red;"></p>
+<p th:if="${success}" th:text="${success}" style="color:green;"></p>
+
+<form method="post">
+    <label>New Email:</label>
+    <input type="email" name="email" required>
+
+    <br><br>
+
+    <button type="submit">Update Email</button>
+</form>
+
+<br>
+<a th:href="@{/profile}"><button>Back</button></a>
+
+</body>
+</html>
