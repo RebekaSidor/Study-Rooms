@@ -15,7 +15,6 @@
             transition: background-color 0.3s ease;
         }
 
-        /* Back button */
         .btn-back {
             background-color: #e0e0e0;
             color: #333;
@@ -26,7 +25,6 @@
             background-color: #c7c7c7;
         }
 
-        /* Make Reservation button */
         .btn-reserve {
             background-color: #6bb4ff;
             color: white;
@@ -79,20 +77,11 @@
 
 <div style="margin: 20px 0;">
 
-    <!-- Buttons Section -->
     <div style="margin: 20px 0; display: flex; gap: 10px;">
-
-        <!-- Back Button -->
         <a th:href="@{/showstudyspaces}" class="btn-back">Back</a>
-
-        <!-- Make Reservation Button -->
         <a th:href="@{'/reserve/' + ${studySpaceId}}" class="btn-reserve">Make a Reservation</a>
-
     </div>
 
-
 </div>
-
-
 </body>
 </html>

@@ -1,13 +1,10 @@
 package gr.hua.dit.StudyRooms.core.service;
 
-import gr.hua.dit.StudyRooms.core.model.PersonType;
 import gr.hua.dit.StudyRooms.core.model.StudySpaceType;
 import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-
 import jakarta.annotation.PostConstruct;
 import java.time.LocalTime;
 import java.util.List;

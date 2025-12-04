@@ -11,6 +11,4 @@ public record CreateReservationRequest(
         String studySpaceId,
         LocalDateTime startTime,
         LocalDateTime endTime
-
-
 ) {}

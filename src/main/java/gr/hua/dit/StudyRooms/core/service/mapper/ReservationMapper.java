@@ -17,7 +17,6 @@ public class ReservationMapper {
             return null;
         }
 
-
         return new ReservationView(
                 reservation.getId(),
                 reservation.getReservationId(),

@@ -1,6 +1,5 @@
 package gr.hua.dit.StudyRooms.core.service.mapper;
 
-
 import gr.hua.dit.StudyRooms.core.model.StudySpace;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import org.springframework.stereotype.Component;

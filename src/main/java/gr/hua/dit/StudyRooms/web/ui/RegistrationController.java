@@ -24,8 +24,6 @@ public class RegistrationController {
         this.personService = personService;
     }
 
-
-    //html
     @GetMapping("/register")
 
     public String showRegistrationForm(final Authentication authentication, final Model model){
@@ -34,7 +32,7 @@ public class RegistrationController {
         }
         model.addAttribute("createPersonRequest", new CreatePersonRequest(PersonType.STUDENT, "","", "", "", "", ""));
 
-        return "register";//html template
+        return "register";
     }
 
     //se periptvsh pou kapoios mpei kateu8eian sto registration_succes apo to browser na t bgalei error

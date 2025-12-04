@@ -1,30 +1,72 @@
 <!DOCTYPE html>
-<html
-        xmlns:th="https://www.thymeleaf.org"
-        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-        layout:decorate="~{base}">
+<html xmlns:th="https://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base}">
 
 <head>
     <title>Logout</title>
+    <style>
+        .btn-logout {
+            background-color: #aa2826; /* κόκκινο */
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-logout:hover {
+            background-color: #aa4441;
+        }
+
+        .btn-cancel {
+            background: rgba(94, 94, 94, 0.6);
+            color: #b1b1b5;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(149, 147, 147, 0.6);
+        }
+
+        .logout-container {
+            max-width: 300px;
+            margin: auto;
+            text-align: center;
+        }
+        .button-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+    </style>
 </head>
 
 <body>
-
-<header layout:fragment="header">
-    <h1>Office Hours <small>/ Logout</small></h1>
-</header>
-
 <section layout:fragment="main">
+    <div class="logout-container">
+        <h2>Are you sure you want to log out?</h2>
 
-    <form th:action="@{/logout}" method="post">
-        <div class="mb-4">
-            <button type="submit" class="btn btn-primary">Log out</button>
+        <div class="button-row">
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn-logout">Yes, log out</button>
+        </form>
+
+
+        <a th:href="@{/profile}">
+            <button class="btn-cancel">Cancel</button>
+        </a>
         </div>
-
-        <p><a th:href="@{/profile}">Profile</a></p>
-    </form>
-
+    </div>
 </section>
-
 </body>
 </html>

@@ -2,36 +2,85 @@
 <html
         xmlns:th="https://www.thymeleaf.org"
         xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-        layout:decorate="~{base}">
+        layout:decorate="~{base}"
+        lang="en">
 
 <head>
     <title>Home</title>
+
+    <style>
+        .button-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .home-btn {
+            background: rgba(94, 94, 94, 0.6);
+            color: #b1b1b5;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .home-btn:hover {
+            background: rgba(149, 147, 147, 0.6);
+        }
+
+        .register-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+            color: #b1b1b5;
+        }
+
+        .register-link:hover{
+            color: #ffffff;
+        }
+
+        .home-image {
+            width: 100%;
+            border-radius: 7px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 
 <body>
 
-<header layout:fragment="header">
-    <h1>🌐 Study Rooms</h1>
-</header>
-
 <section layout:fragment="main">
 
-    <div class="mb-4">
-        <img src="https://www.cornell.edu/academics/assets/img/library/2024_1357_SH_0214-N.jpg" style="width: 100%" />
+    <h1 class="text-center mb-4">Study Rooms</h1>
+
+    <!-- IMAGE BELOW TITLE -->
+    <img class="home-image"
+         src="https://www.cornell.edu/academics/assets/img/library/2024_1357_SH_0214-N.jpg"
+         alt="Library Image">
+
+    <p class="text-center">
+        Study Rooms is a simple and efficient platform that allows users to book study spaces,
+        whether in private rooms or individual seats. It helps students manage their time,
+        reserve study spots, and access available spaces with ease.
+    </p>
+
+    <div class="button-row">
+        <a th:href="@{/login}">
+            <button class="home-btn">Log In</button>
+        </a>
+
+        <a th:href="@{/anonymous/menu}">
+            <button class="home-btn">Continue as guest</button>
+        </a>
     </div>
 
-    <div>
-        <p>Here will be added description :)</p>
-    </div>
-
-    <div class="text-center mt-4">
-        <p><a th:href="@{/login}">Log in</a></p>
-        <p><a th:href="@{/register}">Register</a></p>
-    </div>
-
-    <a th:href="@{/anonymous/menu}">
-        <button>Continue as Anonymous User</button>
+    <a th:href="@{/register}" class="register-link">
+        Don't have an account? Register
     </a>
+
 </section>
 
 </body>

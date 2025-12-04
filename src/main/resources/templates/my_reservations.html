@@ -1,102 +1,98 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>My Reservations</title>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.w3.org/1999/xhtml"
+      layout:decorate="~{base}">
+
+<header layout:fragment="header" class="text-center">
+    <h1>My Reservations</h1>
     <style>
-        body { font-family: Arial, sans-serif; padding: 30px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; border: 1px solid #ccc; text-align: center; }
-        th { background-color: #f4f4f4; }
-        h1 { margin-bottom: 20px; }
-        .cancel-btn {
-            padding: 6px 14px;
-            background: red;
-            color: white;
+        .btn-back {
+            background: rgba(94, 94, 94, 0.6);
+            color: #b1b1b5;
             border: none;
+            border-radius: 5px;
+            font-weight: bold;
             cursor: pointer;
-            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .btn-back:hover {
+            background: rgba(149, 147, 147, 0.6);
         }
     </style>
-</head>
+</header>
 
-<body>
+<div layout:fragment="main">
 
-<h1>My Reservations</h1>
+    <!-- Success message -->
+    <div th:if="${param.cancelSuccess}">
+        <p class="text-success fw-bold">
+            Reservation cancelled successfully.
+        </p>
+    </div>
 
-<!-- Success message -->
-<div th:if="${param.cancelSuccess}">
-    <p style="color: green; font-weight: bold;">
-        Reservation cancelled successfully.
+    <p>
+        <a th:href="@{/my-reservations/upcoming}" class="text-info">Upcoming Reservations</a> |
+        <a th:href="@{/my-reservations/past}" class="text-info">Past Reservations</a>
     </p>
+
+    <table class="table table-dark table-striped table-bordered text-center align-middle mt-3">
+        <thead>
+        <tr>
+            <th>Reservation ID</th>
+            <th>Study Space</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="res : ${reservations}">
+            <td th:text="${res.reservationId}"></td>
+            <td th:text="${res.studySpaceId}"></td>
+            <td th:text="${res.startTime}"></td>
+            <td th:text="${res.endTime}"></td>
+            <td>
+                <span th:if="${res.endTime.isBefore(T(java.time.LocalDateTime).now())}" class="text-secondary fw-bold">
+                    Completed
+                </span>
+
+                <span th:if="${res.startTime.isAfter(T(java.time.LocalDateTime).now())}" class="text-success fw-bold">
+                    Upcoming
+                </span>
+
+                <span th:if="${res.startTime.isBefore(T(java.time.LocalDateTime).now())
+                     and res.endTime.isAfter(T(java.time.LocalDateTime).now())}" class="text-primary fw-bold">
+                    Ongoing
+                </span>
+            </td>
+
+            <!-- CANCEL BUTTON -->
+            <td th:if="${res.startTime.isAfter(T(java.time.LocalDateTime).now())}">
+                <form th:action="@{'/cancel/' + ${res.id}}" method="post">
+                    <button
+                            type="submit"
+                            class="btn btn-outline-danger btn-sm"
+                            onclick="return confirm('Are you sure you want to cancel this reservation?');">
+                        Cancel
+                    </button>
+                </form>
+            </td>
+
+            <td th:unless="${res.startTime.isAfter(T(java.time.LocalDateTime).now())}">
+                <span class="text-muted">-</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div>
+        <a th:href="@{/profile}">
+            <button class="btn-back">← Back</button>
+        </a>
+    </div>
+
 </div>
-
-<p>
-    <a th:href="@{/my-reservations/upcoming}">Upcoming Reservations</a> |
-    <a th:href="@{/my-reservations/past}">Past Reservations</a>
-</p>
-
-<table>
-    <thead>
-    <tr>
-        <th>Reservation ID</th>
-        <th>Study Space</th>
-        <th>Start</th>
-        <th>End</th>
-        <th>Status</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    <tr th:each="res : ${reservations}">
-        <td th:text="${res.reservationId}"></td>
-        <td th:text="${res.studySpaceId}"></td>
-        <td th:text="${res.startTime}"></td>
-        <td th:text="${res.endTime}"></td>
-        <td>
-            <span th:if="${res.endTime.isBefore(T(java.time.LocalDateTime).now())}"
-                  style="color: gray; font-weight: bold;">
-                Completed
-            </span>
-
-                    <span th:if="${res.startTime.isAfter(T(java.time.LocalDateTime).now())}"
-                          style="color: green; font-weight: bold;">
-                Upcoming
-            </span>
-
-                    <span th:if="${res.startTime.isBefore(T(java.time.LocalDateTime).now())
-                         and res.endTime.isAfter(T(java.time.LocalDateTime).now())}"
-                          style="color: blue; font-weight: bold;">
-                Ongoing
-            </span>
-        </td>
-
-
-        <!-- CANCEL BUTTON -->
-        <td th:if="${res.startTime.isAfter(T(java.time.LocalDateTime).now())}">
-            <form th:action="@{'/cancel/' + ${res.id}}" method="post">
-                <button
-                        type="submit"
-                        class="cancel-btn"
-                        onclick="return confirm('Are you sure you want to cancel this reservation?');">
-                    Cancel
-                </button>
-            </form>
-        </td>
-
-        <td th:unless="${res.startTime.isAfter(T(java.time.LocalDateTime).now())}">
-            <span style="color: #999;">-</span>
-        </td>
-
-
-    </tr>
-    </tbody>
-</table>
-
-<br>
-
-<a th:href="@{/}">
-    <button>Back to Home</button>
-</a>
-
-</body>
-</html>

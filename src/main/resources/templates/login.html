@@ -6,6 +6,56 @@
 
 <head>
     <title>Login</title>
+    <style>
+
+        header {
+            text-align: center;
+            color: black;
+            font-weight: bold;
+        }
+
+        .btn-login, .btn-primary {
+            background: rgba(103, 37, 37, 0.6) !important;
+            color: #b1b1b5 !important;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-login:hover{
+            background: rgba(133, 48, 48, 0.6) !important;
+        }
+
+        .register-link, a {
+            color: #bdbdbd !important;
+            text-decoration: underline;
+        }
+
+        .register-link:hover, a:hover {
+            color: #ffffff !important;
+        }
+
+        .btn-back {
+            background: rgba(94, 94, 94, 0.6);
+            color: #b1b1b5;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-back:hover {
+            background: rgba(149, 147, 147, 0.6);
+        }
+
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+    </style>
 </head>
 
 <body>
@@ -41,10 +91,16 @@
         </div>
 
         <div class="mb-4">
-            <button type="submit" class="btn btn-primary">Log in</button>
+            <button type="submit" class="btn-login">Log in</button>
         </div>
 
-        <p><a th:href="@{/register}">Don't have an account? Register</a></p>
+        <p><a th:href="@{/register}" class="register-link">Don't have an account? Register</a></p>
+
+        <div>
+            <a href="/">
+                <button class="btn-back" type="button">← Back</button>
+            </a>
+        </div>
 
     </form>
 

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base}">
+
+<head>
+    <title>Profile</title>
+    <style>
+        .profile-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .profile-pic img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+        }
+
+        .profile-info ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .profile-info li {
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .profile-links {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 10px;
+        }
+
+        .profile-links li {
+            margin-bottom: 8px;
+        }
+
+        .profile-links a {
+            color: #bdbdbd;
+            text-decoration: underline;
+            transition: all 0.3s ease;
+        }
+
+        .profile-links a:hover {
+            color: #ffffff;
+        }
+    </style>
+</head>
+
+<header layout:fragment="header">
+    <h1>Study Rooms <small>/ Profile</small></h1>
+</header>
+
+<section layout:fragment="main">
+
+    <div class="profile-container">
+
+        <div class="profile-pic">
+            <img src="https://cdn-icons-png.freepik.com/512/4466/4466375.png" alt="Profile Picture">
+        </div>
+
+        <div class="profile-info">
+            <ul>
+                <li>Library ID: <span th:text="${me.libraryId}"></span></li>
+                <li>Email: <span th:text="${me.emailAddress()}"></span></li>
+                <li>Type: <span th:text="${me.type()}"></span></li>
+            </ul>
+        </div>
+    </div>
+
+    <hr>
+        <ul class="profile-links">
+            <li><a href="/my-reservations">My Reservations</a></li>
+            <li><a th:href="@{/showstudyspaces(from='profile')}">View Study Spaces</a></li>
+            <li><a th:href="@{/logout-page}">Logout</a></li>
+        </ul>
+    <hr>
+
+    <h3>Edit Profile ✏️</h3>
+    <ul class="profile-links">
+        <li><a th:href="@{/profile/change-email}">Change Email</a></li>
+        <li><a th:href="@{/profile/change-phone}">Change Phone</a></li>
+        <li><a th:href="@{/profile/change-password}">Change Password</a></li>
+    </ul>
+
+</section>
+</html>

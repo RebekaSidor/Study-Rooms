@@ -4,7 +4,6 @@ import gr.hua.dit.StudyRooms.core.model.StudySpace;
 import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceResult;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
-
 import java.util.List;
 
 public interface StudySpaceService {
@@ -12,5 +11,4 @@ public interface StudySpaceService {
     List<StudySpaceView> getAllStudySpaces();
     StudySpace getStudySpaceById(String studySpaceId);
     long countAll();
-
 }

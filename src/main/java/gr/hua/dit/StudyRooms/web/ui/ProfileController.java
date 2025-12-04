@@ -24,7 +24,7 @@ public class ProfileController {
 
     @GetMapping("/profile")
     public String showProfile() {
-        return "profile";
+        return "student_profile";
     }
 
     @GetMapping("/profile/change-email")

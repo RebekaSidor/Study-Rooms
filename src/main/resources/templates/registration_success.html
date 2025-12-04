@@ -1,53 +1,66 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html
+        xmlns:th="https://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{base}">
+
 <head>
     <title>Registration Successful</title>
+
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 40px;
+        .success-box {
             text-align: center;
         }
-        .box {
-            display: inline-block;
-            padding: 25px 30px;
-            border: 2px solid #4CAF50;
-            border-radius: 10px;
-            margin-top: 40px;
-        }
+
         h2 {
             color: #4CAF50;
             margin-bottom: 10px;
         }
-        a button {
+
+        h3 {
+            color: #4CAF50;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        p {
+            color: #e7e7e7;
+            margin-bottom: 10px;
+        }
+
+        .btn-success-login {
             margin-top: 20px;
-            padding: 10px 20px;
+            padding: 10px 22px;
             font-size: 16px;
             border: none;
             border-radius: 8px;
             background-color: #4CAF50;
             color: white;
             cursor: pointer;
+            transition: 0.25s ease;
         }
-        a button:hover {
+
+        .btn-success-login:hover {
             background-color: #43a047;
+            transform: scale(1.05);
         }
     </style>
 </head>
-<body>
 
-<div class="box">
-    <h2>Registration Successful!</h2>
+<section layout:fragment="main">
+    <div class="success-box">
 
-    <p>Your Library ID is:</p>
-    <h3 th:text="${newLibraryId}"></h3>
+        <h2>Registration Successful!</h2>
 
-    <p>You can now log in using your email and password.</p>
+        <p>Your Library ID is:</p>
+        <h3 th:text="${newLibraryId}"></h3>
 
-    <a th:href="@{/login}">
-        <button>Go to Login</button>
-    </a>
-</div>
+        <p>You can now log in using your email and password.</p>
 
-</body>
+        <a th:href="@{/login}">
+            <button class="btn-success-login">Go to Login</button>
+        </a>
+
+    </div>
+</section>
 </html>

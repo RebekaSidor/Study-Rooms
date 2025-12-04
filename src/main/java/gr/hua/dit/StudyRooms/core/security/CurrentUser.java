@@ -5,5 +5,5 @@ import gr.hua.dit.StudyRooms.core.model.PersonType;
 /**
  * @see CurrentUserProvider
  */
-public record CurrentUser(long personId, String emailAddress, PersonType type) {
+public record CurrentUser(long personId, String libraryId, String emailAddress, PersonType type) {
 }

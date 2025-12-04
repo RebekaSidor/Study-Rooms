@@ -10,7 +10,6 @@ import gr.hua.dit.StudyRooms.core.service.model.CreateReservationRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreateReservationResult;
 import gr.hua.dit.StudyRooms.core.service.model.ReservationView;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -49,13 +48,13 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public CreateReservationResult createReservation(CreateReservationRequest request, boolean notify) {
 
-        // 1. Βρες το StudySpace
+        //find study space
         StudySpace studySpace = studySpaceService.getStudySpaceById(request.studySpaceId());
         if (studySpace == null) {
             return CreateReservationResult.fail("StudySpace not found");
         }
 
-        // 2. Έλεγχος overlapp
+        //check for overlapp
         boolean conflict = reservationRepository
                 .existsByStudySpaceIdAndEndTimeAfterAndStartTimeBefore(
                         studySpace.getStudySpaceId(),
@@ -79,8 +78,7 @@ public class ReservationServiceImpl implements ReservationService {
             throw new IllegalStateException("You already have a reservation at that time.");
         }
 
-
-        // 3. Δημιουργία Reservation
+        //create Reservation
         Reservation reservation = new Reservation();
         reservation.setReservationId("R" + System.currentTimeMillis());
         reservation.setStudentId(request.studentId());
@@ -88,10 +86,10 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setStartTime(request.startTime());
         reservation.setEndTime(request.endTime());
 
-        // 4. Αποθήκευση στη DB
+        //save in DB
         reservation = reservationRepository.save(reservation);
 
-        // 5. Mapping σε ReservationView για το UI
+        // Mapping to ReservationView for UI
         ReservationView view = reservationMapper.convertReservationToReservationView(reservation);
 
         return CreateReservationResult.success(view);
@@ -170,7 +168,6 @@ public class ReservationServiceImpl implements ReservationService {
             Long total = (Long) row[1];
             map.put(studySpaceId, total);
         }
-
         return map;
     }
 
@@ -194,120 +191,16 @@ public class ReservationServiceImpl implements ReservationService {
                 .toList();
     }
 
-
     @Override
     public List<ReservationView> getReservationsForStudentView(String studentId) {
 
-        // Βρες τις κρατήσεις του χρήστη
+        // find users reservations
         var reservations = reservationRepository.findByStudentId(studentId);
 
-        // Μετατροπή σε ReservationView
+        // convert to ReservationView
         return reservations.stream()
                 .map(reservationMapper::convertReservationToReservationView)
                 .toList();
     }
 
 }
-
-
-//package gr.hua.dit.StudyRooms.core.service.impl;
-//
-//import gr.hua.dit.StudyRooms.core.model.Reservation;
-//import gr.hua.dit.StudyRooms.core.model.StudySpace;
-//import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
-//import gr.hua.dit.StudyRooms.core.service.ReservationService;
-//import gr.hua.dit.StudyRooms.core.service.StudySpaceService;
-//import gr.hua.dit.StudyRooms.core.service.mapper.ReservationMapper;
-//import gr.hua.dit.StudyRooms.core.service.model.CreateReservationRequest;
-//import gr.hua.dit.StudyRooms.core.service.model.CreateReservationResult;
-//import gr.hua.dit.StudyRooms.core.service.model.ReservationView;
-//import org.springframework.stereotype.Service;
-//
-//import java.time.LocalDateTime;
-//import java.util.List;
-//
-///**
-// * Default implementation of {@link ReservationService}.
-// */
-//@Service
-//public class ReservationServiceImpl implements ReservationService {
-//
-//    private final ReservationRepository reservationRepository;
-//    private final ReservationMapper reservationMapper;
-//    private final StudySpaceService studySpaceService;
-//
-//    public ReservationServiceImpl(final ReservationRepository reservationRepository,
-//                                  final ReservationMapper reservationMapper,
-//                                  final StudySpaceService studySpaceService) {
-//        if (reservationRepository == null) throw new NullPointerException();
-//        if (reservationMapper == null) throw new NullPointerException();
-//        if (studySpaceService == null) throw new NullPointerException();
-//
-//        this.reservationRepository = reservationRepository;
-//        this.reservationMapper = reservationMapper;
-//        this.studySpaceService = studySpaceService;
-//    }
-//
-//    @Override
-//    public List<Reservation> getReservationsForStudySpace(String studySpaceId) {
-//        // Πάρε το StudySpace entity πρώτα
-//        StudySpace studySpace = studySpaceService.getStudySpaceById(studySpaceId);
-//        if (studySpace == null) return List.of();
-//
-//        // Κάλεσε το repository με Long id
-//        return reservationRepository.findByStudySpace_Id(studySpace.getId());
-//    }
-//
-//
-//    @Override
-//    public CreateReservationResult createReservation(CreateReservationRequest request, boolean notify) {
-//
-//        StudySpace studySpace = studySpaceService.getStudySpaceById(request.studySpaceId());
-//        if (studySpace == null) {
-//            return CreateReservationResult.fail("StudySpace not found");
-//        }
-//        // Check overlap
-//        boolean conflict = reservationRepository
-//                .existsByStudySpace_IdAndEndTimeAfterAndStartTimeBefore(
-//                        studySpace.getId(),
-//                        request.startTime(),
-//                        request.endTime()
-//                );
-//
-//        if (conflict) {
-//            return CreateReservationResult.fail("This timeslot is already reserved.");
-//        }
-//
-//        Reservation reservation = new Reservation();
-//        reservation.setReservationId("R" + System.currentTimeMillis());
-//        reservation.setStudentId(request.studentId());
-//        reservation.setStudySpaceId(studySpace.getStudySpaceId());
-//
-//        reservation.setStartTime(request.startTime());
-//        reservation.setEndTime(request.endTime());
-//
-//        reservation = reservationRepository.save(reservation);
-//
-//        ReservationView view = reservationMapper.convertReservationToReservationView(reservation);
-//
-//        return CreateReservationResult.success(view);
-//    }
-//
-//    @Override
-//    public boolean existsOverlappingReservation(String studySpaceId, LocalDateTime start, LocalDateTime end) {
-//
-//        StudySpace studySpace = studySpaceService.getStudySpaceById(studySpaceId);
-//        if (studySpace == null) {
-//            return false;
-//        }
-//
-//        return reservationRepository.existsByStudySpace_IdAndEndTimeAfterAndStartTimeBefore(
-//                studySpace.getId(),
-//                start,
-//                end
-//        );
-//    }
-//
-//
-//
-//}

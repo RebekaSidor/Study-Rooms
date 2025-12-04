@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 /**
- * Implements of Spring's {@link UserDetailsService} for providing application users.
+ * Implementation of Spring's {@link UserDetailsService} for providing application users.
  */
 @Service
 public class ApplicationUserDetailsService implements UserDetailsService {
@@ -27,11 +27,11 @@ public class ApplicationUserDetailsService implements UserDetailsService {
         return this.personRepository.findByLibraryId(username.strip())
                 .map(person -> new ApplicationUserDetails(
                         person.getId(),
-                        person.getLibraryId(),  // username = libId
-                        person.getPasswordHash(),
+                        person.getLibraryId(),
+                        person.getEmailAddress(),
                         person.getType(),
-                        person.getEmailAddress()))
+                        person.getPasswordHash()
+                ))
                 .orElseThrow(() -> new UsernameNotFoundException("User " + username + " not found"));
     }
-
 }

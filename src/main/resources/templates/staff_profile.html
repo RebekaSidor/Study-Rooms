@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base}">
+<head>
+    <title>Profile</title>
+    <style>
+        .profile-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .profile-pic img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+        }
+
+        .profile-info ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .profile-info li {
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .profile-links {
+            list-style: none;
+            padding: 0;
+            margin: 0; /* αφαιρούμε το margin-bottom που υπήρχε */
+        }
+
+        .profile-links li {
+            margin-bottom: 10px; /* απόσταση μεταξύ των links */
+        }
+
+        .profile-links a {
+            color: #bdbdbd;
+            text-decoration: underline;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .profile-links a:hover {
+            color: #ffffff;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #555;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<section layout:fragment="main">
+
+    <div class="profile-container">
+        <div class="profile-pic">
+            <img src="https://cdn-icons-png.flaticon.com/512/3749/3749904.png" alt="Profile Picture">
+        </div>
+
+        <div class="profile-info">
+            <ul>
+                <li>Library ID: <span th:text="${me.libraryId}"></span></li>
+                <li>Email: <span th:text="${me.emailAddress()}"></span></li>
+                <li>Type: <span th:text="${me.type()}"></span></li>
+            </ul>
+        </div>
+    </div>
+
+    <hr>
+    <ul class="profile-links">
+        <li><a th:href="@{/staff/reservations}">View All Reservations</a></li>
+        <li><a th:href="@{/staff/studyspaces}">Manage Study Spaces</a></li>
+        <li><a th:href="@{/staff/statistics}">View Statistics</a></li>
+        <li><a th:href="@{/logout-page}">Logout</a></li>
+    </ul>
+    <hr>
+
+</section>
+</html>

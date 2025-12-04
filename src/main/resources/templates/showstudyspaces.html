@@ -1,140 +1,101 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.w3.org/1999/xhtml">
-<head>
-    <title>Study Spaces</title>
+<html xmlns:th="https://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.w3.org/1999/xhtml"
+      layout:decorate="~{base}">
 
+<header layout:fragment="header" class="text-center">
+    <h1>Study Spaces</h1>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-
-        h1, h2 {
-            color: #333;
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-bottom: 30px;
-        }
-
-        th, td {
-            border: 1px solid #999;
-            padding: 8px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        a {
-            color: #0066cc;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        button {
-            background-color: #ffb6c1;
-            color: #fff;
+        .btn-back {
+            background: rgba(94, 94, 94, 0.6);
+            color: #b1b1b5;
             border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 6px;
+            border-radius: 5px;
+            font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
+            margin-top: 10px;
         }
 
-        button:hover {
-            background-color: #ff99aa;
+        .btn-back:hover {
+            background: rgba(149, 147, 147, 0.6);
         }
     </style>
-</head>
-<body>
+</header>
 
-<h1>Study Spaces</h1>
+<div layout:fragment="main">
 
-<h2>📘 Rooms</h2>
-<table>
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Capacity</th>
-        <th>Available</th>
-        <th>Opening</th>
-        <th>Closing</th>
-        <th>Reserve</th>
-    </tr>
+    <!-- ROOMS -->
+    <h2 class="mt-4">📘 Rooms</h2>
 
-    <tr th:each="room : ${rooms}">
-        <td th:text="${room.studySpaceId}"></td>
-        <td>
-            <a th:href="@{/availability/{id}(id=${room.studySpaceId})}" th:text="${room.name}"></a>
-        </td>
-        <td th:text="${room.capacity}"></td>
-        <td th:text="${room.available}"></td>
-        <td th:text="${room.openingTime}"></td>
-        <td th:text="${room.closingTime}"></td>
-        <td>
-            <div sec:authorize="hasRole('STUDENT')">
-                <a th:href="@{'/reserve/' + ${room.studySpaceId}}">
+    <table class="table table-dark table-striped table-bordered text-center align-middle mt-3">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Capacity</th>
+            <th>Available</th>
+            <th>Opening</th>
+            <th>Closing</th>
+        </tr>
+        </thead>
 
-                <button>Reserve</button>
-                </a>
-            </div>
-        </td>
-    </tr>
-</table>
+        <tbody>
+        <tr th:each="room : ${rooms}">
+            <td th:text="${room.studySpaceId}"></td>
 
-<h2>🪑 Seats</h2>
-<table>
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Available</th>
-        <th>Opening</th>
-        <th>Closing</th>
-        <th>Reserve</th>
-    </tr>
+            <td>
+                <a class="text-info fw-bold"
+                   th:href="@{/availability/{id}(id=${room.studySpaceId})}"
+                   th:text="${room.name}"></a>
+            </td>
 
-    <tr th:each="seat : ${seats}">
-        <td th:text="${seat.studySpaceId}"></td>
-        <td>
-            <a th:href="@{/availability/{id}(id=${seat.studySpaceId})}"
-               th:text="${seat.name}"></a>
-        </td>
-        <td th:text="${seat.available}"></td>
-        <td th:text="${seat.openingTime}"></td>
-        <td th:text="${seat.closingTime}"></td>
+            <td th:text="${room.capacity}"></td>
+            <td th:text="${room.available}"></td>
+            <td th:text="${room.openingTime}"></td>
+            <td th:text="${room.closingTime}"></td>
 
-        <td>
-            <div sec:authorize="hasRole('STUDENT')">
-                <a th:href="@{'/reserve/' + ${seat.studySpaceId}}">
-                    <button>Reserve</button>
-              </a>
-         </div>
-        </td>
-    </tr>
-</table>
+        </tr>
+        </tbody>
+    </table>
 
-<br>
-<div>
-    <a th:if="${from} == 'homepage'" th:href="@{/}">
-        <button>Back to Homepage</button>
-    </a>
 
-    <a th:if="${from} == 'profile'" th:href="@{/profile}">
-        <button>Back to Profile</button>
-    </a>
+    <!-- SEATS -->
+    <h2 class="mt-4">🪑 Seats</h2>
+
+    <table class="table table-dark table-striped table-bordered text-center align-middle mt-3">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Available</th>
+            <th>Opening</th>
+            <th>Closing</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="seat : ${seats}">
+            <td th:text="${seat.studySpaceId}"></td>
+
+            <td>
+                <a class="text-info fw-bold"
+                   th:href="@{/availability/{id}(id=${seat.studySpaceId})}"
+                   th:text="${seat.name}"></a>
+            </td>
+
+            <td th:text="${seat.available}"></td>
+            <td th:text="${seat.openingTime}"></td>
+            <td th:text="${seat.closingTime}"></td>
+
+        </tr>
+        </tbody>
+    </table>
+
+    <div>
+        <a th:href="@{/profile}">
+            <button class="btn-back">← Back</button>
+        </a>
+    </div>
 
 </div>
-
-
-</body>
 </html>
-

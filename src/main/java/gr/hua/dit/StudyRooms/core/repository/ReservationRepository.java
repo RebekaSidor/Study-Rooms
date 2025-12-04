@@ -5,34 +5,29 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-
 
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long>{
 
-    // Βρες όλες τις κρατήσεις για συγκεκριμένο studySpaceId (String)
     List<Reservation> findByStudySpaceId(String studySpaceId);
-
     List<Reservation> findByStudentId(String studentId);
 
-    // Έλεγχος overlap
+    //check overlap
     boolean existsByStudySpaceIdAndEndTimeAfterAndStartTimeBefore(
             String studySpaceId,
             LocalDateTime start,
             LocalDateTime end
     );
 
-    // auto tha mas pei an yparxei krathsh apo ayton ton foithth poy epikalyptetai xronika
+    //check for other reservation at the same time
     boolean existsByStudentIdAndEndTimeAfterAndStartTimeBefore(
             String studentId,
             LocalDateTime start,
             LocalDateTime end
     );
+    boolean existsByIdAndStudentId(long id, String studentId);
 
     @Query("SELECT r.studySpaceId AS room, COUNT(r) AS total FROM Reservation r GROUP BY r.studySpaceId")
     List<Object[]> countReservationsPerRoom();
@@ -54,5 +49,4 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>{
 
     @Query("SELECT r.studySpaceId, COUNT(r) FROM Reservation r GROUP BY r.studySpaceId")
     List<Object[]> countReservationsGroupByStudySpaceId();
-
 }

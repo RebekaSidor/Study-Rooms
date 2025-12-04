@@ -28,7 +28,7 @@ public class StaffController {
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
         model.addAttribute("username", user.getUsername());
 
-        return "staff_home";
+        return "staff_profile";
     }
 
     @GetMapping("/staff/reservations")

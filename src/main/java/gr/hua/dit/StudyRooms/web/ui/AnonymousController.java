@@ -22,7 +22,7 @@ public class AnonymousController {
         return "anonymous_menu";
     }
 
-    // ----- 1) Rooms -----
+    // ----- Rooms -----
     @GetMapping("/rooms")
     public String viewRooms(Model model) {
         model.addAttribute("rooms",
@@ -34,7 +34,7 @@ public class AnonymousController {
         return "anonymous_rooms";
     }
 
-    // ----- 2) Seats -----
+    // ----- Seats -----
     @GetMapping("/seats")
     public String viewSeats(Model model) {
         model.addAttribute("seats",

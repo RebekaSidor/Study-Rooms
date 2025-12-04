@@ -2,7 +2,6 @@ package gr.hua.dit.StudyRooms.core.model;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 
@@ -44,7 +43,6 @@ public class Reservation {
         this.createdAt = createdAt;
     }
 
-    // GETTERS / SETTERS
     public Long getId() { return id; }
 
     public String getReservationId() { return reservationId; }

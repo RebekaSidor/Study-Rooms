@@ -42,7 +42,7 @@ public class PersonServiceImpl implements PersonService {
         this.personMapper = personMapper;
     }
 
-    /** AUTO-GENERATE LIBRARY ID */
+    //AUTO-GENERATE LIBRARY ID
     private String generateNextLibraryId() {
         Person last = personRepository.findTopByOrderByLibraryIdDesc();
 
@@ -63,8 +63,6 @@ public class PersonServiceImpl implements PersonService {
         if (createPersonRequest == null) throw new NullPointerException();
 
         //Unpack (we assume validated CreatePersonRequest)
-        // -----------------------------------------------
-
         final PersonType type = createPersonRequest.type();
         final String firstName = createPersonRequest.firstName().strip();
         final String lastName = createPersonRequest.lastName().strip();
@@ -82,8 +80,6 @@ public class PersonServiceImpl implements PersonService {
             return CreatePersonResult.fail("Mobile Phone number must be unique");
         }
 
-
-        // GENERATE AUTOMATIC LIBRARY ID
         final String libraryId = generateNextLibraryId();
 
         // -------- ENCODE PASSWORD --------
@@ -151,8 +147,6 @@ public class PersonServiceImpl implements PersonService {
     }
 
 
-
-
     @Override
     public String updatePhone(String libraryId, String newPhone) {
 
@@ -206,7 +200,4 @@ public class PersonServiceImpl implements PersonService {
 
         return null; // SUCCESS
     }
-
-
-
 }

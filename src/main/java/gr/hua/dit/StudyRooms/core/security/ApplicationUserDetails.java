@@ -2,72 +2,57 @@ package gr.hua.dit.StudyRooms.core.security;
 
 import gr.hua.dit.StudyRooms.core.model.PersonType;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.Collection;
-import java.util.Collections;
+
 
 /**
  * Immutable view implementing Spring's {@link UserDetails} for representing a user in runtime.
  */
-public final class ApplicationUserDetails implements UserDetails {
+public class ApplicationUserDetails implements UserDetails {
 
-    private final long  personId;
-    private final String libraryId;
-    private final String passwordHash;
-    private final PersonType type;
+    private final long personId;
+    private final String libraryId;      // προσθέτουμε
     private final String emailAddress;
+    private final PersonType type;
+    private final String password;
 
-    public ApplicationUserDetails(final long personId,
-                                  final String libraryId,
-                                  final String passwordHash,
-                                  final PersonType type,
-                                  final  String emailAddress) {
-        if (personId <= 0) throw new IllegalArgumentException();
-        if (libraryId == null) throw new NullPointerException();
-        if (libraryId .isBlank()) throw new IllegalArgumentException();
-        if (passwordHash == null) throw new NullPointerException();
-        if (passwordHash.isBlank()) throw new IllegalArgumentException();
-        if (type == null) throw new NullPointerException();
-        if (emailAddress == null) throw new NullPointerException();
-        if (emailAddress.isBlank()) throw new IllegalArgumentException();
-
+    public ApplicationUserDetails(long personId,
+                                  String libraryId,
+                                  String emailAddress,
+                                  PersonType type,
+                                  String password) {
         this.personId = personId;
         this.libraryId = libraryId;
-        this.passwordHash = passwordHash;
-        this.type = type;
         this.emailAddress = emailAddress;
+        this.type = type;
+        this.password = password;
     }
 
     public long personId() {
-        return this.personId;
+        return personId;
     }
 
-    public PersonType type() {
-        return this.type;
+    public String getLibraryId() {      // ΥΛΟΠΟΙΗΣΗ GETTER
+        return libraryId;
     }
 
+    public String getEmailAddress() {
+        return emailAddress;
+    }
 
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        final String role = (this.type == PersonType.LIB_STAFF) ? "ROLE_LIB_STAFF" : "ROLE_STUDENT";
-        return Collections.singletonList(new SimpleGrantedAuthority(role));
+    public PersonType getType() {
+        return type;
     }
 
     @Override
     public String getPassword() {
-        return this.passwordHash;
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return this.libraryId;
-    }
-
-    public String getEmailAddress() {
-        return this.emailAddress;
+        return emailAddress; // ή libraryId, ανάλογα τι θες να χρησιμοποιείς ως username
     }
 
     @Override
@@ -90,7 +75,8 @@ public final class ApplicationUserDetails implements UserDetails {
         return true;
     }
 
-    public PersonType getType() {
-        return type;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null; // Προσθέτεις authorities αν χρειάζεται
     }
 }

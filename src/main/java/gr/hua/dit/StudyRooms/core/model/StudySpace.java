@@ -2,7 +2,6 @@ package gr.hua.dit.StudyRooms.core.model;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.Instant;
 import java.time.LocalTime;
 
