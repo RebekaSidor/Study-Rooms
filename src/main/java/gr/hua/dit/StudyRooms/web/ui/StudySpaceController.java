@@ -7,8 +7,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
-import org.springframework.security.core.Authentication;
-
 
 @Controller
 public class StudySpaceController {
@@ -22,7 +20,6 @@ public class StudySpaceController {
     @GetMapping("/showstudyspaces")
     public String showStudySpaces(
             @RequestParam(value = "from", required = false, defaultValue = "mainpage") String from,
-            Authentication authentication,
             Model model) {
 
         List<StudySpaceView> all = studySpaceService.getAllStudySpaces();
@@ -35,21 +32,11 @@ public class StudySpaceController {
                 .filter(s -> s.type().name().equals("SEAT"))
                 .toList();
 
-        boolean isLoggedIn = authentication != null
-                && authentication.isAuthenticated()
-                && !"anonymousUser".equals(authentication.getName());
-
         model.addAttribute("rooms", rooms);
         model.addAttribute("seats", seats);
         model.addAttribute("from", from);
-        model.addAttribute("isLoggedIn", isLoggedIn);
 
-        return "showstudyspaces";
+        return "anonymous_studyspaces";
     }
 
-
-    @GetMapping("/availability")
-    public String showAvailabilityPage() {
-        return "availability";
-    }
 }

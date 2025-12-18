@@ -37,7 +37,8 @@ public class ReservationMapper {
                 reservation.getStudySpaceId(),
                 space != null ? space.getName() : reservation.getStudySpaceId(), // <--- εδώ προσθέτουμε το όνομα
                 reservation.getStartTime(),
-                reservation.getEndTime()
+                reservation.getEndTime(),
+                reservation.getPresent()
         );
     }
 }

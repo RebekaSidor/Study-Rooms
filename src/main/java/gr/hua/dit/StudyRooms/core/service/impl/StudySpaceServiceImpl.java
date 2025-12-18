@@ -46,10 +46,8 @@ public class StudySpaceServiceImpl implements StudySpaceService {
         studySpace.setName(request.name());
         studySpace.setType(request.type());
         studySpace.setCapacity(request.capacity());
-        studySpace.setAvailable(request.available());
         studySpace.setOpeningTime(request.openingTime() != null ? request.openingTime() : LocalTime.of(8,0));
         studySpace.setClosingTime(request.closingTime() != null ? request.closingTime() : LocalTime.of(20,0));
-
 
         //save in DB
         studySpace = this.studySpaceRepository.save(studySpace);

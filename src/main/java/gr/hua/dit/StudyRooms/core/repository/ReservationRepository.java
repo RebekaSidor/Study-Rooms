@@ -13,6 +13,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>{
 
     List<Reservation> findByStudySpaceId(String studySpaceId);
     List<Reservation> findByStudentId(String studentId);
+    List<Reservation> findByStudentIdAndStartTimeBetween(String studentId, LocalDateTime start, LocalDateTime end);
 
     //check overlap
     boolean existsByStudySpaceIdAndEndTimeAfterAndStartTimeBefore(
@@ -27,10 +28,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>{
             LocalDateTime start,
             LocalDateTime end
     );
-    boolean existsByIdAndStudentId(long id, String studentId);
-
-    @Query("SELECT r.studySpaceId AS room, COUNT(r) AS total FROM Reservation r GROUP BY r.studySpaceId")
-    List<Object[]> countReservationsPerRoom();
 
     long countDistinctStudentIdByStartTimeAfter(LocalDateTime date);
 

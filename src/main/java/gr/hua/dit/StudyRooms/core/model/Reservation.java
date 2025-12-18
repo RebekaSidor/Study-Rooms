@@ -32,6 +32,8 @@ public class Reservation {
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
+    @Column(name = "present")
+    private Boolean present;
 
     public Reservation() {}
 
@@ -63,6 +65,9 @@ public class Reservation {
     public LocalDateTime getEndTime() { return endTime; }
     public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
 
+    public Boolean getPresent() {return present;}
+
+    public void setPresent(Boolean present) {this.present = present;}
 
     @Override
     public String toString() {

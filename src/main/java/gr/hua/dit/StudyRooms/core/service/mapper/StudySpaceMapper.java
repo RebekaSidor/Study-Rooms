@@ -20,7 +20,6 @@ public class StudySpaceMapper {
                 studySpace.getStudySpaceId(),
                 studySpace.getName(),
                 studySpace.getCapacity(),
-                studySpace.getAvailable(),
                 studySpace.getOpeningTime(),
                 studySpace.getClosingTime()
         );

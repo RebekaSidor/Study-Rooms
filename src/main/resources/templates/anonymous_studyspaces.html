@@ -39,7 +39,6 @@
             <th>ID</th>
             <th>Name</th>
             <th>Capacity</th>
-            <th>Available</th>
             <th>Opening</th>
             <th>Closing</th>
         </tr>
@@ -48,22 +47,10 @@
         <tbody>
         <tr th:each="room : ${rooms}">
             <td th:text="${room.studySpaceId}"></td>
-
-            <td>
-                <a th:if="${isLoggedIn}"
-                   th:href="@{/availability/{id}(id=${room.studySpaceId})}"
-                   th:text="${room.name}"></a>
-
-                <a th:if="${!isLoggedIn}"
-                   th:href="@{/login(required=true)}"
-                   th:text="|${room.name} (Login required)|"></a>
-            </td>
-
+            <td th:text="${room.name}"></td>
             <td th:text="${room.capacity}"></td>
-            <td th:text="${room.available}"></td>
             <td th:text="${room.openingTime}"></td>
             <td th:text="${room.closingTime}"></td>
-
         </tr>
         </tbody>
     </table>
@@ -76,7 +63,6 @@
         <tr>
             <th>ID</th>
             <th>Name</th>
-            <th>Available</th>
             <th>Opening</th>
             <th>Closing</th>
         </tr>
@@ -85,33 +71,16 @@
         <tbody>
         <tr th:each="seat : ${seats}">
             <td th:text="${seat.studySpaceId}"></td>
-
-            <td>
-                <a th:if="${isLoggedIn}"
-                   th:href="@{/availability/{id}(id=${seat.studySpaceId})}"
-                   th:text="${seat.name}"></a>
-
-                <a th:if="${!isLoggedIn}"
-                   th:href="@{/login(required=true)}"
-                   th:text="|${seat.name} (Login required)|"></a>
-            </td>
-
-            <td th:text="${seat.available}"></td>
+            <td th:text="${seat.name}"></td>
             <td th:text="${seat.openingTime}"></td>
             <td th:text="${seat.closingTime}"></td>
-
         </tr>
         </tbody>
     </table>
 
-    <div class="mt-4">
-        <a th:if="${isLoggedIn}" th:href="@{/profile}">
-            <button class="btn-back">← Back</button>
-        </a>
-        <a th:if="${!isLoggedIn}" th:href="@{/}">
-            <button class="btn-back">← Back</button>
-        </a>
-    </div>
+    <a href="/anonymous/menu">
+        <button class="btn-back" type="button">← Back</button>
+    </a>
 
 </div>
 

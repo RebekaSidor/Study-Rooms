@@ -12,5 +12,6 @@ public record ReservationView(
         String studySpaceId,
         String studySpaceName,
         LocalDateTime startTime,
-        LocalDateTime endTime
+        LocalDateTime endTime,
+        Boolean present
 ) {}

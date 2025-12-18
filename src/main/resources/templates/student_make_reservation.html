@@ -97,7 +97,14 @@
             color: #bcbcbc !important;
         }
 
-
+        option.past-hour {
+            color: #000000;
+            background-color: rgb(156, 156, 156);
+        }
+        option.unavailable {
+            color: #cacaca;
+            background-color: #aa4441;
+        }
     </style>
 </head>
 
@@ -145,6 +152,7 @@
             <input type="date"
                    name="date"
                    th:value="${selectedDate}"
+                   th:min="${todayStr}"
                    onchange="this.form.submit()">
 
             <select name="studySpaceId" onchange="this.form.submit()">
@@ -174,17 +182,35 @@
             <input type="hidden" name="studySpaceId" th:value="${selectedSpaceId}">
 
             <select name="startTime" required>
-                <option value="" disabled selected>Select Time (Choose room/seat first)</option>
-                <option th:each="hour : ${availableHours}"
-                        th:value="${hour}"
-                        th:text="${hour}">
+                <option value="" disabled selected>
+                    Select Time (Choose room/seat first)
                 </option>
+
+                <option th:each="h : ${hours}"
+                        th:value="${h.time}"
+                        th:text="${h.time}"
+                        th:disabled="${!h.available}"
+                        th:classappend="${h.pastHour} ? 'past-hour' : (${!h.available} ? 'unavailable' : '')">
+                </option>
+
             </select>
 
             <button type="submit" class="btn-reserve">Reserve</button>
         </form>
 
     </div>
+
+
+    <script>
+        const dateInput = document.querySelector('input[name="date"]');
+        dateInput.addEventListener('input', function() {
+            const selectedDate = new Date(this.value);
+            if (selectedDate.getDay() === 0) {
+                alert("Cannot select Sundays for reservations.");
+                this.value = '';
+            }
+        });
+    </script>
 
     <div style="text-align:center;">
         <p th:if="${successMessage}" style="color:green;" th:text="${successMessage}"></p>

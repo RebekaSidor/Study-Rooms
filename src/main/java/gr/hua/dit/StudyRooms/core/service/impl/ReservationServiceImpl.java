@@ -12,6 +12,7 @@ import gr.hua.dit.StudyRooms.core.service.model.ReservationView;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,15 +35,6 @@ public class ReservationServiceImpl implements ReservationService {
         this.reservationRepository = reservationRepository;
         this.reservationMapper = reservationMapper;
         this.studySpaceService = studySpaceService;
-    }
-
-    @Override
-    public List<Reservation> getReservationsForStudySpace(String studySpaceId) {
-
-        StudySpace studySpace = studySpaceService.getStudySpaceById(studySpaceId);
-        if (studySpace == null) return List.of();
-
-        return reservationRepository.findByStudySpaceId(studySpace.getStudySpaceId());
     }
 
     @Override
@@ -109,33 +101,6 @@ public class ReservationServiceImpl implements ReservationService {
                 end
         );
     }
-    @Override
-    public List<Reservation> getReservationsForStudent(String studentId) {
-        return reservationRepository.findByStudentId(studentId);
-    }
-
-    @Override
-    public void deleteReservation(long id) {
-        reservationRepository.deleteById(id);
-    }
-
-    @Override
-    public List<Reservation> getUpcomingReservations(String studentId) {
-        LocalDateTime now = LocalDateTime.now();
-        return reservationRepository.findByStudentId(studentId)
-                .stream()
-                .filter(r -> r.getStartTime().isAfter(now))
-                .toList();
-    }
-
-    @Override
-    public List<Reservation> getPastReservations(String studentId) {
-        LocalDateTime now = LocalDateTime.now();
-        return reservationRepository.findByStudentId(studentId)
-                .stream()
-                .filter(r -> r.getEndTime().isBefore(now))
-                .toList();
-    }
 
     @Override
     public List<ReservationView> getAllReservations() {
@@ -170,7 +135,6 @@ public class ReservationServiceImpl implements ReservationService {
         }
         return map;
     }
-
 
     @Override
     public long getFullyBookedRoomsToday() {
@@ -226,5 +190,48 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationsPerHour;
     }
 
+    @Override
+    public boolean cancelReservation(Long reservationId, String libraryId) {
+
+        // Φόρτωσε τη συγκεκριμένη κράτηση
+        var optionalReservation = reservationRepository.findById(reservationId);
+        if (optionalReservation.isEmpty()) {
+            return false; // δεν υπάρχει η κράτηση
+        }
+
+        var reservation = optionalReservation.get();
+
+        // Έλεγχος ότι η κράτηση ανήκει στον χρήστη
+        if (!reservation.getStudentId().equals(libraryId)) {
+            return false; // δεν μπορεί να ακυρώσει άλλος χρήστης
+        }
+
+        // Διαγραφή κράτησης
+        reservationRepository.delete(reservation);
+        return true;
+    }
+
+    @Override
+    public List<ReservationView> getReservationsForStudentOnDate(String studentId, LocalDate date) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+        List<Reservation> reservations = reservationRepository.findByStudentIdAndStartTimeBetween(
+                studentId, startOfDay, endOfDay
+        );
+
+        return reservations.stream()
+                .map(reservationMapper::convertReservationToReservationView)
+                .toList();
+    }
+
+    @Override
+    public void markAttendance(Long reservationId, boolean present) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("Reservation not found"));
+
+        reservation.setPresent(present);
+        reservationRepository.save(reservation);
+    }
 
 }

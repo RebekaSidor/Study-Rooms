@@ -4,16 +4,14 @@ import gr.hua.dit.StudyRooms.core.model.StudySpaceType;
 import gr.hua.dit.StudyRooms.core.security.ApplicationUserDetails;
 import gr.hua.dit.StudyRooms.core.service.ReservationService;
 import gr.hua.dit.StudyRooms.core.service.StudySpaceService;
-import gr.hua.dit.StudyRooms.core.service.model.CreateReservationRequest;
-import gr.hua.dit.StudyRooms.core.service.model.CreateReservationResult;
-import gr.hua.dit.StudyRooms.core.service.model.ReservationView;
-import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
+import gr.hua.dit.StudyRooms.core.service.model.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -52,33 +50,54 @@ public class ReservationController {
             else if (space.type() == StudySpaceType.SEAT) seats.add(space);
         }
 
-        List<String> availableHours = new ArrayList<>();
+        List<HourOption> hours = new ArrayList<>();
+
         if (studySpaceId != null) {
             StudySpaceView space = allSpaces.stream()
                     .filter(s -> s.studySpaceId().equals(studySpaceId))
                     .findFirst()
                     .orElse(null);
+
             if (space != null) {
                 LocalTime start = space.openingTime();
                 LocalTime end = space.closingTime();
+
+                LocalTime now = LocalTime.now(); // τρέχουσα ώρα
+
                 while (!start.isAfter(end.minusHours(1))) {
-                    if (!reservationService.existsOverlappingReservation(
+
+                    boolean available = !reservationService.existsOverlappingReservation(
                             space.studySpaceId(),
                             LocalDateTime.of(date, start),
                             LocalDateTime.of(date, start.plusHours(1))
-                    )) {
-                        availableHours.add(start.format(DateTimeFormatter.ofPattern("HH:mm")));
+                    );
+
+                    boolean pastHour = false;
+
+                    if (date.equals(LocalDate.now()) && start.isBefore(LocalTime.now().plusMinutes(1))) {
+                        available = false;
+                        pastHour = true;
                     }
+
+                    hours.add(new HourOption(
+                            start.format(DateTimeFormatter.ofPattern("HH:mm")),
+                            available,
+                            pastHour
+                    ));
+
                     start = start.plusHours(1);
                 }
+
             }
         }
 
+        model.addAttribute("hours", hours);
         model.addAttribute("rooms", rooms);
         model.addAttribute("seats", seats);
         model.addAttribute("selectedDate", date);
         model.addAttribute("selectedSpaceId", studySpaceId);
-        model.addAttribute("availableHours", availableHours);
+        model.addAttribute("hours", hours);
+        model.addAttribute("todayStr", LocalDate.now().toString());
 
         return "student_make_reservation";
     }
@@ -90,11 +109,37 @@ public class ReservationController {
             @RequestParam String startTime,
             RedirectAttributes redirectAttributes) {
 
+        //no reservations on sundays
+        if (date.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage", "Reservations cannot be made on Sundays."
+            );
+            return "redirect:/student/make-reservation?date=" + date + "&studySpaceId=" + studySpaceId;
+        }
+
+        // Έλεγχος για όριο 3 κρατήσεων ανά ημέρα
+        String studentId = getCurrentStudentId();
+        int reservationsCount = reservationService.getReservationsForStudentOnDate(studentId, date).size();
+        if (reservationsCount >= 3) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage", "You can only make up to 3 reservations for a day."
+            );
+            return "redirect:/student/make-reservation?date=" + date + "&studySpaceId=" + studySpaceId;
+        }
+
+
         LocalTime start = LocalTime.parse(startTime);
         LocalDateTime startDateTime = LocalDateTime.of(date, start);
         LocalDateTime endDateTime = startDateTime.plusHours(1);
 
-        String studentId = getCurrentStudentId();
+        // Έλεγχος για υπάρχουσα κράτηση
+        if (reservationService.existsOverlappingReservation(studySpaceId, startDateTime, endDateTime)) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "This time slot is already reserved."
+            );
+            return "redirect:/student/make-reservation?date=" + date + "&studySpaceId=" + studySpaceId;
+        }
 
         CreateReservationRequest request = new CreateReservationRequest(
                 null, studentId, studySpaceId, startDateTime, endDateTime
@@ -111,28 +156,46 @@ public class ReservationController {
         return "redirect:/student/make-reservation?date=" + date + "&studySpaceId=" + studySpaceId;
     }
 
+
     private String getCurrentStudentId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new IllegalStateException("No authenticated user found");
-        }
-
         if (authentication.getPrincipal() instanceof ApplicationUserDetails userDetails) {
-            return userDetails.getLibraryId(); // επιστρέφει το libraryId (π.χ. lib2025000)
+            return userDetails.getLibraryId();
         }
-
         throw new IllegalStateException("Principal is not an ApplicationUserDetails");
     }
 
     @GetMapping("/my-reservations")
     public String showStudentReservations(Authentication auth, Model model) {
-        String studentId = auth.getName();
 
-        List<ReservationView> reservations = reservationService.getReservationsForStudentView(studentId);
+        ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
+
+        String libraryId = user.getLibraryId();
+
+        List<ReservationView> reservations =
+                reservationService.getReservationsForStudentView(libraryId);
 
         model.addAttribute("reservations", reservations);
 
         return "student_reservations";
+    }
+    @PostMapping("/cancel/{reservationId}")
+    public String cancelReservation(@PathVariable("reservationId") Long reservationId,
+                                    RedirectAttributes redirectAttributes,
+                                    Authentication auth) {
+
+        ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
+        String libraryId = user.getLibraryId();
+
+        boolean cancelled = reservationService.cancelReservation(reservationId, libraryId);
+
+        if (cancelled) {
+            redirectAttributes.addFlashAttribute("cancelSuccess", true);
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to cancel reservation.");
+        }
+
+        return "redirect:/my-reservations";
     }
 
 }

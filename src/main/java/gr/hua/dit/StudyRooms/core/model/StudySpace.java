@@ -25,9 +25,6 @@ public class StudySpace {
     @Column(name="capacity")
     private Integer capacity;
 
-    @Column(name="available")
-    private Boolean available;
-
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -48,7 +45,6 @@ public class StudySpace {
         this.name = name;
         this.type = type;
         this.capacity = capacity;
-        this.available = available;
         this.createdAt = createdAt;
     }
 
@@ -92,14 +88,6 @@ public class StudySpace {
         this.capacity = capacity;
     }
 
-    public Boolean getAvailable() {
-        return available;
-    }
-
-    public void setAvailable(Boolean available) {
-        this.available = available;
-    }
-
     public LocalTime getOpeningTime() {
         return openingTime;
     }
@@ -132,7 +120,6 @@ public class StudySpace {
                 ", name='" + name + '\'' +
                 ", type=" + type +
                 ", capacity=" + capacity +
-                ", available=" + available +
                 ", createdAt=" + createdAt +
                 '}';
     }

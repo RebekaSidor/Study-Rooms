@@ -12,7 +12,6 @@ public record StudySpaceView(
         String studySpaceId,
         String name,
         Integer capacity,
-        Boolean available,
         LocalTime openingTime,
         LocalTime closingTime)
 {}

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base}">
+<head>
+    <title>Attendances</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #555;
+            text-align: center;
+            color: white;
+        }
+
+        th {
+            background-color: #333;
+        }
+
+        button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .present {
+            background-color: #024c06;
+            color: white;
+        }
+        .present:hover {
+            background-color: #246527;
+        }
+
+        .absent {
+            background-color: #aa2826;
+            color: white;
+        }
+        .absent:hover {
+            background-color: #aa4441;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        .btn-back {
+            background: rgba(94, 94, 94, 0.6);
+            color: #b1b1b5;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-back:hover {
+            background: rgba(149, 147, 147, 0.6);
+        }
+    </style>
+</head>
+
+<header layout:fragment="header">
+    <h1>Student Attendances</h1>
+</header>
+
+<section layout:fragment="main">
+
+    <table>
+        <thead>
+        <tr>
+            <th>Reservation ID</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Student Library ID</th>
+            <th>Attendance</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="booking : ${bookings}">
+            <td th:text="${booking.reservationId}"></td>
+            <td th:text="${#temporals.format(booking.startTime(), 'HH:mm dd-MM-yyyy')}"></td>
+            <td th:text="${#temporals.format(booking.endTime(), 'HH:mm dd-MM-yyyy')}"></td>
+            <td th:text="${booking.studentId()}"></td>
+            <td>
+                <button class="present" th:onclick="'/staff/attendances/markPresent/' + ${booking.id}">Present</button>
+                <button class="absent" th:onclick="'/staff/attendances/markAbsent/' + ${booking.id}">Absent</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <a th:href="@{/staff/home}">
+        <button class="btn-back" type="button">← Back</button>
+    </a>
+</section>
+</html>
