@@ -203,4 +203,28 @@ public class ReservationServiceImpl implements ReservationService {
                 .toList();
     }
 
+    @Override
+    public Map<Integer, Long> getReservationsPerHourForToday() {
+
+        Map<Integer, Long> reservationsPerHour = new HashMap<>();
+
+        // ώρες λειτουργίας
+        for (int h = 8; h <= 22; h++) {
+            reservationsPerHour.put(h, 0L);
+        }
+
+        List<Reservation> allReservations = reservationRepository.findAll();
+
+        for (Reservation r : allReservations) {
+            int hour = r.getStartTime().getHour();
+            if (hour >= 8 && hour <= 22) {
+                reservationsPerHour.put(hour,
+                        reservationsPerHour.get(hour) + 1);
+            }
+        }
+
+        return reservationsPerHour;
+    }
+
+
 }

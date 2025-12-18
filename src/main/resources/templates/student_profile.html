@@ -53,7 +53,7 @@
 </head>
 
 <header layout:fragment="header">
-    <h1>Study Rooms <small>/ Profile</small></h1>
+    <h1>Student Profile</h1>
 </header>
 
 <section layout:fragment="main">
@@ -75,13 +75,13 @@
 
     <hr>
         <ul class="profile-links">
-            <li><a href="/my-reservations">My Reservations</a></li>
-            <li><a th:href="@{/showstudyspaces(from='profile')}">View Study Spaces</a></li>
+            <li><a th:href="@{/student/make-reservation}">Make New Reservation</a></li>
+            <li><a th:href="@{/my-reservations}">My Reservations</a></li>
             <li><a th:href="@{/logout-page}">Logout</a></li>
         </ul>
     <hr>
 
-    <h3>Edit Profile ✏️</h3>
+    <h4>Edit Profile ✏️</h4>
     <ul class="profile-links">
         <li><a th:href="@{/profile/change-email}">Change Email</a></li>
         <li><a th:href="@{/profile/change-phone}">Change Phone</a></li>

@@ -9,16 +9,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import gr.hua.dit.StudyRooms.core.service.PersonService;
 
-
 /**
  * UI controller for managing profile.
  */
 @Controller
-public class ProfileController {
+public class StudentController {
 
     private final PersonService personService;
 
-    public ProfileController(PersonService personService) {
+    public StudentController(PersonService personService) {
         this.personService = personService;
     }
 
@@ -31,7 +30,7 @@ public class ProfileController {
     public String showEmailForm(Authentication auth, Model model) {
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
         model.addAttribute("currentEmail", user.getEmailAddress());
-        return "change_email";
+        return "student_change_email";
     }
 
     @PostMapping("/profile/change-email")
@@ -45,16 +44,16 @@ public class ProfileController {
 
         if (error != null) {
             model.addAttribute("error", error);
-            return "change_email";
+            return "student_change_email";
         }
 
         model.addAttribute("success", "Email updated successfully!");
-        return "change_email";
+        return "student_change_email";
     }
 
     @GetMapping("/profile/change-phone")
     public String showChangePhoneForm() {
-        return "change_phone";
+        return "student_change_phone";
     }
 
 
@@ -69,16 +68,16 @@ public class ProfileController {
 
         if (error != null) {
             model.addAttribute("error", error);
-            return "change_phone";
+            return "student_change_phone";
         }
 
         model.addAttribute("success", "Phone number updated successfully!");
-        return "change_phone";
+        return "student_change_phone";
     }
 
     @GetMapping("/profile/change-password")
     public String showChangePasswordForm() {
-        return "change_password";
+        return "student_change_password";
     }
 
     @PostMapping("/profile/change-password")
@@ -89,7 +88,7 @@ public class ProfileController {
 
         if (!password.equals(confirm)) {
             model.addAttribute("error", "Passwords do not match.");
-            return "change_password";
+            return "student_change_password";
         }
 
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
@@ -98,11 +97,10 @@ public class ProfileController {
 
         if (error != null) {
             model.addAttribute("error", error);
-            return "change_password";
+            return "student_change_password";
         }
 
         model.addAttribute("success", "Password updated successfully!");
-        return "change_password";
+        return "student_change_password";
     }
-
 }

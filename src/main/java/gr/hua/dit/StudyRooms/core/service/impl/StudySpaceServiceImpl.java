@@ -1,6 +1,7 @@
 package gr.hua.dit.StudyRooms.core.service.impl;
 
 import gr.hua.dit.StudyRooms.core.model.StudySpace;
+import gr.hua.dit.StudyRooms.core.model.StudySpaceType;
 import gr.hua.dit.StudyRooms.core.repository.StudySpaceRepository;
 import gr.hua.dit.StudyRooms.core.service.StudySpaceService;
 import gr.hua.dit.StudyRooms.core.service.mapper.StudySpaceMapper;
@@ -53,7 +54,7 @@ public class StudySpaceServiceImpl implements StudySpaceService {
         //save in DB
         studySpace = this.studySpaceRepository.save(studySpace);
 
-        //conver to View
+        //convert to View
         final StudySpaceView studySpaceView = this.studySpaceMapper.convertStudySpaceToStudySpaceView(studySpace);
 
         return CreateStudySpaceResult.success(studySpaceView);
@@ -67,6 +68,28 @@ public class StudySpaceServiceImpl implements StudySpaceService {
     @Override
     public long countAll() {
         return studySpaceRepository.count();
+    }
+
+    @Override
+    public void updateStudySpace(StudySpace updatedSpace) {
+
+        StudySpace existing = studySpaceRepository
+                .findByStudySpaceId(updatedSpace.getStudySpaceId())
+                .orElseThrow(() -> new IllegalArgumentException("Study space not found"));
+
+        existing.setOpeningTime(updatedSpace.getOpeningTime());
+        existing.setClosingTime(updatedSpace.getClosingTime());
+
+        if (existing.getType() == StudySpaceType.ROOM && updatedSpace.getCapacity() != null) {
+            existing.setCapacity(updatedSpace.getCapacity());
+        }
+
+        studySpaceRepository.save(existing);
+    }
+
+    @Override
+    public void createStudySpace(StudySpace space) {
+        studySpaceRepository.save(space);
     }
 
 }

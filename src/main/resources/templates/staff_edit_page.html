@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base}">
+
+<head>
+    <title>Edit Study Spaces</title>
+    <style>
+        .btn-back {
+            background: rgba(94, 94, 94, 0.6);
+            color: #b1b1b5;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-back:hover {
+            background: rgba(149, 147, 147, 0.6);
+        }
+
+        .btn-add{
+            background: rgb(2, 76, 6, 0.7);
+            color: #e3e3e3;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            text-decoration: none;
+            padding: 8px 15px;
+        }
+
+        .btn-add:hover{
+            background: rgb(36, 101, 39, 0.7);
+        }
+    </style>
+</head>
+
+<div layout:fragment="main">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h2>Edit Study Spaces</h2>
+
+        <a th:href="@{/staff/studyspaces/create}" class="btn-add">+ Add new</a>
+
+    </div>
+
+    <table class="table table-dark table-striped align-middle">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Capacity</th>
+            <th>Opening</th>
+            <th>Closing</th>
+            <th>Edit</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="s : ${spaces}">
+            <td th:text="${s.studySpaceId}"></td>
+            <td th:text="${s.name}"></td>
+            <td th:text="${s.type}"></td>
+            <td th:text="${s.capacity}"></td>
+            <td th:text="${#temporals.format(s.openingTime, 'HH:mm')}"></td>
+            <td th:text="${#temporals.format(s.closingTime, 'HH:mm')}"></td>
+            <td>
+                <a th:href="@{/staff/studyspaces/edit/{id}(id=${s.studySpaceId})}"
+                   class="btn btn-outline-light btn-sm">
+                    ✏️
+                </a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <a th:href="@{/staff/home}">
+        <button class="btn-back" type="button">← Back</button>
+    </a>
+
+</div>
+
+</html>

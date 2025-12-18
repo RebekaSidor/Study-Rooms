@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="https://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security"
       layout:decorate="~{base}">
 
 <head>
@@ -60,13 +61,19 @@
         <form th:action="@{/logout}" method="post">
             <button type="submit" class="btn-logout">Yes, log out</button>
         </form>
+            <!-- STUDENT -->
+            <a sec:authorize="hasRole('STUDENT')" th:href="@{/profile}">
+                <button class="btn-cancel">Cancel</button>
+            </a>
 
+            <!-- LIBRARY STAFF -->
+            <a sec:authorize="hasRole('LIBRARY_STAFF')" th:href="@{/staff/home}">
+                <button class="btn-cancel">Cancel</button>
+            </a>
 
-        <a th:href="@{/profile}">
-            <button class="btn-cancel">Cancel</button>
-        </a>
         </div>
     </div>
+
 </section>
 </body>
 </html>

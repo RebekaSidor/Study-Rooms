@@ -3,7 +3,6 @@
         xmlns:th="https://www.thymeleaf.org"
         xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
         layout:decorate="~{base}">
-
 <head>
     <title>Login</title>
     <style>
@@ -15,8 +14,8 @@
         }
 
         .btn-login, .btn-primary {
-            background: rgba(103, 37, 37, 0.6) !important;
-            color: #b1b1b5 !important;
+            background: rgba(103, 37, 37, 0.8) !important;
+            color: #e3e3e3 !important;
             border: none;
             padding: 8px 15px;
             border-radius: 5px;
@@ -24,7 +23,7 @@
             cursor: pointer;
         }
         .btn-login:hover{
-            background: rgba(133, 48, 48, 0.6) !important;
+            background: rgba(133, 48, 48, 0.8) !important;
         }
 
         .register-link, a {
@@ -37,7 +36,7 @@
         }
 
         .btn-back {
-            background: rgba(94, 94, 94, 0.6);
+            background: rgba(94, 94, 94, 0.7);
             color: #b1b1b5;
             border: none;
             border-radius: 5px;
@@ -47,7 +46,7 @@
         }
 
         .btn-back:hover {
-            background: rgba(149, 147, 147, 0.6);
+            background: rgba(149, 147, 147, 0.7);
         }
 
         form {
@@ -55,56 +54,61 @@
             margin: 0 auto;
         }
 
+        .center-text {
+            text-align: center;
+            color: #bcbcbc !important;
+        }
+
     </style>
 </head>
 
 <body>
+    <section layout:fragment="main">
 
-<header layout:fragment="header">
-    <h1>Study-Rooms <small>/ Login</small></h1>
-</header>
+        <h2 class="center-text">Study-Rooms <small>/ Login</small></h2>
 
-<section layout:fragment="main">
+        <form th:action="@{/login}" method="post">
 
-    <form th:action="@{/login}" method="post">
+            <!-- MESSAGE -->
+            <div class="text-center mb-3" th:if="${message}">
+                <p class="text-primary" th:text="${message}"></p>
+            </div>
 
-        <!-- MESSAGE -->
-        <div class="text-center mb-3" th:if="${message}">
-            <p class="text-primary" th:text="${message}"></p>
-        </div>
+            <div th:if="${param.required}" class="alert alert-warning">
+                You must first login before making a reservation
+            </div>
 
 
-        <!-- ERROR MESSAGE -->
-        <div class="text-center mb-3" th:if="${error}">
-            <p class="text-danger" th:text="${error}"></p>
-        </div>
+            <!-- ERROR MESSAGE -->
+            <div class="text-center mb-3" th:if="${error}">
+                <p class="text-danger" th:text="${error}"></p>
+            </div>
 
-        <!-- FORM CONTROLS -->
-        <div class="mb-3">
-            <label class="form-label">Library ID</label>
-            <input name="username" type="text" class="form-control" placeholder="e.g. lib2025001" required autofocus>
-        </div>
+            <!-- FORM CONTROLS -->
+            <div class="mb-3">
+                <label class="form-label">Library ID</label>
+                <input name="username" type="text" class="form-control" placeholder="e.g. lib2025001" required autofocus>
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label">Password</label>
-            <input name="password" type="password" class="form-control" required>
-        </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input name="password" type="password" class="form-control" required>
+            </div>
 
-        <div class="mb-4">
-            <button type="submit" class="btn-login">Log in</button>
-        </div>
+            <div class="mb-4">
+                <button type="submit" class="btn-login">Log in</button>
+            </div>
 
-        <p><a th:href="@{/register}" class="register-link">Don't have an account? Register</a></p>
+            <p><a th:href="@{/register}" class="register-link">Don't have an account? Register</a></p>
 
-        <div>
-            <a href="/">
-                <button class="btn-back" type="button">← Back</button>
-            </a>
-        </div>
+            <div>
+                <a href="/">
+                    <button class="btn-back" type="button">← Back</button>
+                </a>
+            </div>
 
-    </form>
+        </form>
 
-</section>
-
+    </section>
 </body>
 </html>

@@ -23,7 +23,7 @@ public class StudySpace {
     private StudySpaceType type;
 
     @Column(name="capacity")
-    private Integer capacity;    //Todo for seat-> 1 or null
+    private Integer capacity;
 
     @Column(name="available")
     private Boolean available;
@@ -32,7 +32,6 @@ public class StudySpace {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    // ime schedule
     @Column(name = "opening_time")
     private LocalTime openingTime;
 

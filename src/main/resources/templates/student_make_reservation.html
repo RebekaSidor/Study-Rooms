@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base}">
+
+<head>
+    <title>Make Reservation</title>
+    <style>
+        body {
+            color: white;
+            font-family: Arial, sans-serif;
+            background-color: #1f1f1f;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid rgba(27, 26, 26, 0.7);
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #333;
+        }
+
+        tr:nth-child(even) {background-color: #2a2a2a;}
+        tr:nth-child(odd) {background-color: #1f1f1f;}
+
+        form {
+            margin: 0;
+            padding: 0;
+            border: none;
+            background: none;
+        }
+
+        .reservation-box {
+            width: 400px;
+            margin: 30px auto;
+            text-align: center;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            background-color: #2a2a2a;
+        }
+
+        form h3 {
+            margin-bottom: 20px;
+        }
+
+        select, input[type="date"], button {
+            width: 80%;
+            padding: 8px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: none;
+            font-size: 1em;
+        }
+
+        .btn-reserve {
+            background: rgb(2, 76, 6, 0.6);
+            color: #e8e8e8;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            text-decoration: none;
+            padding: 8px 15px;
+        }
+
+        .btn-reserve:hover {
+            background: rgb(36, 101, 39, 0.6);
+        }
+
+        .btn-back {
+            display: inline-block;
+            margin: 20px auto;
+            padding: 8px 15px;
+            background-color: #555;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .btn-back:hover {
+            background-color: #777;
+        }
+
+        .center-text {
+            text-align: center;
+            color: #bcbcbc !important;
+        }
+
+
+    </style>
+</head>
+
+<section layout:fragment="main">
+
+    <h2 class="center-text">Make Reservation</h2>
+
+    <h4 style="text-align:center;">📘 Rooms</h4>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th><th>Name</th><th>Capacity</th><th>Opening</th><th>Closing</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="room : ${rooms}">
+            <td th:text="${room.studySpaceId}"></td>
+            <td th:text="${room.name}"></td>
+            <td th:text="${room.capacity}"></td>
+            <td th:text="${room.openingTime}"></td>
+            <td th:text="${room.closingTime}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h4 style="text-align:center;">🪑 Seats</h4>
+    <table>
+        <thead>
+        <tr><th>ID</th><th>Name</th><th>Opening</th><th>Closing</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="seat : ${seats}">
+            <td th:text="${seat.studySpaceId}"></td>
+            <td th:text="${seat.name}"></td>
+            <td th:text="${seat.openingTime}"></td>
+            <td th:text="${seat.closingTime}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="reservation-box">
+
+        <!--Date + Space -->
+        <form th:action="@{/student/make-reservation}" method="get">
+            <input type="date"
+                   name="date"
+                   th:value="${selectedDate}"
+                   onchange="this.form.submit()">
+
+            <select name="studySpaceId" onchange="this.form.submit()">
+                <option value=""
+                        disabled
+                        th:selected="${selectedSpaceId == null}">
+                    Select Room/Seat
+                </option>
+
+                <option th:each="space : ${rooms}"
+                        th:value="${space.studySpaceId}"
+                        th:text="${space.name}"
+                        th:selected="${space.studySpaceId == selectedSpaceId}">
+                </option>
+
+                <option th:each="space : ${seats}"
+                        th:value="${space.studySpaceId}"
+                        th:text="${space.name}"
+                        th:selected="${space.studySpaceId == selectedSpaceId}">
+                </option>
+            </select>
+        </form>
+
+        <!--Time + Reserve -->
+        <form th:action="@{/reserve}" method="post">
+            <input type="hidden" name="date" th:value="${selectedDate}">
+            <input type="hidden" name="studySpaceId" th:value="${selectedSpaceId}">
+
+            <select name="startTime" required>
+                <option value="" disabled selected>Select Time (Choose room/seat first)</option>
+                <option th:each="hour : ${availableHours}"
+                        th:value="${hour}"
+                        th:text="${hour}">
+                </option>
+            </select>
+
+            <button type="submit" class="btn-reserve">Reserve</button>
+        </form>
+
+    </div>
+
+    <div style="text-align:center;">
+        <p th:if="${successMessage}" style="color:green;" th:text="${successMessage}"></p>
+        <p th:if="${errorMessage}" style="color:red;" th:text="${errorMessage}"></p>
+    </div>
+
+    <div style="text-align:center;">
+        <a th:href="@{/profile}" class="btn-back">← Back</a>
+    </div>
+
+</section>
+</html>

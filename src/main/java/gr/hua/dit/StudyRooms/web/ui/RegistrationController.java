@@ -35,7 +35,7 @@ public class RegistrationController {
         return "register";
     }
 
-    //se periptvsh pou kapoios mpei kateu8eian sto registration_succes apo to browser na t bgalei error
+    //se periptvsh pou kapoios mpei kateu8eian sto registration_succes apo to browser na emptyfile bgalei error
     @GetMapping("/registration_success")
     public String registrationSuccess() {
         return "registration_success";

@@ -4,7 +4,7 @@
       layout:decorate="~{base}">
 
 <head>
-    <title>Change Phone</title>
+    <title>Change Email</title>
     <style>
         label {
             display: block;
@@ -15,7 +15,7 @@
             color: white;
         }
 
-        input[type="text"] {
+        input[type="email"] {
             width: 100%;
             padding: 8px;
             margin-bottom: 15px;
@@ -26,8 +26,8 @@
         }
 
         .update-btn {
-            background: rgba(103, 37, 37, 0.6);
-            color: #b1b1b5;
+            background: rgba(103, 37, 37, 0.8);
+            color: #dbdbdc;
             border: none;
             padding: 8px 15px;
             border-radius: 5px;
@@ -36,12 +36,7 @@
         }
 
         .update-btn:hover {
-            background: rgba(133, 48, 48, 0.6);
-        }
-
-        .back-link {
-            margin-top: 20px;
-            display: inline-block;
+            background: rgba(133, 48, 48, 0.8);
         }
 
         .back-link button {
@@ -58,24 +53,28 @@
             background: rgba(149, 147, 147, 0.6);
         }
 
+        .center-text {
+            text-align: center;
+            color: #bcbcbc !important;
+        }
+
         .message.error { color: red; margin-bottom: 10px; }
         .message.success { color: #4CAF50; margin-bottom: 10px; }
-
     </style>
 </head>
 
 <section layout:fragment="main">
 
-    <h2>Change Phone Number</h2>
+    <h2 class="center-text">Change Email</h2>
 
     <p th:if="${error}" th:text="${error}" class="message error"></p>
     <p th:if="${success}" th:text="${success}" class="message success"></p>
 
     <form method="post">
-        <label>New Phone Number:</label>
-        <input type="text" name="phone" th:value="${phone}" required>
+        <label>New Email:</label>
+        <input type="email" name="email" th:value="${email}" required>
 
-        <button type="submit" class="update-btn">Update Phone</button>
+        <button type="submit" class="update-btn">Update Email</button>
     </form>
 
     <div class="back-link">

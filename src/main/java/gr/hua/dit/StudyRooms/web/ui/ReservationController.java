@@ -1,153 +1,138 @@
 package gr.hua.dit.StudyRooms.web.ui;
 
-import gr.hua.dit.StudyRooms.core.model.Reservation;
+import gr.hua.dit.StudyRooms.core.model.StudySpaceType;
 import gr.hua.dit.StudyRooms.core.security.ApplicationUserDetails;
 import gr.hua.dit.StudyRooms.core.service.ReservationService;
+import gr.hua.dit.StudyRooms.core.service.StudySpaceService;
 import gr.hua.dit.StudyRooms.core.service.model.CreateReservationRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreateReservationResult;
+import gr.hua.dit.StudyRooms.core.service.model.ReservationView;
+import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
 public class ReservationController {
 
+    private final StudySpaceService studySpaceService;
     private final ReservationService reservationService;
-    private final ReservationRepository reservationRepository;
 
-
-    public ReservationController(ReservationService reservationService,
-                                 ReservationRepository reservationRepository) {
+    public ReservationController(StudySpaceService studySpaceService, ReservationService reservationService) {
+        this.studySpaceService = studySpaceService;
         this.reservationService = reservationService;
-        this.reservationRepository = reservationRepository;
     }
 
+    @GetMapping("/student/make-reservation")
+    public String showReservationForm(
+            @RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(value = "studySpaceId", required = false) String studySpaceId,
+            Model model) {
 
-    @GetMapping("/my-reservations")
-    public String showMyReservations(Authentication auth, Model model) {
+        if (date == null) date = LocalDate.now();
 
-        if (auth == null || !auth.isAuthenticated()) {
-            return "redirect:/login";
+        List<StudySpaceView> allSpaces = studySpaceService.getAllStudySpaces();
+        List<StudySpaceView> rooms = new ArrayList<>();
+        List<StudySpaceView> seats = new ArrayList<>();
+
+        for (StudySpaceView space : allSpaces) {
+            if (space.type() == StudySpaceType.ROOM) rooms.add(space);
+            else if (space.type() == StudySpaceType.SEAT) seats.add(space);
         }
 
-        ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
+        List<String> availableHours = new ArrayList<>();
+        if (studySpaceId != null) {
+            StudySpaceView space = allSpaces.stream()
+                    .filter(s -> s.studySpaceId().equals(studySpaceId))
+                    .findFirst()
+                    .orElse(null);
+            if (space != null) {
+                LocalTime start = space.openingTime();
+                LocalTime end = space.closingTime();
+                while (!start.isAfter(end.minusHours(1))) {
+                    if (!reservationService.existsOverlappingReservation(
+                            space.studySpaceId(),
+                            LocalDateTime.of(date, start),
+                            LocalDateTime.of(date, start.plusHours(1))
+                    )) {
+                        availableHours.add(start.format(DateTimeFormatter.ofPattern("HH:mm")));
+                    }
+                    start = start.plusHours(1);
+                }
+            }
+        }
 
-        List<Reservation> reservations =
-                reservationService.getReservationsForStudent(user.getUsername());
+        model.addAttribute("rooms", rooms);
+        model.addAttribute("seats", seats);
+        model.addAttribute("selectedDate", date);
+        model.addAttribute("selectedSpaceId", studySpaceId);
+        model.addAttribute("availableHours", availableHours);
 
-        model.addAttribute("reservations", reservations);
-
-        return "my_reservations";
+        return "student_make_reservation";
     }
 
+    @PostMapping("/reserve")
+    public String makeReservation(
+            @RequestParam String studySpaceId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam String startTime,
+            RedirectAttributes redirectAttributes) {
 
-    @GetMapping("/reserve/{id}")
-    public String showReservationForm(@PathVariable("id") String id, Model model) {
-        model.addAttribute("studySpaceId", id);
-        return "reservation-form";
-    }
+        LocalTime start = LocalTime.parse(startTime);
+        LocalDateTime startDateTime = LocalDateTime.of(date, start);
+        LocalDateTime endDateTime = startDateTime.plusHours(1);
 
-
-    @PostMapping("/reserve/{id}")
-    public String reserve(
-            @RequestParam("date") String dateStr,
-            @PathVariable("id") String studySpaceId,
-            @RequestParam("start") String start,
-            @RequestParam("end") String end,
-            Authentication auth,
-            Model model
-    ) {
-
-        if (auth == null || !auth.isAuthenticated()) {
-            return "redirect:/login";
-        }
-
-        ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
-
-        // only students can make reservation
-        if (!user.getAuthorities().toString().contains("STUDENT")) {
-            model.addAttribute("error", "Only students can make reservations.");
-            return "reservation_error";
-        }
-
-        // convert to LocalDateTime
-        LocalDateTime startTime = LocalDateTime.parse(dateStr + "T" + start);
-        LocalDateTime endTime = LocalDateTime.parse(dateStr + "T" + end);
-
-        //check if study space already has been reserved
-        boolean conflict = reservationService.existsOverlappingReservation(studySpaceId, startTime, endTime);
-        if (conflict) {
-            model.addAttribute("error", "This time range is already reserved.");
-            return "reservation_error";
-        }
-
-        //check if user has other reservation at this specific time
-        boolean userConflict = reservationRepository
-                .existsByStudentIdAndEndTimeAfterAndStartTimeBefore(
-                        user.getUsername(),
-                        startTime,
-                        endTime
-                );
-        if (userConflict) {
-            model.addAttribute("error", "You already have another reservation at this time.");
-            return "reservation_error";
-        }
+        String studentId = getCurrentStudentId();
 
         CreateReservationRequest request = new CreateReservationRequest(
-                "res-" + System.currentTimeMillis(),
-                user.getUsername(),
-                studySpaceId,
-                startTime,
-                endTime
+                null, studentId, studySpaceId, startDateTime, endDateTime
         );
 
         CreateReservationResult result = reservationService.createReservation(request);
 
-        if (!result.created()) {
-            model.addAttribute("error", result.reason());
-            return "reservation_error";
+        if (result.created()) {
+            redirectAttributes.addFlashAttribute("successMessage", "Reservation created successfully!");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to create reservation: " + result.reason());
         }
 
-        model.addAttribute("reservation", result.reservationView());
-        return "reservation_success";
+        return "redirect:/student/make-reservation?date=" + date + "&studySpaceId=" + studySpaceId;
     }
 
-    @PostMapping("/cancel/{id}")
-    public String cancelReservation(@PathVariable("id") long id, Authentication auth, Model model) {
-        if(auth == null || !auth.isAuthenticated()){
-            return "redirect:/login";
+    private String getCurrentStudentId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new IllegalStateException("No authenticated user found");
         }
 
-        String username = ((ApplicationUserDetails) auth.getPrincipal()).getUsername();
-        boolean owns = reservationRepository.existsByIdAndStudentId(id, username);
-
-        if (!owns) {
-            model.addAttribute("error", "You are not allowed to delete this reservation.");
-            return "reservation_error";
+        if (authentication.getPrincipal() instanceof ApplicationUserDetails userDetails) {
+            return userDetails.getLibraryId(); // επιστρέφει το libraryId (π.χ. lib2025000)
         }
 
-        reservationService.deleteReservation(id);
-        return "redirect:/my-reservations?cancelSuccess";
+        throw new IllegalStateException("Principal is not an ApplicationUserDetails");
     }
 
-    @GetMapping("/my-reservations/upcoming")
-    public String showUpcomingReservations(Authentication auth, Model model) {
-        ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
-        var reservations = reservationService.getUpcomingReservations(user.getUsername());
+    @GetMapping("/my-reservations")
+    public String showStudentReservations(Authentication auth, Model model) {
+        String studentId = auth.getName();
+
+        List<ReservationView> reservations = reservationService.getReservationsForStudentView(studentId);
+
         model.addAttribute("reservations", reservations);
-        return "my_reservations_upcoming";
+
+        return "student_reservations";
     }
 
-    @GetMapping("/my-reservations/past")
-    public String showPastReservations(Authentication auth, Model model) {
-        ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
-        var reservations = reservationService.getPastReservations(user.getUsername());
-        model.addAttribute("reservations", reservations);
-        return "my_reservations_past";
-    }
 }
-

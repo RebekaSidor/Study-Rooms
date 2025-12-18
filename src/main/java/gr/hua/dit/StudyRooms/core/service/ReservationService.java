@@ -33,4 +33,6 @@ public interface ReservationService {
     long getFullyBookedRoomsToday();
 
     List<ReservationView> getReservationsForStudentView(String studentId);
+    Map<Integer, Long> getReservationsPerHourForToday();
+
 }

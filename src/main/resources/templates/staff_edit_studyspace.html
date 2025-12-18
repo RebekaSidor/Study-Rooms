@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base}">
+
+<head>
+    <title>Edit Study Space</title>
+    <style>
+        .btn-cancel, .btn-save {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1.5;
+            text-align: center;
+            text-decoration: none;
+            vertical-align: middle;
+        }
+
+        .btn-cancel {
+            background: rgba(94, 94, 94, 0.6);
+            color: #b1b1b5;
+            border: none;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(149, 147, 147, 0.6);
+        }
+
+        .btn-save {
+            background: rgba(103, 37, 37, 0.6) !important;
+            color: #b1b1b5 !important;
+            border: none;
+        }
+
+        .btn-save:hover {
+            background: rgba(133, 48, 48, 0.6) !important;
+        }
+    </style>
+
+</head>
+
+<div layout:fragment="main">
+
+    <h2>Edit Study Space</h2>
+
+    <div th:if="${errorMessage}" class="alert alert-danger">
+        <p th:text="${errorMessage}"></p>
+    </div>
+
+    <form th:action="@{/staff/studyspaces/edit}"
+          th:object="${space}"
+          method="post"
+          class="mt-4">
+
+        <input type="hidden" th:field="*{studySpaceId}" />
+
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-control" th:field="*{name}" disabled>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Type</label>
+            <input type="text" class="form-control" th:field="*{type}" disabled>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Opening Time</label>
+            <input type="time" class="form-control" th:field="*{openingTime}" step="60">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Closing Time</label>
+            <input type="time" class="form-control" th:field="*{closingTime}" step="60">
+        </div>
+
+        <!--show capacity only for rooms-->
+        <div class="mb-3"
+             th:if="${space.type != null and #strings.equalsIgnoreCase(space.type.name(), 'ROOM')}">
+            <label class="form-label">Capacity</label>
+            <input type="number" class="form-control" th:field="*{capacity}" min="1">
+        </div>
+
+        <button type="submit" class="btn-save">Save</button>
+        <a th:href="@{/staff/studyspaces}" class="btn-cancel">Cancel</a>
+
+    </form>
+
+</div>
+</html>
+
+

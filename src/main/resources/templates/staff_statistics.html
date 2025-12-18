@@ -1,29 +1,130 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="https://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base}">
+
 <head>
-    <title>Statistics</title>
+    <title>Library Statistics</title>
+
+    <style>
+        .btn-back {
+            background: rgba(94, 94, 94, 0.6);
+            color: #b1b1b5;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-back:hover {
+            background: rgba(149, 147, 147, 0.6);
+        }
+
+        .table {
+            border: rgba(34, 32, 32, 0.85);
+        }
+
+        .table th {
+            background-color: #9c9c9c;
+            color: #222020;
+        }
+
+        .table td {
+            background-color: rgba(103, 103, 103, 0.8);
+        }
+    </style>
 </head>
-<body>
 
-<h1>Library Statistics</h1>
+<div layout:fragment="main">
+    <h2>Library Statistics 📊</h2>
+    <br>
 
-<p>Total Reservations: <span th:text="${totalReservations}"></span></p>
-<p>Active Users (last 30 days): <span th:text="${activeUsers}"></span></p>
-<p>Fully Booked Rooms Today: <span th:text="${fullyBookedToday}"></span></p>
+    <div class="mb-3">
+        <p><strong>Total Reservations:</strong> <span th:text="${totalReservations}">0</span></p>
+        <p><strong>Active Users (last 30 days):</strong> <span th:text="${activeUsers}">0</span></p>
+        <p><strong>Fully Booked Rooms Today:</strong> <span th:text="${fullRoomsToday}">0</span></p>
+    </div>
 
-<h3>Reservations Per Room:</h3>
+    <br>
+    <h4>Reservations Per Room:</h4>
+    <table class="table table-striped table-bordered">
+        <thead>
+        <tr>
+            <th>Room</th>
+            <th>Total Reservations</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="entry : ${reservationsPerRoom}">
+            <td th:text="${entry.key}">Room Name</td>
+            <td th:text="${entry.value}">0</td>
+        </tr>
+        </tbody>
+    </table>
 
-<table border="1">
-    <tr><th>Room</th><th>Total Reservations</th></tr>
-    <tr th:each="entry : ${reservationsPerRoom}">
-        <td th:text="${entry.key}"></td>
-        <td th:text="${entry.value}"></td>
-    </tr>
-</table>
+    <br>
 
-<br>
-<a th:href="@{/staff/home}" class="btn">← Back</a>
+    <h4>📈Peak Hours:</h4>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <canvas id="peakHoursChart"
+            th:data-hours="${hoursJson}"
+            th:data-reservations="${reservationsJson}"
+            width="600"
+            height="300">
+    </canvas>
+
+    <script>
+        const canvas = document.getElementById('peakHoursChart');
+
+        const hours = JSON.parse(canvas.dataset.hours || '[]');
+        const reservations = JSON.parse(canvas.dataset.reservations || '[]');
+
+        const labels = hours.map(h => h.toString().padStart(2,'0') + ':00');
+        const ctx = canvas.getContext('2d');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Reservations per Hour',
+                    data: reservations,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        },
+                        title: {
+                            display: true,
+                            text: 'Number of Reservations'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Hour of Day'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
 
 
-</body>
+    <div>
+        <a th:href="@{/staff/home}">
+            <button class="btn-back" type="button">← Back</button>
+        </a>
+    </div>
+
+</div>
 </html>

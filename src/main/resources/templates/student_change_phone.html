@@ -4,7 +4,7 @@
       layout:decorate="~{base}">
 
 <head>
-    <title>Change Password</title>
+    <title>Change Phone</title>
     <style>
         label {
             display: block;
@@ -15,7 +15,7 @@
             color: white;
         }
 
-        input[type="password"] {
+        input[type="text"] {
             width: 100%;
             padding: 8px;
             margin-bottom: 15px;
@@ -26,8 +26,8 @@
         }
 
         .update-btn {
-            background: rgba(103, 37, 37, 0.6);
-            color: #b1b1b5;
+            background: rgba(103, 37, 37, 0.8);
+            color: #e8e8e8;
             border: none;
             padding: 8px 15px;
             border-radius: 5px;
@@ -36,11 +36,11 @@
         }
 
         .update-btn:hover {
-            background: rgba(133, 48, 48, 0.6);
+            background: rgba(133, 48, 48, 0.8);
         }
 
         .back-link {
-            margin-top: 25px; /* πιο κάτω από τη φόρμα */
+            margin-top: 20px;
             display: inline-block;
         }
 
@@ -58,27 +58,28 @@
             background: rgba(149, 147, 147, 0.6);
         }
 
+        .center-text {
+            text-align: center;
+            color: #bcbcbc !important;
+        }
+
         .message.error { color: red; margin-bottom: 10px; }
         .message.success { color: #4CAF50; margin-bottom: 10px; }
-
     </style>
 </head>
 
 <section layout:fragment="main">
 
-    <h2>Change Password</h2>
+    <h2 class="center-text">Change Phone Number</h2>
 
     <p th:if="${error}" th:text="${error}" class="message error"></p>
     <p th:if="${success}" th:text="${success}" class="message success"></p>
 
     <form method="post">
-        <label>New Password:</label>
-        <input type="password" name="password" required>
+        <label>New Phone Number:</label>
+        <input type="text" name="phone" th:value="${phone}" required>
 
-        <label>Confirm Password:</label>
-        <input type="password" name="confirmPassword" required>
-
-        <button type="submit" class="update-btn">Update Password</button>
+        <button type="submit" class="update-btn">Update Phone</button>
     </form>
 
     <div class="back-link">

@@ -2,8 +2,10 @@ package gr.hua.dit.StudyRooms.core.security;
 
 import gr.hua.dit.StudyRooms.core.model.PersonType;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -33,7 +35,7 @@ public class ApplicationUserDetails implements UserDetails {
         return personId;
     }
 
-    public String getLibraryId() {      // ΥΛΟΠΟΙΗΣΗ GETTER
+    public String getLibraryId() {
         return libraryId;
     }
 
@@ -77,6 +79,12 @@ public class ApplicationUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null; // Προσθέτεις authorities αν χρειάζεται
+        if (type == PersonType.STUDENT) {
+            return List.of(new SimpleGrantedAuthority("ROLE_STUDENT"));
+        } else if (type == PersonType.LIB_STAFF) {
+            return List.of(new SimpleGrantedAuthority("ROLE_LIBRARY_STAFF"));
+        } else {
+            return List.of();
+        }
     }
 }

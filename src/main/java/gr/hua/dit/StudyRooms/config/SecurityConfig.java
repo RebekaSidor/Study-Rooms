@@ -38,7 +38,7 @@ public class SecurityConfig {
                 .securityMatcher("/**")
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/", "/login", "/register", "/anonymous/**", "/availability/**").permitAll()
+                        .requestMatchers("/", "/login", "/register", "/anonymous/**", "/availability/**", "/showstudyspaces").permitAll()
                         .requestMatchers("/reservation/**").hasRole("STUDENT")
                         .requestMatchers("/profile", "/logout").authenticated()
                         .anyRequest().authenticated()

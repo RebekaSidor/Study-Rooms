@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html
-        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-        lang="en"
-        dir="ltr">
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      lang="en"
+      dir="ltr">
 <head>
     <meta charset="UTF-8" />
     <title>STUDY-ROOMS</title>
@@ -65,22 +64,18 @@
         footer small {
             color: black;
         }
-
     </style>
 
 </head>
+    <body>
+        <header class="text-center p-4" layout:fragment="header"></header>
 
-<body>
+        <main>
+            <div class="app-container" layout:fragment="main"></div>
+        </main>
 
-<header class="text-center p-4" layout:fragment="header"></header>
-
-<main>
-    <div class="app-container" layout:fragment="main"></div>
-</main>
-
-<footer class="text-center p-4 mt-4" layout:fragment="footer">
-    <small>&copy; 2025 Study Rooms Application</small>
-</footer>
-
-</body>
+        <footer class="text-center p-4 mt-4" layout:fragment="footer">
+            <small>&copy; 2025 Study Rooms Application</small>
+        </footer>
+    </body>
 </html>

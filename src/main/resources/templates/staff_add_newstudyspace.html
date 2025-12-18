@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base}">
+
+<head>
+    <title>Create Study Space</title>
+
+    <style>
+        .btn-save {
+            background: rgba(103, 37, 37, 0.6);
+            color: #b1b1b5;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-save:hover {
+            background: rgba(133, 48, 48, 0.6);
+        }
+
+        .btn-cancel {
+            background: rgba(94, 94, 94, 0.6);
+            color: #b1b1b5;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-cancel:hover {
+            background: rgba(149, 147, 147, 0.6);
+        }
+    </style>
+</head>
+
+<div layout:fragment="main">
+
+    <h2>Create New Study Space</h2>
+
+    <!-- ERROR MESSAGE -->
+    <div th:if="${errorMessage}" class="alert alert-danger">
+        <p th:text="${errorMessage}"></p>
+    </div>
+
+    <form th:action="@{/staff/studyspaces/create}"
+          th:object="${space}"
+          method="post"
+          class="mt-4">
+
+        <!-- TYPE -->
+        <div class="mb-3">
+            <label class="form-label">Type</label>
+            <select class="form-control"
+                    th:field="*{type}"
+                    id="typeSelect"
+                    required>
+                <option value="">-- Select type --</option>
+                <option th:value="ROOM">ROOM</option>
+                <option th:value="SEAT">SEAT</option>
+            </select>
+        </div>
+
+        <!-- AUTO ID (HIDDEN) -->
+        <input type="hidden"
+               th:field="*{studySpaceId}"
+               id="idField"/>
+
+        <!-- AUTO NAME -->
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input type="text"
+                   class="form-control"
+                   th:field="*{name}"
+                   id="nameField"
+                   readonly>
+        </div>
+
+        <!-- CAPACITY (ONLY FOR ROOM) -->
+        <div class="mb-3" id="capacityBlock">
+            <label class="form-label">Capacity</label>
+            <input type="number"
+                   class="form-control"
+                   th:field="*{capacity}"
+                   min="1">
+        </div>
+
+        <!-- OPENING TIME -->
+        <div class="mb-3">
+            <label class="form-label">Opening Time</label>
+            <input type="time"
+                   class="form-control"
+                   th:field="*{openingTime}"
+                   step="60"
+                   required>
+        </div>
+
+        <!-- CLOSING TIME -->
+        <div class="mb-3">
+            <label class="form-label">Closing Time</label>
+            <input type="time"
+                   class="form-control"
+                   th:field="*{closingTime}"
+                   step="60"
+                   required>
+        </div>
+
+        <!-- BUTTONS -->
+        <button type="submit" class="btn-save">Create</button>
+        <a th:href="@{/staff/studyspaces}" class="btn-cancel ms-2">Cancel</a>
+
+    </form>
+
+    <script>
+        const typeSelect = document.getElementById('typeSelect');
+        const nameField = document.getElementById('nameField');
+        const idField = document.getElementById('idField');
+        const capacityBlock = document.getElementById('capacityBlock');
+
+        async function updateFields() {
+            const type = typeSelect.value;
+
+            // hide/show capacity
+            capacityBlock.style.display = (type === 'ROOM') ? 'block' : 'none';
+
+            if (!type) {
+                nameField.value = '';
+                idField.value = '';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/staff/studyspaces/next?type=${type}`);
+                if (!response.ok) return;
+
+                const data = await response.json();
+                nameField.value = data.name;
+                idField.value = data.studySpaceId;
+
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        typeSelect.addEventListener('change', updateFields);
+        window.addEventListener('DOMContentLoaded', updateFields);
+    </script>
+</div>
+
+</html>
+

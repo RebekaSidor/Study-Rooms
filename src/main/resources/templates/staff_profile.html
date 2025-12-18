@@ -32,11 +32,11 @@
         .profile-links {
             list-style: none;
             padding: 0;
-            margin: 0; /* αφαιρούμε το margin-bottom που υπήρχε */
+            margin: 0;
         }
 
         .profile-links li {
-            margin-bottom: 10px; /* απόσταση μεταξύ των links */
+            margin-bottom: 10px;
         }
 
         .profile-links a {
@@ -58,6 +58,10 @@
     </style>
 </head>
 
+<header layout:fragment="header">
+    <h1>Library Staff Profile</h1>
+</header>
+
 <section layout:fragment="main">
 
     <div class="profile-container">
@@ -76,8 +80,7 @@
 
     <hr>
     <ul class="profile-links">
-        <li><a th:href="@{/staff/reservations}">View All Reservations</a></li>
-        <li><a th:href="@{/staff/studyspaces}">Manage Study Spaces</a></li>
+        <li><a th:href="@{/staff/studyspaces}">Edit Study Spaces</a></li>
         <li><a th:href="@{/staff/statistics}">View Statistics</a></li>
         <li><a th:href="@{/logout-page}">Logout</a></li>
     </ul>

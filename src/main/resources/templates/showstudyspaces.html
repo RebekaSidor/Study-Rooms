@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html xmlns:th="https://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.w3.org/1999/xhtml"
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{base}">
 
-<header layout:fragment="header" class="text-center">
-    <h1>Study Spaces</h1>
+<head>
+    <title>Study Spaces</title>
     <style>
         .btn-back {
             background: rgba(94, 94, 94, 0.6);
@@ -20,6 +20,12 @@
             background: rgba(149, 147, 147, 0.6);
         }
     </style>
+</head>
+
+<body>
+
+<header layout:fragment="header" class="text-center">
+    <h1>Study Spaces</h1>
 </header>
 
 <div layout:fragment="main">
@@ -44,9 +50,13 @@
             <td th:text="${room.studySpaceId}"></td>
 
             <td>
-                <a class="text-info fw-bold"
+                <a th:if="${isLoggedIn}"
                    th:href="@{/availability/{id}(id=${room.studySpaceId})}"
                    th:text="${room.name}"></a>
+
+                <a th:if="${!isLoggedIn}"
+                   th:href="@{/login(required=true)}"
+                   th:text="|${room.name} (Login required)|"></a>
             </td>
 
             <td th:text="${room.capacity}"></td>
@@ -57,7 +67,6 @@
         </tr>
         </tbody>
     </table>
-
 
     <!-- SEATS -->
     <h2 class="mt-4">🪑 Seats</h2>
@@ -78,9 +87,13 @@
             <td th:text="${seat.studySpaceId}"></td>
 
             <td>
-                <a class="text-info fw-bold"
+                <a th:if="${isLoggedIn}"
                    th:href="@{/availability/{id}(id=${seat.studySpaceId})}"
                    th:text="${seat.name}"></a>
+
+                <a th:if="${!isLoggedIn}"
+                   th:href="@{/login(required=true)}"
+                   th:text="|${seat.name} (Login required)|"></a>
             </td>
 
             <td th:text="${seat.available}"></td>
@@ -91,11 +104,16 @@
         </tbody>
     </table>
 
-    <div>
-        <a th:href="@{/profile}">
+    <div class="mt-4">
+        <a th:if="${isLoggedIn}" th:href="@{/profile}">
+            <button class="btn-back">← Back</button>
+        </a>
+        <a th:if="${!isLoggedIn}" th:href="@{/}">
             <button class="btn-back">← Back</button>
         </a>
     </div>
 
 </div>
+
+</body>
 </html>
