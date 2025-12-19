@@ -14,6 +14,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>{
     List<Reservation> findByStudySpaceId(String studySpaceId);
     List<Reservation> findByStudentId(String studentId);
     List<Reservation> findByStudentIdAndStartTimeBetween(String studentId, LocalDateTime start, LocalDateTime end);
+    List<Reservation> findAllByOrderByStartTimeDesc();
 
     //check overlap
     boolean existsByStudySpaceIdAndEndTimeAfterAndStartTimeBefore(

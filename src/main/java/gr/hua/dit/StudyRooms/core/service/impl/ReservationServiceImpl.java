@@ -137,15 +137,6 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public long getFullyBookedRoomsToday() {
-        LocalDate today = LocalDate.now();
-        LocalDateTime from = today.atStartOfDay();
-        LocalDateTime to = today.atTime(23,59);
-
-        return reservationRepository.countFullyBookedRooms(from, to);
-    }
-
-    @Override
     public List<ReservationView> getReservationsByStudentId(String studentId) {
 
         List<Reservation> reservations = reservationRepository.findByStudentId(studentId);
@@ -243,4 +234,15 @@ public class ReservationServiceImpl implements ReservationService {
         );
     }
 
+    @Override
+    public void toggleAttendance(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Reservation not found"));
+
+        reservation.setPresent(
+                reservation.getPresent() == null || !reservation.getPresent()
+        );
+
+        reservationRepository.save(reservation);
+    }
 }

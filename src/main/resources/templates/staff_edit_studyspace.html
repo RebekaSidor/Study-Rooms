@@ -59,28 +59,33 @@
         <div class="mb-3">
             <label class="form-label">Name</label>
             <input type="text" class="form-control" th:field="*{name}" disabled>
+            <input type="hidden" th:field="*{name}" />
         </div>
 
         <div class="mb-3">
             <label class="form-label">Type</label>
             <input type="text" class="form-control" th:field="*{type}" disabled>
+            <input type="hidden" th:field="*{type}" />
         </div>
 
         <div class="mb-3">
             <label class="form-label">Opening Time</label>
-            <input type="time" class="form-control" th:field="*{openingTime}" step="60">
+            <input type="time" class="form-control" th:field="*{openingTime}" step="60" min="08:00" max="22:00">
         </div>
 
         <div class="mb-3">
             <label class="form-label">Closing Time</label>
-            <input type="time" class="form-control" th:field="*{closingTime}" step="60">
+            <input type="time" class="form-control" th:field="*{closingTime}" step="60" min="08:00" max="22:00">
         </div>
 
-        <!--show capacity only for rooms-->
         <div class="mb-3"
              th:if="${space.type != null and #strings.equalsIgnoreCase(space.type.name(), 'ROOM')}">
             <label class="form-label">Capacity</label>
             <input type="number" class="form-control" th:field="*{capacity}" min="1">
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger">
+            <p th:text="${errorMessage}"></p>
         </div>
 
         <button type="submit" class="btn-save">Save</button>

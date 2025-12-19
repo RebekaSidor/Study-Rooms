@@ -23,7 +23,6 @@ public interface ReservationService {
     long countActiveUsers();// users with reservation in last 30 days
     Map<String, Long> getReservationsPerRoom();
     List<ReservationView> getReservationsByStudentId(String studentId);
-    long getFullyBookedRoomsToday();
 
     List<ReservationView> getReservationsForStudentView(String studentId);
     Map<Integer, Long> getReservationsPerHourForToday();
@@ -35,4 +34,7 @@ public interface ReservationService {
     boolean studentHasOverlappingReservation(String studentId, LocalDateTime startTime, LocalDateTime endTime);
 
     void markAttendance(Long reservationId, boolean present);
+
+    void toggleAttendance(Long bookingId);
+
 }

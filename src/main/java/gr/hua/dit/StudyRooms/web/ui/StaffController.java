@@ -1,18 +1,21 @@
 package gr.hua.dit.StudyRooms.web.ui;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import gr.hua.dit.StudyRooms.core.model.Reservation;
 import gr.hua.dit.StudyRooms.core.model.StudySpace;
 import gr.hua.dit.StudyRooms.core.model.StudySpaceType;
+import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
 import gr.hua.dit.StudyRooms.core.security.ApplicationUserDetails;
 import gr.hua.dit.StudyRooms.core.service.ReservationService;
 import gr.hua.dit.StudyRooms.core.service.StudySpaceService;
 import gr.hua.dit.StudyRooms.core.service.model.NextStudySpaceResponse;
-import gr.hua.dit.StudyRooms.core.service.model.ReservationView;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,11 +25,14 @@ public class StaffController {
 
     private final ReservationService reservationService;
     private final StudySpaceService studySpaceService;
+    private final ReservationRepository reservationRepository;
 
     public StaffController(ReservationService reservationService,
-                           StudySpaceService studySpaceService) {
+                           StudySpaceService studySpaceService,
+                           ReservationRepository reservationRepository) {
         this.reservationService = reservationService;
         this.studySpaceService = studySpaceService;
+        this.reservationRepository = reservationRepository;
     }
 
     @GetMapping("/staff/home")
@@ -49,33 +55,51 @@ public class StaffController {
             return "staff_edit_studyspace";
         }
 
-        @PostMapping("/staff/studyspaces/edit")
-        public String saveStudySpace(@ModelAttribute("space") StudySpace formSpace, Model model) {
+    @PostMapping("/staff/studyspaces/edit")
+    public String saveStudySpace(@ModelAttribute("space") StudySpace formSpace, Model model) {
 
-            StudySpace existing = studySpaceService.getStudySpaceById(formSpace.getStudySpaceId());
-            if (existing == null) {
-                throw new IllegalArgumentException("Study space not found");
-            }
+        StudySpace existing = studySpaceService.getStudySpaceById(formSpace.getStudySpaceId());
+        if (existing == null) {
+            throw new IllegalArgumentException("Study space not found");
+        }
 
-            if (formSpace.getOpeningTime() != null && formSpace.getClosingTime() != null &&
-                    formSpace.getClosingTime().isBefore(formSpace.getOpeningTime())) {
-                model.addAttribute("space", formSpace); // null-safe
+        // Κρατάμε τα πεδία που δεν αλλάζουν αν είναι null
+        if (formSpace.getOpeningTime() != null) {
+            existing.setOpeningTime(formSpace.getOpeningTime());
+        }
+
+        if (formSpace.getClosingTime() != null) {
+            existing.setClosingTime(formSpace.getClosingTime());
+        }
+
+        if (existing.getType() == StudySpaceType.ROOM && formSpace.getCapacity() != null) {
+            existing.setCapacity(formSpace.getCapacity());
+        }
+
+        LocalTime earliest = LocalTime.of(8, 0);
+        LocalTime latest = LocalTime.of(22, 0);
+
+        if (existing.getOpeningTime() != null && existing.getClosingTime() != null) {
+
+            if (existing.getClosingTime().isBefore(existing.getOpeningTime())) {
+                model.addAttribute("space", existing);
                 model.addAttribute("errorMessage", "Closing time cannot be before opening time!");
                 return "staff_edit_studyspace";
             }
 
-            existing.setOpeningTime(formSpace.getOpeningTime());
-            existing.setClosingTime(formSpace.getClosingTime());
-
-            if (existing.getType() == StudySpaceType.ROOM) {
-                existing.setCapacity(formSpace.getCapacity());
+            if (existing.getOpeningTime().isBefore(earliest) ||
+                    existing.getClosingTime().isAfter(latest)) {
+                model.addAttribute("space", existing);
+                model.addAttribute("errorMessage", "Time must be between 08:00 and 22:00!");
+                return "staff_edit_studyspace";
             }
-
-            studySpaceService.updateStudySpace(existing);
-            return "redirect:/staff/studyspaces?updated";
         }
 
-        @GetMapping("/staff/studyspaces/next")
+        studySpaceService.updateStudySpace(existing);
+        return "redirect:/staff/studyspaces?updated";
+    }
+
+    @GetMapping("/staff/studyspaces/next")
         @ResponseBody
         public NextStudySpaceResponse getNext(@RequestParam("type") StudySpaceType type) {
 
@@ -137,7 +161,6 @@ public class StaffController {
 
             Map<Integer, Long> reservationsPerHour = reservationService.getReservationsPerHourForToday();
 
-            // Δημιουργούμε ώρες λειτουργίας 8-22
             List<Integer> hours = new ArrayList<>();
             List<Long> reservations = new ArrayList<>();
             for (int h = 8; h <= 22; h++) {
@@ -154,22 +177,20 @@ public class StaffController {
 
 /*check attendance of student*/
     @GetMapping("/staff/attendances")
-    public String viewAttendances(Model model) {
-        List<ReservationView> bookings = reservationService.getAllReservations();
+    public String attendances(Model model) {
+        List<Reservation> bookings =
+                reservationRepository.findAllByOrderByStartTimeDesc();
+
         model.addAttribute("bookings", bookings);
+        model.addAttribute("now", LocalDateTime.now());
+
         return "staff_attendance";
     }
 
+    @GetMapping("/staff/attendances/toggle/{id}")
+    public String toggleAttendance(@PathVariable Long id) {
+        reservationService.toggleAttendance(id);
+        return "redirect:/staff/attendances";
+    }
 
-    @GetMapping("/staff/attendances/markPresent/{id}")
-        public String markPresent(@PathVariable Long id) {
-            reservationService.markAttendance(id, true);
-            return "redirect:/staff/attendances";
-        }
-
-        @GetMapping("/staff/attendances/markAbsent/{id}")
-        public String markAbsent(@PathVariable Long id) {
-            reservationService.markAttendance(id, false);
-            return "redirect:/staff/attendances";
-        }
 }

@@ -30,20 +30,11 @@
             font-weight: bold;
         }
 
-        .present {
-            background-color: #024c06;
-            color: white;
-        }
-        .present:hover {
-            background-color: #246527;
-        }
-
-        .absent {
-            background-color: #aa2826;
-            color: white;
-        }
-        .absent:hover {
-            background-color: #aa4441;
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #2e7d32; /* πράσινο tick */
         }
 
         button:hover {
@@ -63,15 +54,21 @@
         .btn-back:hover {
             background: rgba(149, 147, 147, 0.6);
         }
+        .center-text {
+            text-align: center;
+            color: #bcbcbc !important;
+        }
+        .separator td {
+            background-color: rgba(27, 26, 26, 0.75);
+            color: #cccccc;
+        }
+
     </style>
 </head>
 
-<header layout:fragment="header">
-    <h1>Student Attendances</h1>
-</header>
-
 <section layout:fragment="main">
 
+    <h2 class="center-text">Student Attendances</h2>
     <table>
         <thead>
         <tr>
@@ -83,17 +80,42 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each="booking : ${bookings}">
-            <td th:text="${booking.reservationId}"></td>
-            <td th:text="${#temporals.format(booking.startTime(), 'HH:mm dd-MM-yyyy')}"></td>
-            <td th:text="${#temporals.format(booking.endTime(), 'HH:mm dd-MM-yyyy')}"></td>
-            <td th:text="${booking.studentId()}"></td>
-            <td>
-                <button class="present" th:onclick="'/staff/attendances/markPresent/' + ${booking.id}">Present</button>
-                <button class="absent" th:onclick="'/staff/attendances/markAbsent/' + ${booking.id}">Absent</button>
-            </td>
-        </tr>
+
+        <th:block th:each="booking, iter : ${bookings}">
+
+            <!-- Separator for past reservations -->
+            <tr th:if="${booking.endTime != null}
+               and ${booking.endTime.isBefore(now)}
+               and ${iter.index > 0}
+               and ${bookings[iter.index - 1].endTime != null}
+               and ${bookings[iter.index - 1].endTime.isAfter(now)}"
+                class="separator">
+                <td colspan="5">Past Reservations</td>
+            </tr>
+
+            <tr>
+                <td th:text="${booking.reservationId}"></td>
+                <td th:text="${#temporals.format(booking.startTime, 'HH:mm dd-MM-yyyy')}"></td>
+                <td th:text="${#temporals.format(booking.endTime, 'HH:mm dd-MM-yyyy')}"></td>
+                <td th:text="${booking.studentId}"></td>
+                <td>
+                    <!-- Για παρελθούσες κρατήσεις -->
+                    <span th:if="${booking.endTime != null and booking.endTime.isBefore(now)}"
+                          th:text="${booking.present} ? 'Attended' : 'Absent'">
+                    </span>
+
+                    <!-- Για μελλοντικές / τρέχουσες κρατήσεις -->
+                    <input type="checkbox"
+                           th:if="${booking.endTime == null or booking.endTime.isAfter(now)}"
+                           th:checked="${booking.present}"
+                           th:onchange="|window.location.href='/staff/attendances/toggle/${booking.id}'|">
+                </td>
+            </tr>
+
+        </th:block>
+
         </tbody>
+
     </table>
 
     <a th:href="@{/staff/home}">
