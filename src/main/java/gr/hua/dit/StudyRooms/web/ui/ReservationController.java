@@ -132,6 +132,25 @@ public class ReservationController {
         LocalDateTime startDateTime = LocalDateTime.of(date, start);
         LocalDateTime endDateTime = startDateTime.plusHours(1);
 
+        boolean studentOverlap =
+                reservationService
+                        .getReservationsForStudentOnDate(studentId, date)
+                        .stream()
+                        .anyMatch(r ->
+                                r.startTime().isBefore(endDateTime) &&
+                                        r.endTime().isAfter(startDateTime)
+                        );
+
+        if (studentOverlap) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "You already have another reservation at this time."
+            );
+
+            return "redirect:/student/make-reservation?date=" + date +
+                    "&studySpaceId=" + studySpaceId;
+        }
+
         // Έλεγχος για υπάρχουσα κράτηση
         if (reservationService.existsOverlappingReservation(studySpaceId, startDateTime, endDateTime)) {
             redirectAttributes.addFlashAttribute(

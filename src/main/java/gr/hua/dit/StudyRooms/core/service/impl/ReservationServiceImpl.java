@@ -234,4 +234,13 @@ public class ReservationServiceImpl implements ReservationService {
         reservationRepository.save(reservation);
     }
 
+    @Override
+    public boolean studentHasOverlappingReservation(String studentId, LocalDateTime start, LocalDateTime end) {
+        return reservationRepository.existsByStudentIdAndEndTimeAfterAndStartTimeBefore(
+                studentId,
+                start,
+                end
+        );
+    }
+
 }

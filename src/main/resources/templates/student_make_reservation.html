@@ -105,6 +105,10 @@
             color: #cacaca;
             background-color: #aa4441;
         }
+
+        .schedule{
+            color: rgba(149, 147, 147, 0.6);
+        }
     </style>
 </head>
 
@@ -146,6 +150,8 @@
     </table>
 
     <div class="reservation-box">
+
+        <h6 class="schedule">Library open Monday-Saturday 8:00-20:00</h6>
 
         <!--Date + Space -->
         <form th:action="@{/student/make-reservation}" method="get">

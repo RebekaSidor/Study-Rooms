@@ -177,8 +177,6 @@ public class PersonServiceImpl implements PersonService {
         return null; // SUCCESS
     }
 
-
-
     @Override
     public String updatePassword(String libraryId, String newPassword) {
 

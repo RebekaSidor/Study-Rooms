@@ -32,5 +32,7 @@ public interface ReservationService {
 
     List<ReservationView> getReservationsForStudentOnDate(String studentId, LocalDate date);
 
+    boolean studentHasOverlappingReservation(String studentId, LocalDateTime startTime, LocalDateTime endTime);
+
     void markAttendance(Long reservationId, boolean present);
 }
