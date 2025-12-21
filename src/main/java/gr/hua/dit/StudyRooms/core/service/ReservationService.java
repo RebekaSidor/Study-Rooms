@@ -20,21 +20,16 @@ public interface ReservationService {
     List<ReservationView> getAllReservations();
 
     long countAllReservations();
-    long countActiveUsers();// users with reservation in last 30 days
+    long countActiveUsers(); // users with reservation in last 30 days
     Map<String, Long> getReservationsPerRoom();
     List<ReservationView> getReservationsByStudentId(String studentId);
 
-    List<ReservationView> getReservationsForStudentView(String studentId);
     Map<Integer, Long> getReservationsPerHourForToday();
 
     boolean cancelReservation(Long reservationId, String libraryId);
 
     List<ReservationView> getReservationsForStudentOnDate(String studentId, LocalDate date);
 
-    boolean studentHasOverlappingReservation(String studentId, LocalDateTime startTime, LocalDateTime endTime);
 
-    void markAttendance(Long reservationId, boolean present);
-
-    void toggleAttendance(Long bookingId);
 
 }

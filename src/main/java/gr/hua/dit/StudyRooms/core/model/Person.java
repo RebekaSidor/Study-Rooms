@@ -29,7 +29,7 @@ public class Person {
     private String lastName;
 
     @Column(name = "mobile_phone_number")
-    private String mobilePhoneNumber; // E164
+    private String mobilePhoneNumber;
 
     @Column(name = "email_address")
     private String emailAddress;
@@ -45,9 +45,7 @@ public class Person {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    public Person() {
-
-    }
+    public Person() {}
 
     public Person(Long id, String libraryId,
                   String firstName, String lastName,

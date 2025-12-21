@@ -109,6 +109,22 @@ public class ReservationController {
             @RequestParam String startTime,
             RedirectAttributes redirectAttributes) {
 
+        String studentId = getCurrentStudentId();
+        //enalty for 3+ absences
+        long absences = reservationService.getReservationsByStudentId(studentId)
+                .stream() // <--- εδώ
+                .filter(r -> r.endTime().isBefore(LocalDateTime.now()))
+                .filter(r -> Boolean.FALSE.equals(r.present()))
+                .count();
+
+        if (absences >= 3) {
+            redirectAttributes.addFlashAttribute(
+                    "penaltyMessage",
+                    "⚠ Penalty for not attending reservations – unable to make reservation for 2 days."
+            );
+            return "redirect:/student/make-reservation?date=" + date + "&studySpaceId=" + studySpaceId;
+        }
+
         //no reservations on sundays
         if (date.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) {
             redirectAttributes.addFlashAttribute(
@@ -118,7 +134,6 @@ public class ReservationController {
         }
 
         // Έλεγχος για όριο 3 κρατήσεων ανά ημέρα
-        String studentId = getCurrentStudentId();
         int reservationsCount = reservationService.getReservationsForStudentOnDate(studentId, date).size();
         if (reservationsCount >= 3) {
             redirectAttributes.addFlashAttribute(
@@ -192,7 +207,7 @@ public class ReservationController {
         String libraryId = user.getLibraryId();
 
         List<ReservationView> reservations =
-                reservationService.getReservationsForStudentView(libraryId);
+                reservationService.getReservationsByStudentId(libraryId);
 
         model.addAttribute("reservations", reservations);
 
@@ -216,5 +231,4 @@ public class ReservationController {
 
         return "redirect:/my-reservations";
     }
-
 }

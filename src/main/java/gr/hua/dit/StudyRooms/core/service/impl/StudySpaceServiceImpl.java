@@ -29,14 +29,7 @@ public class StudySpaceServiceImpl implements StudySpaceService {
         this.studySpaceMapper = studySpaceMapper;
     }
 
-    @Override
-    public List<StudySpaceView> getAllStudySpaces() {
-        return studySpaceRepository.findAll()
-                .stream()
-                .map(studySpaceMapper::convertStudySpaceToStudySpaceView)
-                .toList();
-    }
-
+/*create study space*/
     @Override
     public CreateStudySpaceResult createStudySpace(final CreateStudySpaceRequest request) {
         if (request == null) throw new NullPointerException();
@@ -56,13 +49,25 @@ public class StudySpaceServiceImpl implements StudySpaceService {
         final StudySpaceView studySpaceView = this.studySpaceMapper.convertStudySpaceToStudySpaceView(studySpace);
 
         return CreateStudySpaceResult.success(studySpaceView);
-
     }
+
+
+    //get list of all study spaces
+    @Override
+    public List<StudySpaceView> getAllStudySpaces() {
+        return studySpaceRepository.findAll()
+                .stream()
+                .map(studySpaceMapper::convertStudySpaceToStudySpaceView)
+                .toList();
+    }
+
+    //
     @Override
     public StudySpace getStudySpaceById(String studySpaceId) {
         return studySpaceRepository.findByStudySpaceId(studySpaceId)
-                .orElse(null); // ή throw exception αν θες
+                .orElse(null);
     }
+
     @Override
     public long countAll() {
         return studySpaceRepository.count();

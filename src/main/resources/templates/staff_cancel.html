@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{base}">
+<head>
+    <title>Delete Student Reservation</title>
+
+    <style>
+        .container {
+            max-width: 1100px;
+            padding: 20px;
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #555;
+            text-align: left;
+        }
+
+        th {
+            background-color: #333;
+        }
+
+        .center-text {
+            text-align: center;
+            color: #bcbcbc;
+        }
+
+        .help-note {
+            color: #008fb1;
+            text-align: center;
+        }
+
+        .delete-section {
+            margin-top: 15px;
+            padding: 15px;
+            border: 1px solid #555;
+            background-color: #222;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 6px;
+            margin: 8px 0 12px 0;
+        }
+
+        input[type="submit"] {
+            padding: 6px 18px;
+            cursor: pointer;
+            background-color: #aa2826;
+            border: none;
+            border-radius: 3px;
+            color: #e1dfdf;
+            font-weight: bold;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #aa4441;
+        }
+
+        input[type="radio"] {
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        hr.divider {
+            border: 0;
+            border-top: 1px solid rgba(255,255,255,0.15);
+            margin: 35px 0;
+        }
+
+        .message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .success {
+            background-color: #2d6a4f;
+        }
+
+        .error {
+            background-color: #9d0208;
+        }
+
+        ul.history {
+            list-style-type: square;
+            padding-left: 20px;
+            color: #e4e4e4;
+        }
+        .btn-back {
+            background: rgba(94, 94, 94, 0.6);
+            color: #b1b1b5;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-back:hover {
+            background: rgba(149, 147, 147, 0.6);
+        }
+    </style>
+</head>
+
+<section layout:fragment="main">
+
+    <h2 class="center-text">Delete Student Reservation</h2>
+    <p class="help-note">Note: Reservations should only be deleted in special cases (e.g. study space closure)</p>
+
+    <div class="container">
+
+        <!-- Success / Error messages -->
+        <div th:if="${successMessage}" class="message success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="message error" th:text="${errorMessage}"></div>
+
+        <!-- DELETE FORM -->
+        <form th:action="@{/staff/cancel-reservation}" method="post">
+
+            <table>
+                <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Reservation ID</th>
+                    <th>Student ID</th>
+                    <th>Study Space</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="res : ${futureReservations}">
+                    <td>
+                        <input type="radio"
+                               name="selectedReservation"
+                               th:value="${res.id}"
+                               required />
+                    </td>
+                    <td th:text="${res.reservationId}"></td>
+                    <td th:text="${res.studentId}"></td>
+                    <td th:text="${res.studySpaceId}"></td>
+                    <td th:text="${#temporals.format(res.startTime,'yyyy-MM-dd HH:mm')}"></td>
+                    <td th:text="${#temporals.format(res.endTime,'yyyy-MM-dd HH:mm')}"></td>
+                </tr>
+
+                <tr th:if="${futureReservations == null || futureReservations.size() == 0}">
+                    <td colspan="6" class="center-text">No future reservations available.</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="delete-section">
+                <label for="cancelReason">Reason for cancelation:</label>
+                <input type="text"
+                       id="cancelReason"
+                       name="cancelReason"
+                       placeholder="Enter reason..."
+                       required />
+                <input type="submit" value="Cancel" />
+            </div>
+
+        </form>
+
+        <hr class="divider"/>
+
+        <h2 class="center-text">Deleted Reservations History</h2>
+
+        <ul class="history">
+            <li th:each="entry : ${history}" th:text="${entry}"></li>
+            <li th:if="${history == null || history.size() == 0}">
+                No deleted reservations yet.
+            </li>
+        </ul>
+
+        <div>
+            <a th:href="@{/staff/home}">
+                <button class="btn-back" type="button">← Back</button>
+            </a>
+        </div>
+    </div>
+
+</section>
+</html>

@@ -17,6 +17,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Default implementation of {@link ReservationService}.
+ */
 @Service
 public class ReservationServiceImpl implements ReservationService {
 
@@ -37,35 +40,33 @@ public class ReservationServiceImpl implements ReservationService {
         this.studySpaceService = studySpaceService;
     }
 
+/*create a reservation*/
     @Override
     public CreateReservationResult createReservation(CreateReservationRequest request, boolean notify) {
-
         //find study space
         StudySpace studySpace = studySpaceService.getStudySpaceById(request.studySpaceId());
         if (studySpace == null) {
             return CreateReservationResult.fail("StudySpace not found");
         }
 
-        //check for overlapp
+        //check if there is other reservation for the same study space at the same time
         boolean conflict = reservationRepository
                 .existsByStudySpaceIdAndEndTimeAfterAndStartTimeBefore(
                         studySpace.getStudySpaceId(),
                         request.startTime(),
                         request.endTime()
                 );
-
         if (conflict) {
             return CreateReservationResult.fail("This timeslot is already reserved.");
         }
 
-        // CHECK IF STUDENT HAS ANOTHER RESERVATION OVERLAPPING
+        //check if student has other reservation at the same time
         boolean studentHasOverlap =
                 reservationRepository.existsByStudentIdAndEndTimeAfterAndStartTimeBefore(
                         request.studentId(),
                         request.startTime(),
                         request.endTime()
                 );
-
         if (studentHasOverlap) {
             throw new IllegalStateException("You already have a reservation at that time.");
         }
@@ -77,24 +78,24 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setStudySpaceId(studySpace.getStudySpaceId());
         reservation.setStartTime(request.startTime());
         reservation.setEndTime(request.endTime());
-
         //save in DB
         reservation = reservationRepository.save(reservation);
-
-        // Mapping to ReservationView for UI
+        //convert to view
         ReservationView view = reservationMapper.convertReservationToReservationView(reservation);
 
         return CreateReservationResult.success(view);
     }
 
+
+    //check if there is other reservation for the same study space at the same time
     @Override
     public boolean existsOverlappingReservation(String studySpaceId, LocalDateTime start, LocalDateTime end) {
-
+        //find study-space
         StudySpace studySpace = studySpaceService.getStudySpaceById(studySpaceId);
         if (studySpace == null) {
             return false;
         }
-
+        //check for overlap
         return reservationRepository.existsByStudySpaceIdAndEndTimeAfterAndStartTimeBefore(
                 studySpace.getStudySpaceId(),
                 start,
@@ -102,6 +103,7 @@ public class ReservationServiceImpl implements ReservationService {
         );
     }
 
+    //retrieve all reservations
     @Override
     public List<ReservationView> getAllReservations() {
         return reservationRepository.findAll()
@@ -110,22 +112,23 @@ public class ReservationServiceImpl implements ReservationService {
                 .toList();
     }
 
+    //count how many reservations there are
     @Override
     public long countAllReservations() {
         return reservationRepository.count();
     }
 
+    //count users that used the application in the last 30 days ~ for statistics page
     @Override
     public long countActiveUsers() {
         LocalDateTime now = LocalDateTime.now().minusDays(30);
         return reservationRepository.countDistinctStudentIdByStartTimeAfter(now);
     }
 
+    //count amount of reservations for each study space
     @Override
     public Map<String, Long> getReservationsPerRoom() {
-
         List<Object[]> results = reservationRepository.countReservationsGroupByStudySpaceId();
-
         Map<String, Long> map = new HashMap<>();
 
         for (Object[] row : results) {
@@ -136,6 +139,7 @@ public class ReservationServiceImpl implements ReservationService {
         return map;
     }
 
+    //get all reservations for specific student
     @Override
     public List<ReservationView> getReservationsByStudentId(String studentId) {
 
@@ -146,30 +150,19 @@ public class ReservationServiceImpl implements ReservationService {
                 .toList();
     }
 
-    @Override
-    public List<ReservationView> getReservationsForStudentView(String studentId) {
-
-        // find users reservations
-        var reservations = reservationRepository.findByStudentId(studentId);
-
-        // convert to ReservationView
-        return reservations.stream()
-                .map(reservationMapper::convertReservationToReservationView)
-                .toList();
-    }
-
+    //calculate number of reservations per hour ~ for statistics page chart
     @Override
     public Map<Integer, Long> getReservationsPerHourForToday() {
-
+        //map working hours to num of reservations
         Map<Integer, Long> reservationsPerHour = new HashMap<>();
-
-        // ώρες λειτουργίας
         for (int h = 8; h <= 22; h++) {
             reservationsPerHour.put(h, 0L);
         }
 
+        //get reservations from db
         List<Reservation> allReservations = reservationRepository.findAll();
 
+        //calculate
         for (Reservation r : allReservations) {
             int hour = r.getStartTime().getHour();
             if (hour >= 8 && hour <= 22) {
@@ -177,36 +170,37 @@ public class ReservationServiceImpl implements ReservationService {
                         reservationsPerHour.get(hour) + 1);
             }
         }
-
         return reservationsPerHour;
     }
 
+    //cancel my reservation ~ student
     @Override
     public boolean cancelReservation(Long reservationId, String libraryId) {
-
-        // Φόρτωσε τη συγκεκριμένη κράτηση
+        //get the reservation
         var optionalReservation = reservationRepository.findById(reservationId);
         if (optionalReservation.isEmpty()) {
-            return false; // δεν υπάρχει η κράτηση
+            return false;
         }
 
         var reservation = optionalReservation.get();
 
-        // Έλεγχος ότι η κράτηση ανήκει στον χρήστη
+        //check that it's the students reservation - other students can't cancel
         if (!reservation.getStudentId().equals(libraryId)) {
-            return false; // δεν μπορεί να ακυρώσει άλλος χρήστης
+            return false;
         }
 
-        // Διαγραφή κράτησης
+        //delete
         reservationRepository.delete(reservation);
         return true;
     }
 
+    //get all student's reservations for specific day
     @Override
     public List<ReservationView> getReservationsForStudentOnDate(String studentId, LocalDate date) {
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
 
+        //get from db
         List<Reservation> reservations = reservationRepository.findByStudentIdAndStartTimeBetween(
                 studentId, startOfDay, endOfDay
         );
@@ -216,33 +210,4 @@ public class ReservationServiceImpl implements ReservationService {
                 .toList();
     }
 
-    @Override
-    public void markAttendance(Long reservationId, boolean present) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new IllegalArgumentException("Reservation not found"));
-
-        reservation.setPresent(present);
-        reservationRepository.save(reservation);
-    }
-
-    @Override
-    public boolean studentHasOverlappingReservation(String studentId, LocalDateTime start, LocalDateTime end) {
-        return reservationRepository.existsByStudentIdAndEndTimeAfterAndStartTimeBefore(
-                studentId,
-                start,
-                end
-        );
-    }
-
-    @Override
-    public void toggleAttendance(Long reservationId) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new RuntimeException("Reservation not found"));
-
-        reservation.setPresent(
-                reservation.getPresent() == null || !reservation.getPresent()
-        );
-
-        reservationRepository.save(reservation);
-    }
 }

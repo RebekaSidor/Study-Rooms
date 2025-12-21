@@ -151,7 +151,7 @@
 
     <div class="reservation-box">
 
-        <h6 class="schedule">Library open Monday-Saturday 8:00-20:00</h6>
+        <h6 class="schedule">Library open Monday-Saturday 8:00-22:00</h6>
 
         <!--Date + Space -->
         <form th:action="@{/student/make-reservation}" method="get">
@@ -202,6 +202,11 @@
             </select>
 
             <button type="submit" class="btn-reserve">Reserve</button>
+
+            <div th:if="${penaltyMessage}" style="color: orange; font-weight: bold; text-align: center; margin-bottom: 10px;"
+                 th:text="${penaltyMessage}">
+            </div>
+
         </form>
 
     </div>

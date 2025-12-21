@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 public class PersonServiceImpl implements PersonService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PersonServiceImpl.class);
-
     private  final PasswordEncoder passwordEncoder;
     private final SmsNotificationPort smsNotificationPort;
     private final PersonRepository personRepository;
@@ -42,7 +41,61 @@ public class PersonServiceImpl implements PersonService {
         this.personMapper = personMapper;
     }
 
-    //AUTO-GENERATE LIBRARY ID
+    @Override
+    public CreatePersonResult createPerson(final CreatePersonRequest createPersonRequest, final boolean notify) {
+        if (createPersonRequest == null) throw new NullPointerException();
+
+        final PersonType type = createPersonRequest.type();
+        final String firstName = createPersonRequest.firstName().strip();
+        final String lastName = createPersonRequest.lastName().strip();
+        final String emailAddress =  createPersonRequest.emailAddress().strip();
+        final String mobilePhoneNumber = createPersonRequest.mobilePhoneNumber().strip();
+        final String rawPassword = createPersonRequest.rawPassword();
+
+        //validation
+        if (this.personRepository.existsByEmailAddressIgnoreCase(emailAddress)){
+            return CreatePersonResult.fail("Email address must be unique");
+        }
+        if (this.personRepository.existsByMobilePhoneNumber(mobilePhoneNumber)){
+            return CreatePersonResult.fail("Mobile Phone number must be unique");
+        }
+
+        final String libraryId = generateNextLibraryId();
+
+        //encode password
+        final String hashedPassword = this.passwordEncoder.encode(rawPassword);
+
+
+        //create person object
+        Person person = new Person();
+        person.setId(null); // auto generated
+        person.setLibraryId(libraryId);
+        person.setType(type);
+        person.setFirstName(firstName);
+        person.setLastName(lastName);
+        person.setEmailAddress(emailAddress);
+        person.setMobilePhoneNumber(mobilePhoneNumber);
+        person.setPasswordHash(hashedPassword);
+        person.setCreatedAt(null); // auto generated
+        person = this.personRepository.save(person);
+
+//
+//        // -------- SEND SMS IF REQUESTED --------
+//        if (notify){
+//            final String content = String.format("You have successfully registered for Study Rooms application."+
+//                    "Use your email (%s) to log in ", emailAddress);//todo message
+//            final boolean sent = this.smsNotificationPort.sendSms(mobilePhoneNumber, content);
+//            if (!sent) {
+//                LOGGER.warn("SMS sent to {} failed", mobilePhoneNumber);
+//            }
+//        }
+
+        //convert to view
+        final PersonView personView = this.personMapper.convertPersonToPersonView(person);
+        return CreatePersonResult.success(personView);
+    }
+
+    //auto generate library id
     private String generateNextLibraryId() {
         Person last = personRepository.findTopByOrderByLibraryIdDesc();
 
@@ -57,145 +110,68 @@ public class PersonServiceImpl implements PersonService {
         return "lib" + num;
     }
 
-
-    @Override
-    public CreatePersonResult createPerson(final CreatePersonRequest createPersonRequest, final boolean notify) {
-        if (createPersonRequest == null) throw new NullPointerException();
-
-        //Unpack (we assume validated CreatePersonRequest)
-        final PersonType type = createPersonRequest.type();
-        final String firstName = createPersonRequest.firstName().strip();
-        final String lastName = createPersonRequest.lastName().strip();
-        final String emailAddress =  createPersonRequest.emailAddress().strip();
-        final String mobilePhoneNumber = createPersonRequest.mobilePhoneNumber().strip();
-        final String rawPassword = createPersonRequest.rawPassword();
-
-
-        // -------- VALIDATION --------
-        if (this.personRepository.existsByEmailAddressIgnoreCase(emailAddress)){
-            return CreatePersonResult.fail("Email address must be unique");
-        }
-
-        if (this.personRepository.existsByMobilePhoneNumber(mobilePhoneNumber)){
-            return CreatePersonResult.fail("Mobile Phone number must be unique");
-        }
-
-        final String libraryId = generateNextLibraryId();
-
-        // -------- ENCODE PASSWORD --------
-        final String hashedPassword = this.passwordEncoder.encode(rawPassword);
-
-
-        // -------- CREATE PERSON OBJECT --------
-        Person person = new Person();
-        person.setId(null); // auto generated
-        person.setLibraryId(libraryId);
-        person.setType(type);
-        person.setFirstName(firstName);
-        person.setLastName(lastName);
-        person.setEmailAddress(emailAddress);
-        person.setMobilePhoneNumber(mobilePhoneNumber);
-        person.setPasswordHash(hashedPassword);
-        person.setCreatedAt(null); // auto generated
-
-        // -------- SAVE PERSON --------
-        person = this.personRepository.save(person);
-
-
-        // SMS disabled for local development
-//
-//        // -------- SEND SMS IF REQUESTED --------
-//        if (notify){
-//            final String content = String.format("You have successfully registered for Study Rooms application."+
-//                    "Use your email (%s) to log in ", emailAddress);//todo message
-//            final boolean sent = this.smsNotificationPort.sendSms(mobilePhoneNumber, content);
-//            if (!sent) {
-//                LOGGER.warn("SMS sent to {} failed", mobilePhoneNumber);
-//            }
-//        }
-
-        // -------- CONVERT TO VIEW --------
-        final PersonView personView = this.personMapper.convertPersonToPersonView(person);
-
-        return CreatePersonResult.success(personView);
-    }
-
+/*change personal information*/
     @Override
     public String updateEmail(String libraryId, String newEmail) {
-
         if (newEmail == null || newEmail.isBlank()) {
             return "Email cannot be empty.";
         }
-
-        if (!newEmail.toLowerCase().endsWith("@lib.gr")) {
-            return "Email must end with @lib.gr";
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        if (!newEmail.matches(emailRegex)) {
+            return "Invalid email format.";
         }
-
         if (personRepository.existsByEmailAddressIgnoreCase(newEmail)) {
             return "This email is already used.";
         }
-
         Person person = personRepository.findByLibraryId(libraryId).orElse(null);
         if (person == null) {
             return "User not found.";
         }
-
         person.setEmailAddress(newEmail);
         personRepository.save(person);
 
-        return null; // SUCCESS
+        return null;
     }
-
 
     @Override
     public String updatePhone(String libraryId, String newPhone) {
-
         if (newPhone == null || newPhone.isBlank()) {
             return "Phone number cannot be empty.";
         }
-
         if (!newPhone.matches("\\d+")) {
             return "Phone number must contain only digits.";
         }
-
         if (newPhone.length() != 10) {
             return "Phone number must be exactly 10 digits.";
         }
-
         if (personRepository.existsByMobilePhoneNumber(newPhone)) {
             return "This phone number already belongs to another user.";
         }
-
         Person person = personRepository.findByLibraryId(libraryId).orElse(null);
         if (person == null) {
             return "User not found.";
         }
-
         person.setMobilePhoneNumber(newPhone);
         personRepository.save(person);
 
-        return null; // SUCCESS
+        return null;
     }
 
     @Override
     public String updatePassword(String libraryId, String newPassword) {
-
         if (newPassword == null || newPassword.isBlank()) {
             return "Password cannot be empty.";
         }
-
         if (newPassword.length() < 6) {
             return "Password must be at least 6 characters.";
         }
-
         Person person = personRepository.findByLibraryId(libraryId).orElse(null);
         if (person == null) {
             return "User not found.";
         }
-
         person.setPasswordHash(passwordEncoder.encode(newPassword));
         personRepository.save(person);
 
-        return null; // SUCCESS
+        return null;
     }
 }

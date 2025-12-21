@@ -67,8 +67,12 @@
         <div class="profile-info">
             <ul>
                 <li>Library ID: <span th:text="${me.libraryId}"></span></li>
-                <li>Email: <span th:text="${me.emailAddress()}"></span></li>
-                <li>Type: <span th:text="${me.type()}"></span></li>
+                <li>Email: <span th:text="${me.emailAddress}"></span></li>
+                <li>Type: <span th:text="${me.type}"></span></li>
+                <li>
+                    Absences: <span th:text="${absences}"></span>
+                    <span th:if="${absences >= 3}" style="color: orange;">-penalty</span>
+                </li>
             </ul>
         </div>
     </div>

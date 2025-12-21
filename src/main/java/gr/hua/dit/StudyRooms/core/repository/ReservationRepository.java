@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long>{
 
-    List<Reservation> findByStudySpaceId(String studySpaceId);
+    List<Reservation> findByStartTimeAfterOrderByStartTimeAsc(LocalDateTime now);
     List<Reservation> findByStudentId(String studentId);
     List<Reservation> findByStudentIdAndStartTimeBetween(String studentId, LocalDateTime start, LocalDateTime end);
     List<Reservation> findAllByOrderByStartTimeDesc();
@@ -32,19 +32,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long>{
 
     long countDistinctStudentIdByStartTimeAfter(LocalDateTime date);
 
-    @Query("""
-    SELECT COUNT(s) FROM StudySpace s
-    WHERE s.type = 'ROOM'
-    AND s.capacity <= (
-        SELECT COUNT(r) FROM Reservation r
-        WHERE r.studySpaceId = s.studySpaceId
-        AND r.startTime BETWEEN :from AND :to
-    )
-    """)
-    long countFullyBookedRooms(@Param("from") LocalDateTime from,
-                               @Param("to") LocalDateTime to);
-
-
     @Query("SELECT r.studySpaceId, COUNT(r) FROM Reservation r GROUP BY r.studySpaceId")
     List<Object[]> countReservationsGroupByStudySpaceId();
+
 }

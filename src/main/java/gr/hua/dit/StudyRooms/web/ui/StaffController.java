@@ -10,10 +10,13 @@ import gr.hua.dit.StudyRooms.core.service.ReservationService;
 import gr.hua.dit.StudyRooms.core.service.StudySpaceService;
 import gr.hua.dit.StudyRooms.core.service.model.NextStudySpaceResponse;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -178,19 +181,94 @@ public class StaffController {
 /*check attendance of student*/
     @GetMapping("/staff/attendances")
     public String attendances(Model model) {
-        List<Reservation> bookings =
-                reservationRepository.findAllByOrderByStartTimeDesc();
+        List<Reservation> bookings = reservationRepository.findAllByOrderByStartTimeDesc();
+        LocalDateTime now = LocalDateTime.now();
+
+        // Ενημέρωση περασμένων κρατήσεων χωρίς τσεκ
+        for (Reservation r : bookings) {
+            if (r.getEndTime() != null && r.getEndTime().isBefore(now) && r.getPresent() == null) {
+                r.setPresent(false); // Δεν τσέκαρε το staff → false
+                reservationRepository.save(r);
+            }
+        }
 
         model.addAttribute("bookings", bookings);
-        model.addAttribute("now", LocalDateTime.now());
+        model.addAttribute("now", now);
 
         return "staff_attendance";
     }
 
     @GetMapping("/staff/attendances/toggle/{id}")
     public String toggleAttendance(@PathVariable Long id) {
-        reservationService.toggleAttendance(id);
+        Reservation reservation = reservationRepository.findById(id).orElseThrow();
+        reservation.setPresent(Boolean.TRUE.equals(reservation.getPresent()) ? false : true);
+        reservationRepository.save(reservation);
         return "redirect:/staff/attendances";
     }
+
+/*cancel student reservations*/
+@GetMapping("/staff/cancel-reservation")
+public String showCancelableReservations(Model model, HttpSession session) {
+
+    List<Reservation> futureReservations =
+            reservationRepository.findByStartTimeAfterOrderByStartTimeAsc(LocalDateTime.now());
+
+    List<String> history =
+            (List<String>) session.getAttribute("history");
+
+    model.addAttribute("futureReservations", futureReservations);
+    model.addAttribute("history", history);
+
+    return "staff_cancel";
+}
+
+
+    @PostMapping("/staff/cancel-reservation")
+    public String cancelReservation(
+            @RequestParam Long selectedReservation,
+            @RequestParam String cancelReason,
+            RedirectAttributes redirectAttributes,
+            HttpSession session) {
+
+        Reservation reservation = reservationRepository.findById(selectedReservation).orElse(null);
+
+        if (reservation == null || cancelReason.isBlank()) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "Failed to delete reservation. Reason is required."
+            );
+            return "redirect:/staff/cancel-reservation";
+        }
+
+        // History entry
+        String historyEntry =
+                "Reservation " + reservation.getReservationId() +
+                        " (Student: " + reservation.getStudentId() +
+                        ", Space: " + reservation.getStudySpaceId() +
+                        ", " + reservation.getStartTime() + " – " + reservation.getEndTime() +
+                        ") was deleted. Reason: " + cancelReason;
+
+        // Get history from session
+        List<String> history =
+                (List<String>) session.getAttribute("history");
+
+        if (history == null) {
+            history = new ArrayList<>();
+        }
+
+        history.add(0, historyEntry); // newest on top
+        session.setAttribute("history", history);
+
+        // DELETE from DB
+        reservationRepository.delete(reservation);
+
+        redirectAttributes.addFlashAttribute(
+                "successMessage",
+                "Reservation deleted successfully."
+        );
+
+        return "redirect:/staff/cancel-reservation";
+    }
+
 
 }

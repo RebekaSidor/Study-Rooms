@@ -1,5 +1,7 @@
 package gr.hua.dit.StudyRooms.web.ui;
 
+import gr.hua.dit.StudyRooms.core.model.Reservation;
+import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
 import gr.hua.dit.StudyRooms.core.security.ApplicationUserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -9,6 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import gr.hua.dit.StudyRooms.core.service.PersonService;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 /**
  * UI controller for managing profile.
  */
@@ -16,13 +21,31 @@ import gr.hua.dit.StudyRooms.core.service.PersonService;
 public class StudentController {
 
     private final PersonService personService;
+    private final ReservationRepository reservationRepository;
 
-    public StudentController(PersonService personService) {
+    public StudentController(PersonService personService,
+                             ReservationRepository reservationRepository) {
         this.personService = personService;
+        this.reservationRepository = reservationRepository;
     }
 
     @GetMapping("/profile")
-    public String showProfile() {
+    public String showProfile(Authentication auth, Model model) {
+        ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
+        model.addAttribute("me", user);
+
+        List<Reservation> reservations = reservationRepository.findByStudentId(user.getLibraryId());
+
+        LocalDateTime now = LocalDateTime.now();
+        long absences = reservations.stream()
+                // Μόνο κρατήσεις που έχουν τελειώσει
+                .filter(r -> r.getEndTime() != null && r.getEndTime().isBefore(now))
+                // Και είναι false (απουσία)
+                .filter(r -> Boolean.FALSE.equals(r.getPresent()))
+                .count();
+
+        model.addAttribute("absences", absences);
+
         return "student_profile";
     }
 
