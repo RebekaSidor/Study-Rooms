@@ -6,11 +6,17 @@ import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceResult;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import java.util.List;
 
+/**
+ * Service (contract) for managing rooms/seats.
+ */
 public interface StudySpaceService {
+
     CreateStudySpaceResult createStudySpace(final CreateStudySpaceRequest createStudySpace);
     List<StudySpaceView> getAllStudySpaces();
     StudySpace getStudySpaceById(String studySpaceId);
+
     void updateStudySpace(StudySpace studySpace);
     void createStudySpace(StudySpace space);
+
     long countAll();
 }

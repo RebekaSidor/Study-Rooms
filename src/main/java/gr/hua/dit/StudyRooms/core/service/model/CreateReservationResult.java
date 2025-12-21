@@ -1,7 +1,9 @@
 package gr.hua.dit.StudyRooms.core.service.model;
 
 /**
- * CreateReservationResult (DTO).
+ * CreateReservationResult DTO.
+ *
+ * @see gr.hua.dit.StudyRooms.core.service.impl.ReservationServiceImpl#createReservation(CreateReservationRequest)
  */
 public record CreateReservationResult(boolean created, String reason, ReservationView reservationView) {
     public static CreateReservationResult success(final ReservationView reservationView) {

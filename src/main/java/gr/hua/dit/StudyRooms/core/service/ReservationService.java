@@ -8,7 +8,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Service (contract) for managing reservations.
+ */
 public interface ReservationService {
+
     CreateReservationResult createReservation(final CreateReservationRequest request, final boolean notify);
 
     default CreateReservationResult createReservation(final CreateReservationRequest request) {
@@ -16,20 +20,16 @@ public interface ReservationService {
     }
 
     boolean existsOverlappingReservation(String studySpaceId, LocalDateTime startTime, LocalDateTime endTime);
+    boolean cancelReservation(Long reservationId, String libraryId);
 
     List<ReservationView> getAllReservations();
+    List<ReservationView> getReservationsForStudentOnDate(String studentId, LocalDate date);
+    List<ReservationView> getReservationsByStudentId(String studentId);
 
     long countAllReservations();
     long countActiveUsers(); // users with reservation in last 30 days
+
     Map<String, Long> getReservationsPerRoom();
-    List<ReservationView> getReservationsByStudentId(String studentId);
-
     Map<Integer, Long> getReservationsPerHourForToday();
-
-    boolean cancelReservation(Long reservationId, String libraryId);
-
-    List<ReservationView> getReservationsForStudentOnDate(String studentId, LocalDate date);
-
-
 
 }

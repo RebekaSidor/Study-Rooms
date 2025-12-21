@@ -11,18 +11,12 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ReservationMapper {
-    /**
-     * Μετατρέπει ένα Reservation entity σε ReservationView για το UI.
-     */
     private final StudySpaceService studySpaceService;
 
     public ReservationMapper(StudySpaceService studySpaceService) {
         this.studySpaceService = studySpaceService;
     }
 
-    /**
-     * Μετατρέπει ένα Reservation entity σε ReservationView για το UI.
-     */
     public ReservationView convertReservationToReservationView(final Reservation reservation) {
         if (reservation == null) {
             return null;
@@ -35,7 +29,7 @@ public class ReservationMapper {
                 reservation.getReservationId(),
                 reservation.getStudentId(),
                 reservation.getStudySpaceId(),
-                space != null ? space.getName() : reservation.getStudySpaceId(), // <--- εδώ προσθέτουμε το όνομα
+                space != null ? space.getName() : reservation.getStudySpaceId(),
                 reservation.getStartTime(),
                 reservation.getEndTime(),
                 reservation.getPresent()

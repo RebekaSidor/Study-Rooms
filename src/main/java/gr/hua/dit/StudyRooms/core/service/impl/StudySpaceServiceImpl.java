@@ -29,7 +29,7 @@ public class StudySpaceServiceImpl implements StudySpaceService {
         this.studySpaceMapper = studySpaceMapper;
     }
 
-/*create study space*/
+/*create study space ~ APIs & JSON*/
     @Override
     public CreateStudySpaceResult createStudySpace(final CreateStudySpaceRequest request) {
         if (request == null) throw new NullPointerException();
@@ -61,28 +61,31 @@ public class StudySpaceServiceImpl implements StudySpaceService {
                 .toList();
     }
 
-    //
+    //call to repository to get a study space by its id
     @Override
     public StudySpace getStudySpaceById(String studySpaceId) {
         return studySpaceRepository.findByStudySpaceId(studySpaceId)
                 .orElse(null);
     }
 
+    //count how many study spaces there are
     @Override
     public long countAll() {
         return studySpaceRepository.count();
     }
 
+    //update study space details ~ staff edit study space
     @Override
     public void updateStudySpace(StudySpace updatedSpace) {
-
+        //find study space
         StudySpace existing = studySpaceRepository
                 .findByStudySpaceId(updatedSpace.getStudySpaceId())
                 .orElseThrow(() -> new IllegalArgumentException("Study space not found"));
 
+        //update hours
         existing.setOpeningTime(updatedSpace.getOpeningTime());
         existing.setClosingTime(updatedSpace.getClosingTime());
-
+        //update capacity if its a room
         if (existing.getType() == StudySpaceType.ROOM && updatedSpace.getCapacity() != null) {
             existing.setCapacity(updatedSpace.getCapacity());
         }
@@ -90,9 +93,9 @@ public class StudySpaceServiceImpl implements StudySpaceService {
         studySpaceRepository.save(existing);
     }
 
+    //create study space ~ html
     @Override
     public void createStudySpace(StudySpace space) {
         studySpaceRepository.save(space);
     }
-
 }

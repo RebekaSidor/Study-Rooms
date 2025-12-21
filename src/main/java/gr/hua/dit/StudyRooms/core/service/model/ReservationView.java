@@ -3,7 +3,7 @@ package gr.hua.dit.StudyRooms.core.service.model;
 import java.time.LocalDateTime;
 
 /**
- * ReservationView (DTO) που περιέχει μόνο πληροφορίες για το UI.
+ * ReservationView (DTO)
  */
 public record ReservationView(
         long id,

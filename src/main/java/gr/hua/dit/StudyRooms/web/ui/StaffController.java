@@ -38,35 +38,43 @@ public class StaffController {
         this.reservationRepository = reservationRepository;
     }
 
+    //show library staff profil
     @GetMapping("/staff/home")
     public String staffHome(Authentication auth, Model model) {
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
         model.addAttribute("username", user.getUsername());
         return "staff_profile";
     }
-/*edit and create new study spaces*/
-        @GetMapping("/staff/studyspaces")
-        public String manageStudySpaces(Model model) {
-            model.addAttribute("spaces", studySpaceService.getAllStudySpaces());
+
+/**
+* edit and create new study spaces
+*/
+    //general edit page for study spaces
+    @GetMapping("/staff/studyspaces")
+    public String manageStudySpaces(Model model) {
+        model.addAttribute("spaces", studySpaceService.getAllStudySpaces());
             return "staff_edit_page";
-        }
+    }
 
-        @GetMapping("/staff/studyspaces/edit/{id}")
-        public String editStudySpace(@PathVariable("id") String id, Model model) {
-            StudySpace space = studySpaceService.getStudySpaceById(id);
-            model.addAttribute("space", space);
-            return "staff_edit_studyspace";
-        }
+    //edit page for chosen study space
+    @GetMapping("/staff/studyspaces/edit/{id}")
+    public String editStudySpace(@PathVariable("id") String id, Model model) {
+         StudySpace space = studySpaceService.getStudySpaceById(id);
+         model.addAttribute("space", space);
+         return "staff_edit_studyspace";
+    }
 
+    //save changes made to study space
     @PostMapping("/staff/studyspaces/edit")
     public String saveStudySpace(@ModelAttribute("space") StudySpace formSpace, Model model) {
 
+        //retrieve from db
         StudySpace existing = studySpaceService.getStudySpaceById(formSpace.getStudySpaceId());
         if (existing == null) {
             throw new IllegalArgumentException("Study space not found");
         }
 
-        // Κρατάμε τα πεδία που δεν αλλάζουν αν είναι null
+        //keep existing fields if there is no change
         if (formSpace.getOpeningTime() != null) {
             existing.setOpeningTime(formSpace.getOpeningTime());
         }
@@ -79,6 +87,7 @@ public class StaffController {
             existing.setCapacity(formSpace.getCapacity());
         }
 
+        //define valid time range
         LocalTime earliest = LocalTime.of(8, 0);
         LocalTime latest = LocalTime.of(22, 0);
 
@@ -97,94 +106,106 @@ public class StaffController {
                 return "staff_edit_studyspace";
             }
         }
-
+        //save
         studySpaceService.updateStudySpace(existing);
         return "redirect:/staff/studyspaces?updated";
     }
 
+    //return next study space name and id R3->R4
     @GetMapping("/staff/studyspaces/next")
-        @ResponseBody
-        public NextStudySpaceResponse getNext(@RequestParam("type") StudySpaceType type) {
+    @ResponseBody
+    public NextStudySpaceResponse getNext(@RequestParam("type") StudySpaceType type) {
 
-            List<StudySpaceView> all = studySpaceService.getAllStudySpaces();
+        List<StudySpaceView> all = studySpaceService.getAllStudySpaces();
 
-            int max = all.stream()
-                    .filter(s -> s.type() == type)
-                    .mapToInt(s -> {
-                        try {
-                            return Integer.parseInt(s.name().substring(1));
-                        } catch (Exception e) {
-                            return 0;
-                        }
-                    })
-                    .max()
-                    .orElse(0);
+        //find the maximum number currently used for the given type
+        int max = all.stream()
+              .filter(s -> s.type() == type) //filter by type (ROOM or SEAT)
+              .mapToInt(s -> {
+              try {
+                   return Integer.parseInt(s.name().substring(1)); //extract numeric part of name
+              } catch (Exception e) {
+                   return 0;
+              }
+              })
+              .max()
+              .orElse(0); //if none found, start from 0
 
-            int next = max + 1;
+        int next = max + 1;
+        //generate next name and ID
+        String name = (type == StudySpaceType.ROOM ? "R" : "S") + next;
+        String id   = (type == StudySpaceType.ROOM ? "r" : "s") + String.format("%03d", next);
 
-            String name = (type == StudySpaceType.ROOM ? "R" : "S") + next;
-            String id   = (type == StudySpaceType.ROOM ? "r" : "s") + String.format("%03d", next);
+        return new NextStudySpaceResponse(name, id);
+    }
 
-            return new NextStudySpaceResponse(name, id);
-        }
+    //form for creating new study space
+    @GetMapping("/staff/studyspaces/create")
+    public String createStudySpaceForm(Model model) {
+        model.addAttribute("space", new StudySpace());
+        return "staff_add_newstudyspace";
+    }
 
-        @GetMapping("/staff/studyspaces/create")
-        public String createStudySpaceForm(Model model) {
-            model.addAttribute("space", new StudySpace());
+    //save the new studyspace
+    @PostMapping("/staff/studyspaces/create")
+    public String saveNewStudySpace(@ModelAttribute("space") StudySpace space, Model model) {
+        //validate that the study space has ID and name
+        if (space.getStudySpaceId() == null || space.getName() == null) {
+            model.addAttribute("errorMessage", "Invalid study space data");
             return "staff_add_newstudyspace";
         }
-
-        @PostMapping("/staff/studyspaces/create")
-        public String saveNewStudySpace(@ModelAttribute("space") StudySpace space, Model model) {
-
-            if (space.getStudySpaceId() == null || space.getName() == null) {
-                model.addAttribute("errorMessage", "Invalid study space data");
-                return "staff_add_newstudyspace";
-            }
-
-            if (space.getClosingTime().isBefore(space.getOpeningTime())) {
-                model.addAttribute("errorMessage", "Closing time cannot be before opening time!");
-                return "staff_add_newstudyspace";
-            }
-
-            if (space.getType() == StudySpaceType.SEAT) {
-                space.setCapacity(null);
-            }
-
-            studySpaceService.createStudySpace(space);
-            return "redirect:/staff/studyspaces?created";
+        //validate opening and closing times
+        if (space.getClosingTime().isBefore(space.getOpeningTime())) {
+            model.addAttribute("errorMessage", "Closing time cannot be before opening time!");
+            return "staff_add_newstudyspace";
         }
-
-/*show statistics for study spaces*/
-        @GetMapping("/staff/statistics")
-        public String showStats(Model model) throws Exception {
-            model.addAttribute("totalReservations", reservationService.countAllReservations());
-            model.addAttribute("activeUsers", reservationService.countActiveUsers());
-            model.addAttribute("reservationsPerRoom", reservationService.getReservationsPerRoom());
-
-            Map<Integer, Long> reservationsPerHour = reservationService.getReservationsPerHourForToday();
-
-            List<Integer> hours = new ArrayList<>();
-            List<Long> reservations = new ArrayList<>();
-            for (int h = 8; h <= 22; h++) {
-                hours.add(h);
-                reservations.add(reservationsPerHour.getOrDefault(h, 0L));
-            }
-
-            ObjectMapper mapper = new ObjectMapper();
-            model.addAttribute("hoursJson", mapper.writeValueAsString(hours));
-            model.addAttribute("reservationsJson", mapper.writeValueAsString(reservations));
-
-            return "staff_statistics";
+        //if the space is a SEAT, capacity is not applicable
+        if (space.getType() == StudySpaceType.SEAT) {
+            space.setCapacity(null);
         }
+        //save
+        studySpaceService.createStudySpace(space);
+        return "redirect:/staff/studyspaces?created";
+    }
 
-/*check attendance of student*/
+/**
+ * show statistics for study spaces
+ * */
+    @GetMapping("/staff/statistics")
+    public String showStats(Model model) throws Exception {
+         model.addAttribute("totalReservations", reservationService.countAllReservations());
+         model.addAttribute("activeUsers", reservationService.countActiveUsers());
+         model.addAttribute("reservationsPerRoom", reservationService.getReservationsPerRoom());
+
+         //get reservations per hour for today
+         Map<Integer, Long> reservationsPerHour = reservationService.getReservationsPerHourForToday();
+
+         //prepare lists for char
+         List<Integer> hours = new ArrayList<>();
+         List<Long> reservations = new ArrayList<>();
+         for (int h = 8; h <= 22; h++) {
+            hours.add(h);
+            reservations.add(reservationsPerHour.getOrDefault(h, 0L));
+         }
+
+         //convert lists to JSON for frontend
+         ObjectMapper mapper = new ObjectMapper();
+         model.addAttribute("hoursJson", mapper.writeValueAsString(hours));
+         model.addAttribute("reservationsJson", mapper.writeValueAsString(reservations));
+
+         return "staff_statistics";
+    }
+
+/**
+ * check attendance of student
+ * */
+    //show student reservation and attendances
     @GetMapping("/staff/attendances")
     public String attendances(Model model) {
         List<Reservation> bookings = reservationRepository.findAllByOrderByStartTimeDesc();
         LocalDateTime now = LocalDateTime.now();
 
-        // Ενημέρωση περασμένων κρατήσεων χωρίς τσεκ
+        //for past reservations that staff didn't mark, set present=false
         for (Reservation r : bookings) {
             if (r.getEndTime() != null && r.getEndTime().isBefore(now) && r.getPresent() == null) {
                 r.setPresent(false); // Δεν τσέκαρε το staff → false
@@ -198,31 +219,39 @@ public class StaffController {
         return "staff_attendance";
     }
 
+    //manually change attendance if student came to his reservation
     @GetMapping("/staff/attendances/toggle/{id}")
     public String toggleAttendance(@PathVariable Long id) {
         Reservation reservation = reservationRepository.findById(id).orElseThrow();
+
+        //change presence status attended/absent
         reservation.setPresent(Boolean.TRUE.equals(reservation.getPresent()) ? false : true);
-        reservationRepository.save(reservation);
+
+        reservationRepository.save(reservation); //save
         return "redirect:/staff/attendances";
     }
 
-/*cancel student reservations*/
-@GetMapping("/staff/cancel-reservation")
-public String showCancelableReservations(Model model, HttpSession session) {
+/**
+ * cancel student reservations
+ * */
+    //show future student reservations and cancel form
+    @GetMapping("/staff/cancel-reservation")
+    public String showCancelableReservations(Model model, HttpSession session) {
 
-    List<Reservation> futureReservations =
-            reservationRepository.findByStartTimeAfterOrderByStartTimeAsc(LocalDateTime.now());
+        List<Reservation> futureReservations =
+                reservationRepository.findByStartTimeAfterOrderByStartTimeAsc(LocalDateTime.now());
 
-    List<String> history =
-            (List<String>) session.getAttribute("history");
+        //get cancellation history from session
+        List<String> history = (List<String>) session.getAttribute("history");
 
-    model.addAttribute("futureReservations", futureReservations);
-    model.addAttribute("history", history);
+        model.addAttribute("futureReservations", futureReservations);
+        model.addAttribute("history", history);
 
-    return "staff_cancel";
-}
+        return "staff_cancel";
+    }
 
-
+    //make cancellation
+    //history only visible for session, if browser closed history lost
     @PostMapping("/staff/cancel-reservation")
     public String cancelReservation(
             @RequestParam Long selectedReservation,
@@ -230,8 +259,8 @@ public String showCancelableReservations(Model model, HttpSession session) {
             RedirectAttributes redirectAttributes,
             HttpSession session) {
 
+        //find reservation
         Reservation reservation = reservationRepository.findById(selectedReservation).orElse(null);
-
         if (reservation == null || cancelReason.isBlank()) {
             redirectAttributes.addFlashAttribute(
                     "errorMessage",
@@ -240,35 +269,27 @@ public String showCancelableReservations(Model model, HttpSession session) {
             return "redirect:/staff/cancel-reservation";
         }
 
-        // History entry
+        //create history entry
         String historyEntry =
                 "Reservation " + reservation.getReservationId() +
-                        " (Student: " + reservation.getStudentId() +
-                        ", Space: " + reservation.getStudySpaceId() +
-                        ", " + reservation.getStartTime() + " – " + reservation.getEndTime() +
-                        ") was deleted. Reason: " + cancelReason;
+                " (Student: " + reservation.getStudentId() +
+                 ", Space: " + reservation.getStudySpaceId() +
+                 ", " + reservation.getStartTime() + " – " + reservation.getEndTime() +
+                 ") was deleted. Reason: " + cancelReason;
 
-        // Get history from session
-        List<String> history =
-                (List<String>) session.getAttribute("history");
+        //get history from session
+        List<String> history = (List<String>) session.getAttribute("history");
 
-        if (history == null) {
-            history = new ArrayList<>();
-        }
+        if (history == null) {history = new ArrayList<>();}
 
         history.add(0, historyEntry); // newest on top
         session.setAttribute("history", history);
 
-        // DELETE from DB
+        //delete from DB
         reservationRepository.delete(reservation);
 
-        redirectAttributes.addFlashAttribute(
-                "successMessage",
-                "Reservation deleted successfully."
-        );
-
+        redirectAttributes.addFlashAttribute("successMessage", "Reservation deleted successfully.");
         return "redirect:/staff/cancel-reservation";
     }
-
 
 }

@@ -1,7 +1,9 @@
 package gr.hua.dit.StudyRooms.core.service.model;
 
 /**
- * CreateStudySpaceResult (DTO).
+ * CreateStudySpaceResult DTO.
+ *
+ * @see gr.hua.dit.StudyRooms.core.service.impl.StudySpaceServiceImpl#createStudySpace(CreateStudySpaceRequest)
  */
 public record CreateStudySpaceResult( boolean created, String reason, StudySpaceView studySpaceView) {
     public static CreateStudySpaceResult success(final StudySpaceView studySpaceView) {

@@ -17,6 +17,7 @@ public class StudySpaceController {
         this.studySpaceService = studySpaceService;
     }
 
+/*show available study spaces for guest user*/
     @GetMapping("/showstudyspaces")
     public String showStudySpaces(
             @RequestParam(value = "from", required = false, defaultValue = "mainpage") String from,
@@ -24,6 +25,7 @@ public class StudySpaceController {
 
         List<StudySpaceView> all = studySpaceService.getAllStudySpaces();
 
+        //separate to rooms and seats
         List<StudySpaceView> rooms = all.stream()
                 .filter(s -> s.type().name().equals("ROOM"))
                 .toList();
