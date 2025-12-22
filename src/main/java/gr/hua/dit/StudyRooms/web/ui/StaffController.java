@@ -73,16 +73,13 @@ public class StaffController {
         if (existing == null) {
             throw new IllegalArgumentException("Study space not found");
         }
-
         //keep existing fields if there is no change
         if (formSpace.getOpeningTime() != null) {
             existing.setOpeningTime(formSpace.getOpeningTime());
         }
-
         if (formSpace.getClosingTime() != null) {
             existing.setClosingTime(formSpace.getClosingTime());
         }
-
         if (existing.getType() == StudySpaceType.ROOM && formSpace.getCapacity() != null) {
             existing.setCapacity(formSpace.getCapacity());
         }

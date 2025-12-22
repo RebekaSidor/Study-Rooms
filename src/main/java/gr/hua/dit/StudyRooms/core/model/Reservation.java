@@ -5,12 +5,29 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 
+/**
+ * Reservation entity.
+ */
 @Entity
-@Table(name = "RESERVATION")
+@Table(
+        name = "RESERVATION",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_reservation_reservation_id",
+                        columnNames = "reservation_id"
+                )
+        },
+        indexes = {
+                @Index(name = "idx_reservation_student", columnList = "student_id"),
+                @Index(name = "idx_reservation_space", columnList = "study_space_id"),
+                @Index(name = "idx_reservation_start_time", columnList = "start_time")
+        }
+)
 public class Reservation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "id")
     private Long id;
 
     @Column(name="reservation_id", nullable = false)

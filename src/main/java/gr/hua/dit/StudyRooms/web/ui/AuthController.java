@@ -1,7 +1,6 @@
 package gr.hua.dit.StudyRooms.web.ui;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,16 +16,16 @@ public class AuthController {
             final Authentication authentication,
             final HttpServletRequest request,
             final Model model
-    ){
-        if (isAuthenticated(authentication)) {
+    ) {
+        if (AuthUtils.isAuthenticated(authentication)) {
             return "redirect:/profile";
         }
 
         // Spring Security appends ?error or ?logout; show friendly messages.
-        if(request.getParameter("error") != null) {
+        if (request.getParameter("error") != null) {
             model.addAttribute("error", "Invalid email or password.");
         }
-        if(request.getParameter("logout") != null) {
+        if (request.getParameter("logout") != null) {
             model.addAttribute("message", "You have been logged out.");
         }
         return "login";
@@ -34,22 +33,9 @@ public class AuthController {
 
     @GetMapping("/logout")
     public String logout(final Authentication authentication) {
-        if (isAnonymous(authentication)) {
+        if (AuthUtils.isAnonymous(authentication)) {
             return "redirect:/login";
         }
-
         return "logout";
-    }
-
-    public static boolean isAuthenticated(final Authentication auth) {
-        return auth != null
-                && (auth.isAuthenticated()
-                && !(auth instanceof AnonymousAuthenticationToken));
-    }
-
-    public static boolean isAnonymous(final Authentication auth) {
-        return auth == null
-                || !auth.isAuthenticated()
-                || auth instanceof AnonymousAuthenticationToken;
     }
 }

@@ -1,6 +1,5 @@
 package gr.hua.dit.StudyRooms.core.port.impl.dto;
 
-
 /**
  * SendSmsResult DTO.
  */

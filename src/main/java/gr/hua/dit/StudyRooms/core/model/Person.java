@@ -1,44 +1,76 @@
 package gr.hua.dit.StudyRooms.core.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.Instant;
 
+/**
+ * Person entity.
+ */
 @Entity
-@Table(name = "PERSON")
-public class Person {
+@Table(
+    name = "PERSON",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_person_library_id", columnNames = "library_id"),
+        @UniqueConstraint(name = "uk_person_email_address", columnNames = "email_address"),
+        @UniqueConstraint(name = "uk_person_mobile_phone_number", columnNames = "mobile_phone_number")
+    },
+    indexes = {
+        @Index(name = "idx_person_type", columnList = "type"),
+        @Index(name = "idx_person_last_name", columnList = "last_name")
+    }
+)
+public final class Person {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "id")
     private Long id;
 
+    @NotNull
+    @NotBlank
+    @Size(max = 20)
     @Column(name="library_id")
     private String libraryId;
 
+    @NotNull
+    @NotBlank
+    @Size(max = 100)
     @Column(name = "first_name")
     private String firstName;
 
+    @NotNull
+    @NotBlank
+    @Size(max = 100)
     @Column(name = "last_name")
     private String lastName;
 
-    @Column(name = "mobile_phone_number")
+    @NotNull
+    @NotBlank
+    @Size(max = 18)
+    @Column(name = "mobile_phone_number", nullable = false, length = 18)
     private String mobilePhoneNumber;
 
-    @Column(name = "email_address")
+    @NotNull
+    @NotBlank
+    @Size(max = 100)
+    @Email
+    @Column(name = "email_address", nullable = false, length = 100)
     private String emailAddress;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "type")
+    @Column(name = "type", nullable = false, length = 20)
     private PersonType type;
 
-    @Column(name = "password_hash")
+    @NotNull
+    @NotBlank
+    @Size(max = 255)
+    @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
     @CreationTimestamp

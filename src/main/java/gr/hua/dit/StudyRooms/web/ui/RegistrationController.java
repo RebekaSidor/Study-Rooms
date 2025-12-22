@@ -4,9 +4,11 @@ import gr.hua.dit.StudyRooms.core.model.PersonType;
 import gr.hua.dit.StudyRooms.core.service.PersonService;
 import gr.hua.dit.StudyRooms.core.service.model.CreatePersonRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreatePersonResult;
+import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,13 +27,16 @@ public class RegistrationController {
     }
 
     @GetMapping("/register")
-    public String showRegistrationForm(final Authentication authentication, final Model model){
-
-        if (AuthController.isAuthenticated(authentication)) {
-            return "redirect:/profile"; //already logged in
+    public String showRegistrationForm(
+            final Authentication authentication,
+            final Model model
+    ) {
+        if (AuthUtils.isAuthenticated(authentication)) {
+            return "redirect:/profile";
         }
-        model.addAttribute("createPersonRequest", new CreatePersonRequest(PersonType.STUDENT, "","", "", "", "", ""));
-
+        // Initial data for the form.
+        final CreatePersonRequest createPersonRequest = new CreatePersonRequest(PersonType.STUDENT, "", "", "", "", "", "");
+        model.addAttribute("createPersonRequest", createPersonRequest);
         return "register";
     }
 
@@ -43,24 +48,24 @@ public class RegistrationController {
 
     //handle POST request when form is submited
     @PostMapping("/register")
-    public String handleFormSubmission(final Authentication authentication,
-                                       @ModelAttribute("createPersonRequest") final CreatePersonRequest createPersonRequest,
-                                       final Model model){
-
-        if (AuthController.isAuthenticated(authentication)) {
-            return "redirect:/profile"; //already logged in
+    public String handleFormSubmission(
+            final Authentication authentication,
+            @Valid @ModelAttribute("createPersonRequest") final CreatePersonRequest createPersonRequest,
+            final BindingResult bindingResult,
+            final Model model
+    ) {
+        if (AuthUtils.isAuthenticated(authentication)) {
+            return "redirect:/profile"; // already logged in.
         }
-
+        if (bindingResult.hasErrors()) {
+            return "register";
+        }
         //try creating new Person, return CreatePersonResult
-        final CreatePersonResult createPersonResult = this.personService.createPerson(createPersonRequest, false);
-
+        final CreatePersonResult createPersonResult = this.personService.createPerson(createPersonRequest);
         //if success: take new id created and add to Person model
         if (createPersonResult.created()) {
-            String newLibraryId = createPersonResult.personView().libraryId();
-            model.addAttribute("newLibraryId", newLibraryId);
-            return "registration_success"; // <-- SUCCESS PAGE
+            return "registration_success";// <-- SUCCESS PAGE
         }
-
         //if failed: pass the same form data, error
         model.addAttribute("createPersonRequest", createPersonRequest);
         model.addAttribute("errorMessage", createPersonResult.reason());

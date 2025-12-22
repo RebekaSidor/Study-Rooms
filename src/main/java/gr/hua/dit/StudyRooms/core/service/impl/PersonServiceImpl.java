@@ -2,17 +2,24 @@ package gr.hua.dit.StudyRooms.core.service.impl;
 
 import gr.hua.dit.StudyRooms.core.model.Person;
 import gr.hua.dit.StudyRooms.core.model.PersonType;
+import gr.hua.dit.StudyRooms.core.port.LookupPort;
+import gr.hua.dit.StudyRooms.core.port.PhoneNumberPort;
 import gr.hua.dit.StudyRooms.core.port.SmsNotificationPort;
+import gr.hua.dit.StudyRooms.core.port.impl.dto.PhoneNumberValidationResult;
 import gr.hua.dit.StudyRooms.core.repository.PersonRepository;
 import gr.hua.dit.StudyRooms.core.service.PersonService;
 import gr.hua.dit.StudyRooms.core.service.mapper.PersonMapper;
 import gr.hua.dit.StudyRooms.core.service.model.CreatePersonRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreatePersonResult;
 import gr.hua.dit.StudyRooms.core.service.model.PersonView;
+import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.Set;
 
 /**
  * Default implementation of {@link PersonService}.
@@ -21,36 +28,82 @@ import org.springframework.stereotype.Service;
 public class PersonServiceImpl implements PersonService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PersonServiceImpl.class);
+
+    private final Validator validator;
     private  final PasswordEncoder passwordEncoder;
-    private final SmsNotificationPort smsNotificationPort;
     private final PersonRepository personRepository;
     private final PersonMapper personMapper;
+    private final PhoneNumberPort phoneNumberPort;
+    private final LookupPort lookupPort;
+    private final SmsNotificationPort smsNotificationPort;
 
-    public PersonServiceImpl(final PasswordEncoder passwordEncoder,
-                             final SmsNotificationPort smsNotificationPort,
+    public PersonServiceImpl(final Validator validator,
+                             final PasswordEncoder passwordEncoder,
                              final PersonRepository personRepository,
-                             final PersonMapper personMapper) {
+                             final PersonMapper personMapper,
+                             final PhoneNumberPort phoneNumberPort,
+                             final LookupPort lookupPort,
+                             final SmsNotificationPort smsNotificationPort) {
+        if (validator == null) throw new NullPointerException();
         if (passwordEncoder == null) throw new NullPointerException();
-        if (smsNotificationPort == null) throw new NullPointerException();
         if (personRepository == null) throw new NullPointerException();
         if (personMapper == null) throw new NullPointerException();
+        if (phoneNumberPort == null) throw new NullPointerException();
+        if (lookupPort == null) throw new NullPointerException();
+        if (smsNotificationPort == null) throw new NullPointerException();
 
+        this.validator = validator;
         this.passwordEncoder = passwordEncoder;
-        this.smsNotificationPort = smsNotificationPort;
         this.personRepository = personRepository;
         this.personMapper = personMapper;
+        this.phoneNumberPort = phoneNumberPort;
+        this.lookupPort = lookupPort;
+        this.smsNotificationPort = smsNotificationPort;
     }
 
+    @Transactional
     @Override
     public CreatePersonResult createPerson(final CreatePersonRequest createPersonRequest, final boolean notify) {
         if (createPersonRequest == null) throw new NullPointerException();
+
+        // `CreatePersonRequest` validation.
+        // --------------------------------------------------
+
+        final Set<ConstraintViolation<CreatePersonRequest>> requestViolations
+                = this.validator.validate(createPersonRequest);
+        if (!requestViolations.isEmpty()) {
+            final StringBuilder sb = new StringBuilder();
+            for (final ConstraintViolation<CreatePersonRequest> violation : requestViolations) {
+                sb
+                        .append(violation.getPropertyPath())
+                        .append(": ")
+                        .append(violation.getMessage())
+                        .append("\n");
+            }
+            return CreatePersonResult.fail(sb.toString());
+        }
+
+        // Unpack (we assume valid `CreatePersonRequest` instance)
+        // --------------------------------------------------
 
         final PersonType type = createPersonRequest.type();
         final String firstName = createPersonRequest.firstName().strip();
         final String lastName = createPersonRequest.lastName().strip();
         final String emailAddress =  createPersonRequest.emailAddress().strip();
-        final String mobilePhoneNumber = createPersonRequest.mobilePhoneNumber().strip();
+        String mobilePhoneNumber = createPersonRequest.mobilePhoneNumber().strip();
         final String rawPassword = createPersonRequest.rawPassword();
+
+        // Advanced mobile phone number validation.
+        // --------------------------------------------------
+
+        final PhoneNumberValidationResult phoneNumberValidationResult
+                = this.phoneNumberPort.validate(mobilePhoneNumber);
+        if (!phoneNumberValidationResult.isValidMobile()) {
+            return CreatePersonResult.fail("Mobile Phone Number is not valid");
+        }
+        mobilePhoneNumber = phoneNumberValidationResult.e164();
+
+        // --------------------------------------------------
 
         //validation
         if (this.personRepository.existsByEmailAddressIgnoreCase(emailAddress)){
@@ -62,13 +115,24 @@ public class PersonServiceImpl implements PersonService {
 
         final String libraryId = generateNextLibraryId();
 
+        // --------------------------------------------------
+
+        final PersonType personType_lookup = this.lookupPort.lookup(libraryId).orElse(null);
+        if (personType_lookup == null) {
+            return CreatePersonResult.fail("Invalid LIBRARY ID");
+        }
+        if (personType_lookup != type) {
+            return CreatePersonResult.fail("The provided person type does not match the actual one");
+        }
+
+        // --------------------------------------------------
         //encode password
         final String hashedPassword = this.passwordEncoder.encode(rawPassword);
 
-
-        //create person object
+        // Instantiate person.
+        // --------------------------------------------------
         Person person = new Person();
-        person.setId(null); // auto generated
+        person.setId(null); //auto generated
         person.setLibraryId(libraryId);
         person.setType(type);
         person.setFirstName(firstName);
@@ -77,18 +141,33 @@ public class PersonServiceImpl implements PersonService {
         person.setMobilePhoneNumber(mobilePhoneNumber);
         person.setPasswordHash(hashedPassword);
         person.setCreatedAt(null); // auto generated
+
+        // --------------------------------------------------
+
+        final Set<ConstraintViolation<Person>> personViolations = this.validator.validate(person);
+        if (!personViolations.isEmpty()) {
+            // Throw an exception instead of returning an instance, i.e. `CreatePersonResult.fail`.
+            // At this point, errors/violations on the `Person` instance
+            // indicate a programmer error, not a client error.
+            throw new RuntimeException("invalid Person instance");
+        }
+
+        // Persist person (save/insert to database)
+        // --------------------------------------------------
+
         person = this.personRepository.save(person);
 
-//
-//        // -------- SEND SMS IF REQUESTED --------
-//        if (notify){
-//            final String content = String.format("You have successfully registered for Study Rooms application."+
-//                    "Use your email (%s) to log in ", emailAddress);//todo message
-//            final boolean sent = this.smsNotificationPort.sendSms(mobilePhoneNumber, content);
-//            if (!sent) {
-//                LOGGER.warn("SMS sent to {} failed", mobilePhoneNumber);
-//            }
-//        }
+        // --------------------------------------------------
+
+        if (notify) {
+            final String content = String.format(
+                    "You have successfully registered for the Office Hours application. " +
+                            "Use your email (%s) to log in.", emailAddress);
+            final boolean sent = this.smsNotificationPort.sendSms(mobilePhoneNumber, content);
+            if (!sent) {
+                LOGGER.warn("SMS send to {} failed!", mobilePhoneNumber);
+            }
+        }
 
         //convert to view
         final PersonView personView = this.personMapper.convertPersonToPersonView(person);
