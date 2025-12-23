@@ -1,6 +1,6 @@
 package gr.hua.dit.StudyRooms.web.ui;
 
-import gr.hua.dit.StudyRooms.core.service.StudySpaceService;
+import gr.hua.dit.StudyRooms.core.service.StudySpaceBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,10 +11,10 @@ import java.util.List;
 @Controller
 public class StudySpaceController {
 
-    private final StudySpaceService studySpaceService;
+    private final StudySpaceBusinessLogicService studySpaceBusinessLogicService;
 
-    public StudySpaceController(StudySpaceService studySpaceService) {
-        this.studySpaceService = studySpaceService;
+    public StudySpaceController(StudySpaceBusinessLogicService studySpaceBusinessLogicService) {
+        this.studySpaceBusinessLogicService = studySpaceBusinessLogicService;
     }
 
 /*show available study spaces for guest user*/
@@ -23,7 +23,7 @@ public class StudySpaceController {
             @RequestParam(value = "from", required = false, defaultValue = "mainpage") String from,
             Model model) {
 
-        List<StudySpaceView> all = studySpaceService.getAllStudySpaces();
+        List<StudySpaceView> all = studySpaceBusinessLogicService.getAllStudySpaces();
 
         //separate to rooms and seats
         List<StudySpaceView> rooms = all.stream()

@@ -8,9 +8,9 @@ import gr.hua.dit.StudyRooms.core.repository.PersonRepository;
 import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
 import gr.hua.dit.StudyRooms.core.security.CurrentUser;
 import gr.hua.dit.StudyRooms.core.security.CurrentUserProvider;
-import gr.hua.dit.StudyRooms.core.service.PersonService;
-import gr.hua.dit.StudyRooms.core.service.ReservationService;
-import gr.hua.dit.StudyRooms.core.service.StudySpaceService;
+import gr.hua.dit.StudyRooms.core.service.PersonBusinessLogicService;
+import gr.hua.dit.StudyRooms.core.service.ReservationBusinessLogicService;
+import gr.hua.dit.StudyRooms.core.service.StudySpaceBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.mapper.ReservationMapper;
 import gr.hua.dit.StudyRooms.core.service.model.CreateReservationRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreateReservationResult;
@@ -27,38 +27,38 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Default implementation of {@link ReservationService}.
+ * Default implementation of {@link ReservationBusinessLogicService}.
  */
 @Service
-public class ReservationServiceImpl implements ReservationService {
+public class ReservationBusinessLogicServiceImpl implements ReservationBusinessLogicService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReservationServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReservationBusinessLogicServiceImpl.class);
 
     private final ReservationRepository reservationRepository;
     private final ReservationMapper reservationMapper;
-    private final StudySpaceService studySpaceService;
-    private final PersonService personService;
+    private final StudySpaceBusinessLogicService studySpaceBusinessLogicService;
+    private final PersonBusinessLogicService personBusinessLogicService;
     private final PersonRepository personRepository;
     private final CurrentUserProvider currentUserProvider;
 
-    public ReservationServiceImpl(ReservationRepository reservationRepository,
-                                  ReservationMapper reservationMapper,
-                                  StudySpaceService studySpaceService,
-                                  PersonService personService,
-                                  PersonRepository personRepository,
-                                  CurrentUserProvider currentUserProvider) {
+    public ReservationBusinessLogicServiceImpl(ReservationRepository reservationRepository,
+                                               ReservationMapper reservationMapper,
+                                               StudySpaceBusinessLogicService studySpaceBusinessLogicService,
+                                               PersonBusinessLogicService personBusinessLogicService,
+                                               PersonRepository personRepository,
+                                               CurrentUserProvider currentUserProvider) {
 
         if (reservationRepository == null) throw new NullPointerException();
         if (reservationMapper == null) throw new NullPointerException();
-        if (studySpaceService == null) throw new NullPointerException();
-        if (personService == null) throw new NullPointerException();
+        if (studySpaceBusinessLogicService == null) throw new NullPointerException();
+        if (personBusinessLogicService == null) throw new NullPointerException();
         if (personRepository == null) throw new NullPointerException();
         if (currentUserProvider == null) throw new NullPointerException();
 
         this.reservationRepository = reservationRepository;
         this.reservationMapper = reservationMapper;
-        this.studySpaceService = studySpaceService;
-        this.personService = personService;
+        this.studySpaceBusinessLogicService = studySpaceBusinessLogicService;
+        this.personBusinessLogicService = personBusinessLogicService;
         this.personRepository = personRepository;
         this.currentUserProvider = currentUserProvider;
     }
@@ -68,13 +68,13 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public CreateReservationResult createReservation(CreateReservationRequest request, boolean notify) {
         //find study space
-        StudySpace studySpace = studySpaceService.getStudySpaceById(request.studySpaceId());
+        StudySpace studySpace = studySpaceBusinessLogicService.getStudySpaceById(request.studySpaceId());
         if (studySpace == null) {
             return CreateReservationResult.fail("StudySpace not found");
         }
 
         // Find student
-        Person student = personService.getPersonById(request.studentId());
+        Person student = personBusinessLogicService.getPersonById(request.studentId());
         if (student == null) {
             return CreateReservationResult.fail("Student not found");
         }
@@ -137,7 +137,7 @@ public class ReservationServiceImpl implements ReservationService {
     public boolean existsOverlappingReservation(String studySpaceId, LocalDateTime start, LocalDateTime end) {
 
         //find study-space
-        StudySpace studySpace = studySpaceService.getStudySpaceById(studySpaceId);
+        StudySpace studySpace = studySpaceBusinessLogicService.getStudySpaceById(studySpaceId);
         if (studySpace == null) {
             return false;
         }
@@ -165,7 +165,7 @@ public class ReservationServiceImpl implements ReservationService {
             throw new SecurityException("Only the student can view their own reservations");
         }
 
-        Person student = personService.getPersonById(studentId);
+        Person student = personBusinessLogicService.getPersonById(studentId);
         if (student == null) return List.of();
 
         List<Reservation> reservations = reservationRepository.findByStudent(student);
@@ -228,7 +228,7 @@ public class ReservationServiceImpl implements ReservationService {
             throw new SecurityException("Only staff can view other students' reservations");
         }
 
-        Person student = personService.getPersonById(studentId);
+        Person student = personBusinessLogicService.getPersonById(studentId);
         if (student == null) return List.of();
 
         List<Reservation> reservations = reservationRepository.findByStudent(student);
@@ -330,7 +330,7 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
         //get from db
-        Person student = personService.getPersonById(studentId);
+        Person student = personBusinessLogicService.getPersonById(studentId);
         if (student == null) {
             return List.of();
         }

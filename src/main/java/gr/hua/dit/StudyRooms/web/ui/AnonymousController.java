@@ -1,6 +1,6 @@
 package gr.hua.dit.StudyRooms.web.ui;
 
-import gr.hua.dit.StudyRooms.core.service.StudySpaceService;
+import gr.hua.dit.StudyRooms.core.service.StudySpaceBusinessLogicService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/anonymous")
 public class AnonymousController {
 
-    private final StudySpaceService studySpaceService;
+    private final StudySpaceBusinessLogicService studySpaceBusinessLogicService;
 
-    public AnonymousController(StudySpaceService studySpaceService) {
-        this.studySpaceService = studySpaceService;
+    public AnonymousController(StudySpaceBusinessLogicService studySpaceBusinessLogicService) {
+        this.studySpaceBusinessLogicService = studySpaceBusinessLogicService;
     }
 
     @GetMapping("/menu")

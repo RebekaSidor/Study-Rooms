@@ -12,7 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import gr.hua.dit.StudyRooms.core.service.PersonService;
+import gr.hua.dit.StudyRooms.core.service.PersonBusinessLogicService;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,14 +22,14 @@ import java.util.List;
 @Controller
 public class StudentController {
 
-    private final PersonService personService;
+    private final PersonBusinessLogicService personBusinessLogicService;
     private final ReservationRepository reservationRepository;
     private final PersonRepository personRepository;
 
-    public StudentController(PersonService personService,
+    public StudentController(PersonBusinessLogicService personBusinessLogicService,
                              ReservationRepository reservationRepository,
                              PersonRepository personRepository) {
-        this.personService = personService;
+        this.personBusinessLogicService = personBusinessLogicService;
         this.reservationRepository = reservationRepository;
         this.personRepository = personRepository;
     }
@@ -83,7 +83,7 @@ public class StudentController {
         //get logged-in user
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
         //call service
-        String error = personService.updateEmail(user.getUsername(), email);
+        String error = personBusinessLogicService.updateEmail(user.getUsername(), email);
 
         if (error != null) {
             model.addAttribute("error", error); //fail
@@ -104,7 +104,7 @@ public class StudentController {
         //get logged-in user
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
         //call service
-        String error = personService.updatePhone(user.getUsername(), phone);
+        String error = personBusinessLogicService.updatePhone(user.getUsername(), phone);
 
         if (error != null) {
             model.addAttribute("error", error); //fail
@@ -131,7 +131,7 @@ public class StudentController {
         //get logged-in user
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
         //call service
-        String error = personService.updatePassword(user.getUsername(), password);
+        String error = personBusinessLogicService.updatePassword(user.getUsername(), password);
 
         if (error != null) {
             model.addAttribute("error", error); //fail

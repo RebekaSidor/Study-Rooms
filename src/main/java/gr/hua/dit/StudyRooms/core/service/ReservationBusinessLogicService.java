@@ -12,7 +12,7 @@ import java.util.Map;
  * Service (contract) for managing reservations.
  */
 public interface
-ReservationService {
+ReservationBusinessLogicService {
 
     CreateReservationResult createReservation(final CreateReservationRequest request, final boolean notify);
 

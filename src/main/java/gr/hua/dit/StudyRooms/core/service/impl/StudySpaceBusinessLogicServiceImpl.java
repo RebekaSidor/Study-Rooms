@@ -6,7 +6,7 @@ import gr.hua.dit.StudyRooms.core.model.StudySpaceType;
 import gr.hua.dit.StudyRooms.core.repository.StudySpaceRepository;
 import gr.hua.dit.StudyRooms.core.security.CurrentUser;
 import gr.hua.dit.StudyRooms.core.security.CurrentUserProvider;
-import gr.hua.dit.StudyRooms.core.service.StudySpaceService;
+import gr.hua.dit.StudyRooms.core.service.StudySpaceBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.mapper.StudySpaceMapper;
 import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceResult;
@@ -16,16 +16,16 @@ import java.time.LocalTime;
 import java.util.List;
 
 /**
- * Default implementation of {@link StudySpaceService}.
+ * Default implementation of {@link StudySpaceBusinessLogicService}.
  */
 @Service
-public class StudySpaceServiceImpl implements StudySpaceService {
+public class StudySpaceBusinessLogicServiceImpl implements StudySpaceBusinessLogicService {
 
     private final StudySpaceRepository studySpaceRepository;
     private final StudySpaceMapper studySpaceMapper;
     private final CurrentUserProvider currentUserProvider;
 
-    public StudySpaceServiceImpl(final StudySpaceRepository studySpaceRepository,final StudySpaceMapper studySpaceMapper, final CurrentUserProvider currentUserProvider) {
+    public StudySpaceBusinessLogicServiceImpl(final StudySpaceRepository studySpaceRepository, final StudySpaceMapper studySpaceMapper, final CurrentUserProvider currentUserProvider) {
         if (studySpaceRepository == null) throw new NullPointerException();
         if (studySpaceMapper == null) throw new NullPointerException();
         if (currentUserProvider == null) throw new NullPointerException();

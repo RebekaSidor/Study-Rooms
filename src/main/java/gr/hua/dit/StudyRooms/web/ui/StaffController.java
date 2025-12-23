@@ -6,8 +6,8 @@ import gr.hua.dit.StudyRooms.core.model.StudySpace;
 import gr.hua.dit.StudyRooms.core.model.StudySpaceType;
 import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
 import gr.hua.dit.StudyRooms.core.security.ApplicationUserDetails;
-import gr.hua.dit.StudyRooms.core.service.ReservationService;
-import gr.hua.dit.StudyRooms.core.service.StudySpaceService;
+import gr.hua.dit.StudyRooms.core.service.ReservationBusinessLogicService;
+import gr.hua.dit.StudyRooms.core.service.StudySpaceBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.model.NextStudySpaceResponse;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import jakarta.servlet.http.HttpSession;
@@ -27,15 +27,15 @@ import java.util.Map;
 @Controller
 public class StaffController {
 
-    private final ReservationService reservationService;
-    private final StudySpaceService studySpaceService;
+    private final ReservationBusinessLogicService reservationBusinessLogicService;
+    private final StudySpaceBusinessLogicService studySpaceBusinessLogicService;
     private final ReservationRepository reservationRepository;
 
-    public StaffController(ReservationService reservationService,
-                           StudySpaceService studySpaceService,
+    public StaffController(ReservationBusinessLogicService reservationBusinessLogicService,
+                           StudySpaceBusinessLogicService studySpaceBusinessLogicService,
                            ReservationRepository reservationRepository) {
-        this.reservationService = reservationService;
-        this.studySpaceService = studySpaceService;
+        this.reservationBusinessLogicService = reservationBusinessLogicService;
+        this.studySpaceBusinessLogicService = studySpaceBusinessLogicService;
         this.reservationRepository = reservationRepository;
     }
 
@@ -55,7 +55,7 @@ public class StaffController {
     @PreAuthorize("hasRole('LIB_STAFF')")
     @GetMapping("/staff/studyspaces")
     public String manageStudySpaces(Model model) {
-        model.addAttribute("spaces", studySpaceService.getAllStudySpaces());
+        model.addAttribute("spaces", studySpaceBusinessLogicService.getAllStudySpaces());
             return "staff_edit_page";
     }
 
@@ -63,7 +63,7 @@ public class StaffController {
     @PreAuthorize("hasRole('LIB_STAFF')")
     @GetMapping("/staff/studyspaces/edit/{id}")
     public String editStudySpace(@PathVariable("id") String id, Model model) {
-         StudySpace space = studySpaceService.getStudySpaceById(id);
+         StudySpace space = studySpaceBusinessLogicService.getStudySpaceById(id);
          model.addAttribute("space", space);
          return "staff_edit_studyspace";
     }
@@ -74,7 +74,7 @@ public class StaffController {
     public String saveStudySpace(@ModelAttribute("space") StudySpace formSpace, Model model) {
 
         //retrieve from db
-        StudySpace existing = studySpaceService.getStudySpaceById(formSpace.getStudySpaceId());
+        StudySpace existing = studySpaceBusinessLogicService.getStudySpaceById(formSpace.getStudySpaceId());
         if (existing == null) {
             throw new IllegalArgumentException("Study space not found");
         }
@@ -109,7 +109,7 @@ public class StaffController {
             }
         }
         //save
-        studySpaceService.updateStudySpace(existing);
+        studySpaceBusinessLogicService.updateStudySpace(existing);
         return "redirect:/staff/studyspaces?updated";
     }
 
@@ -118,7 +118,7 @@ public class StaffController {
     @ResponseBody
     public NextStudySpaceResponse getNext(@RequestParam("type") StudySpaceType type) {
 
-        List<StudySpaceView> all = studySpaceService.getAllStudySpaces();
+        List<StudySpaceView> all = studySpaceBusinessLogicService.getAllStudySpaces();
 
         //find the maximum number currently used for the given type
         int max = all.stream()
@@ -168,7 +168,7 @@ public class StaffController {
             space.setCapacity(null);
         }
         //save
-        studySpaceService.createStudySpace(space);
+        studySpaceBusinessLogicService.createStudySpace(space);
         return "redirect:/staff/studyspaces?created";
     }
 
@@ -178,12 +178,12 @@ public class StaffController {
     @PreAuthorize("hasRole('LIB_STAFF')")
     @GetMapping("/staff/statistics")
     public String showStats(Model model) throws Exception {
-         model.addAttribute("totalReservations", reservationService.countAllReservations());
-         model.addAttribute("activeUsers", reservationService.countActiveUsers());
-         model.addAttribute("reservationsPerRoom", reservationService.getReservationsPerRoom());
+         model.addAttribute("totalReservations", reservationBusinessLogicService.countAllReservations());
+         model.addAttribute("activeUsers", reservationBusinessLogicService.countActiveUsers());
+         model.addAttribute("reservationsPerRoom", reservationBusinessLogicService.getReservationsPerRoom());
 
          //get reservations per hour for today
-         Map<Integer, Long> reservationsPerHour = reservationService.getReservationsPerHourForToday();
+         Map<Integer, Long> reservationsPerHour = reservationBusinessLogicService.getReservationsPerHourForToday();
 
          //prepare lists for char
          List<Integer> hours = new ArrayList<>();

@@ -1,9 +1,11 @@
 package gr.hua.dit.StudyRooms.core.service.model;
 
+import gr.hua.dit.StudyRooms.core.service.impl.StudySpaceBusinessLogicServiceImpl;
+
 /**
  * CreateStudySpaceResult DTO.
  *
- * @see gr.hua.dit.StudyRooms.core.service.impl.StudySpaceServiceImpl#createStudySpace(CreateStudySpaceRequest)
+ * @see StudySpaceBusinessLogicServiceImpl#createStudySpace(CreateStudySpaceRequest)
  */
 public record CreateStudySpaceResult( boolean created, String reason, StudySpaceView studySpaceView) {
     public static CreateStudySpaceResult success(final StudySpaceView studySpaceView) {

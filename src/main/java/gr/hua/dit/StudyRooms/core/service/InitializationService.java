@@ -14,24 +14,24 @@ public class InitializationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InitializationService.class);
 
-    private final PersonService personService;
-    private final StudySpaceService studySpaceService;
-    private final ReservationService reservationService;
+    private final PersonBusinessLogicService personBusinessLogicService;
+    private final StudySpaceBusinessLogicService studySpaceBusinessLogicService;
+    private final ReservationBusinessLogicService reservationBusinessLogicService;
 
     public InitializationService(
-            PersonService personService,
-            StudySpaceService studySpaceService,
-            ReservationService reservationService
+            PersonBusinessLogicService personBusinessLogicService,
+            StudySpaceBusinessLogicService studySpaceBusinessLogicService,
+            ReservationBusinessLogicService reservationBusinessLogicService
     ) {
-        this.personService = personService;
-        this.studySpaceService = studySpaceService;
-        this.reservationService = reservationService;
+        this.personBusinessLogicService = personBusinessLogicService;
+        this.studySpaceBusinessLogicService = studySpaceBusinessLogicService;
+        this.reservationBusinessLogicService = reservationBusinessLogicService;
     }
 
     @PostConstruct
     public void populateDatabase() {
 
-        long count = studySpaceService.countAll();
+        long count = studySpaceBusinessLogicService.countAll();
 
         if (count > 0) {
             LOGGER.info("Database already initialized — skipping initial data load.");
@@ -68,7 +68,7 @@ public class InitializationService {
         );
 
         for (CreateStudySpaceRequest req : spaces) {
-            studySpaceService.createStudySpace(req);
+            studySpaceBusinessLogicService.createStudySpace(req);
         }
 
         LOGGER.info("Study spaces created successfully!");

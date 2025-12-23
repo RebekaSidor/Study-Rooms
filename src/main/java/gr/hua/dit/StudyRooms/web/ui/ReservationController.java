@@ -2,8 +2,8 @@ package gr.hua.dit.StudyRooms.web.ui;
 
 import gr.hua.dit.StudyRooms.core.model.StudySpaceType;
 import gr.hua.dit.StudyRooms.core.security.ApplicationUserDetails;
-import gr.hua.dit.StudyRooms.core.service.ReservationService;
-import gr.hua.dit.StudyRooms.core.service.StudySpaceService;
+import gr.hua.dit.StudyRooms.core.service.ReservationBusinessLogicService;
+import gr.hua.dit.StudyRooms.core.service.StudySpaceBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.model.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,12 +26,12 @@ import java.util.List;
 @Controller
 public class ReservationController {
 
-    private final StudySpaceService studySpaceService;
-    private final ReservationService reservationService;
+    private final StudySpaceBusinessLogicService studySpaceBusinessLogicService;
+    private final ReservationBusinessLogicService reservationBusinessLogicService;
 
-    public ReservationController(StudySpaceService studySpaceService, ReservationService reservationService) {
-        this.studySpaceService = studySpaceService;
-        this.reservationService = reservationService;
+    public ReservationController(StudySpaceBusinessLogicService studySpaceBusinessLogicService, ReservationBusinessLogicService reservationBusinessLogicService) {
+        this.studySpaceBusinessLogicService = studySpaceBusinessLogicService;
+        this.reservationBusinessLogicService = reservationBusinessLogicService;
     }
 
     //show the form for making reservations
@@ -44,7 +44,7 @@ public class ReservationController {
 
         if (date == null) date = LocalDate.now(); //if no date is provided, use today's date
 
-        List<StudySpaceView> allSpaces = studySpaceService.getAllStudySpaces();
+        List<StudySpaceView> allSpaces = studySpaceBusinessLogicService.getAllStudySpaces();
         List<StudySpaceView> rooms = new ArrayList<>();
         List<StudySpaceView> seats = new ArrayList<>();
 
@@ -73,7 +73,7 @@ public class ReservationController {
                 while (!start.isAfter(end.minusHours(1))) {
 
                     //check if there is any overlapping reservation
-                    boolean available = !reservationService.existsOverlappingReservation(
+                    boolean available = !reservationBusinessLogicService.existsOverlappingReservation(
                             space.studySpaceId(),
                             LocalDateTime.of(date, start),
                             LocalDateTime.of(date, start.plusHours(1))
@@ -116,7 +116,7 @@ public class ReservationController {
         String studentId = getCurrentStudentId();
 
         //penalty for 3+ absences
-        long absences = reservationService.getReservationsForStudentOnDate(studentId, LocalDate.now().minusMonths(1))
+        long absences = reservationBusinessLogicService.getReservationsForStudentOnDate(studentId, LocalDate.now().minusMonths(1))
                 .stream()
                 .filter(r -> r.endTime().isBefore(LocalDateTime.now()))
                 .filter(r -> Boolean.FALSE.equals(r.present()))
@@ -138,7 +138,7 @@ public class ReservationController {
         }
 
         //allow up to 3 reservations per day
-        int reservationsCount = reservationService.getReservationsForStudentOnDate(studentId, date).size();
+        int reservationsCount = reservationBusinessLogicService.getReservationsForStudentOnDate(studentId, date).size();
         if (reservationsCount >= 3) {
             redirectAttributes.addFlashAttribute(
                     "errorMessage", "You can only make up to 3 reservations for a day."
@@ -153,7 +153,7 @@ public class ReservationController {
 
         //check overlap with student's own reservations
         boolean studentOverlap =
-                reservationService.getReservationsForStudentOnDate(studentId, date)
+                reservationBusinessLogicService.getReservationsForStudentOnDate(studentId, date)
                                   .stream()
                                   .anyMatch(r -> r.startTime().isBefore(endDateTime) && r.endTime().isAfter(startDateTime));
 
@@ -167,7 +167,7 @@ public class ReservationController {
         }
 
         //check overlap for the study space
-        if (reservationService.existsOverlappingReservation(studySpaceId, startDateTime, endDateTime)) {
+        if (reservationBusinessLogicService.existsOverlappingReservation(studySpaceId, startDateTime, endDateTime)) {
             redirectAttributes.addFlashAttribute(
                     "errorMessage",
                     "This time slot is already reserved."
@@ -180,7 +180,7 @@ public class ReservationController {
                 null, studentId, studySpaceId, startDateTime, endDateTime
         );
 
-        CreateReservationResult result = reservationService.createReservation(request);
+        CreateReservationResult result = reservationBusinessLogicService.createReservation(request);
 
         if (result.created()) {
             redirectAttributes.addFlashAttribute("successMessage", "Reservation created successfully!");
@@ -208,7 +208,7 @@ public class ReservationController {
         String libraryId = user.getLibraryId();
 
         // Καλούμε τη νέα μέθοδο για τον ίδιο μαθητή
-        List<ReservationView> reservations = reservationService.getMyReservations(libraryId);
+        List<ReservationView> reservations = reservationBusinessLogicService.getMyReservations(libraryId);
 
         model.addAttribute("reservations", reservations);
         return "student_reservations";
@@ -224,7 +224,7 @@ public class ReservationController {
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
         String libraryId = user.getLibraryId();
 
-        boolean cancelled = reservationService.cancelReservation(reservationId, libraryId);
+        boolean cancelled = reservationBusinessLogicService.cancelReservation(reservationId, libraryId);
         if (cancelled) {
             redirectAttributes.addFlashAttribute("cancelSuccess", true);
         } else {

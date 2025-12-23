@@ -2,7 +2,7 @@ package gr.hua.dit.StudyRooms.core.service.mapper;
 
 import gr.hua.dit.StudyRooms.core.model.Reservation;
 import gr.hua.dit.StudyRooms.core.model.StudySpace;
-import gr.hua.dit.StudyRooms.core.service.StudySpaceService;
+import gr.hua.dit.StudyRooms.core.service.StudySpaceBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.model.ReservationView;
 import org.springframework.stereotype.Component;
 
@@ -11,10 +11,10 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ReservationMapper {
-    private final StudySpaceService studySpaceService;
+    private final StudySpaceBusinessLogicService studySpaceBusinessLogicService;
 
-    public ReservationMapper(StudySpaceService studySpaceService) {
-        this.studySpaceService = studySpaceService;
+    public ReservationMapper(StudySpaceBusinessLogicService studySpaceBusinessLogicService) {
+        this.studySpaceBusinessLogicService = studySpaceBusinessLogicService;
     }
 
     public ReservationView convertReservationToReservationView(final Reservation reservation) {

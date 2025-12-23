@@ -1,9 +1,11 @@
 package gr.hua.dit.StudyRooms.core.service.model;
 
+import gr.hua.dit.StudyRooms.core.service.impl.ReservationBusinessLogicServiceImpl;
+
 /**
  * CreateReservationResult DTO.
  *
- * @see gr.hua.dit.StudyRooms.core.service.impl.ReservationServiceImpl#createReservation(CreateReservationRequest)
+ * @see ReservationBusinessLogicServiceImpl#createReservation(CreateReservationRequest)
  */
 public record CreateReservationResult(boolean created, String reason, ReservationView reservationView) {
     public static CreateReservationResult success(final ReservationView reservationView) {

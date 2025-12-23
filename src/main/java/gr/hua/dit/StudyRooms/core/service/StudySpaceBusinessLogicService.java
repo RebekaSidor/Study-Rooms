@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Service (contract) for managing rooms/seats.
  */
-public interface StudySpaceService {
+public interface StudySpaceBusinessLogicService {
 
     CreateStudySpaceResult createStudySpace(final CreateStudySpaceRequest createStudySpace);
     List<StudySpaceView> getAllStudySpaces();

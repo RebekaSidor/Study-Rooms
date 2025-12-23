@@ -7,7 +7,7 @@ import gr.hua.dit.StudyRooms.core.service.model.CreatePersonResult;
 /**
  * Service (contract) for managing students/staff.
  */
-public interface PersonService {
+public interface PersonBusinessLogicService {
 
     CreatePersonResult createPerson(final CreatePersonRequest createPersonRequest, final boolean notify);
 
