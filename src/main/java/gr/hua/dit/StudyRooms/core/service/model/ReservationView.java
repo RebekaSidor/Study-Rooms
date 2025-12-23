@@ -15,3 +15,4 @@ public record ReservationView(
         LocalDateTime endTime,
         Boolean present
 ) {}
+

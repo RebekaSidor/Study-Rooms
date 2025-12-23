@@ -1,6 +1,7 @@
 package gr.hua.dit.StudyRooms.core.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -30,22 +31,31 @@ public class Reservation {
     @Column(name = "id")
     private Long id;
 
+    @NotNull
+    @NotBlank
+    @Size(max = 20)
     @Column(name="reservation_id", nullable = false)
     private String reservationId;
 
-    @Column(name = "student_id", nullable = false)
-    private String studentId;
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "student_id", referencedColumnName = "library_id", nullable = false)
+    private Person student;
 
-    @Column(name = "study_space_id", nullable = false)
-    private String studySpaceId;
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "study_space_id", referencedColumnName = "space_id", nullable = false)
+    private StudySpace studySpace;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Future
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
+    @Future
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
@@ -54,46 +64,86 @@ public class Reservation {
 
     public Reservation() {}
 
-    public Reservation(Long id, String reservationId, String studentId, String studySpaceId, Instant createdAt) {
+    public Reservation(Long id, String reservationId, Person student, StudySpace studySpace, Instant createdAt) {
         this.id = id;
         this.reservationId = reservationId;
-        this.studentId = studentId;
-        this.studySpaceId = studySpaceId;
+        this.student = student;
+        this.studySpace = studySpace;
         this.createdAt = createdAt;
     }
 
-    public Long getId() { return id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getReservationId() { return reservationId; }
-    public void setReservationId(String reservationId) { this.reservationId = reservationId; }
+    public String getReservationId() {
+        return reservationId;
+    }
 
-    public String getStudentId() { return studentId; }
-    public void setStudentId(String studentId) { this.studentId = studentId; }
+    public void setReservationId(String reservationId) {
+        this.reservationId = reservationId;
+    }
 
-    public String getStudySpaceId() { return studySpaceId; }
-    public void setStudySpaceId(String studySpaceId) { this.studySpaceId = studySpaceId; }
+    public Person getStudent() {
+        return student;
+    }
 
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public void setStudent(Person student) {
+        this.student = student;
+    }
 
-    public LocalDateTime getStartTime() { return startTime; }
-    public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
+    public StudySpace getStudySpace() {
+        return studySpace;
+    }
 
-    public LocalDateTime getEndTime() { return endTime; }
-    public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
+    public void setStudySpace(StudySpace studySpace) {
+        this.studySpace = studySpace;
+    }
 
-    public Boolean getPresent() {return present;}
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
 
-    public void setPresent(Boolean present) {this.present = present;}
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public Boolean getPresent() {
+        return present;
+    }
+
+    public void setPresent(Boolean present) {
+        this.present = present;
+    }
 
     @Override
     public String toString() {
         return "Reservation{" +
                 "id=" + id +
                 ", reservationId='" + reservationId + '\'' +
-                ", studentId='" + studentId + '\'' +
-                ", studySpaceId='" + studySpaceId + '\'' +
+                ", student=" + (student != null ? student.getId() : null) +
+                ", studySpace=" + (studySpace != null ? studySpace.getId() : null) +
                 ", createdAt=" + createdAt +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", present=" + present +
                 '}';
     }
+
 }

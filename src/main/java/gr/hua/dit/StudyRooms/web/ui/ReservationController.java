@@ -6,6 +6,7 @@ import gr.hua.dit.StudyRooms.core.service.ReservationService;
 import gr.hua.dit.StudyRooms.core.service.StudySpaceService;
 import gr.hua.dit.StudyRooms.core.service.model.*;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -34,6 +35,7 @@ public class ReservationController {
     }
 
     //show the form for making reservations
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/student/make-reservation")
     public String showReservationForm(
             @RequestParam(value = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -105,6 +107,7 @@ public class ReservationController {
         return "student_make_reservation";
     }
 
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/reserve")
     public String makeReservation(@RequestParam String studySpaceId,
                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -113,7 +116,7 @@ public class ReservationController {
         String studentId = getCurrentStudentId();
 
         //penalty for 3+ absences
-        long absences = reservationService.getReservationsByStudentId(studentId)
+        long absences = reservationService.getReservationsForStudentOnDate(studentId, LocalDate.now().minusMonths(1))
                 .stream()
                 .filter(r -> r.endTime().isBefore(LocalDateTime.now()))
                 .filter(r -> Boolean.FALSE.equals(r.present()))
@@ -198,20 +201,21 @@ public class ReservationController {
     }
 
     //show students reservations
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/my-reservations")
     public String showStudentReservations(Authentication auth, Model model) {
-        //get the current logged-in user details
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
         String libraryId = user.getLibraryId();
 
-        //get all reservations for this student
-        List<ReservationView> reservations = reservationService.getReservationsByStudentId(libraryId);
+        // Καλούμε τη νέα μέθοδο για τον ίδιο μαθητή
+        List<ReservationView> reservations = reservationService.getMyReservations(libraryId);
 
         model.addAttribute("reservations", reservations);
         return "student_reservations";
     }
 
     //cancel reservation ~ by student
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/cancel/{reservationId}")
     public String cancelReservation(@PathVariable("reservationId") Long reservationId,
                                     RedirectAttributes redirectAttributes,

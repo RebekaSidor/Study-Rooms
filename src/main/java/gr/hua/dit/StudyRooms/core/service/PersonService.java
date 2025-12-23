@@ -1,5 +1,6 @@
 package gr.hua.dit.StudyRooms.core.service;
 
+import gr.hua.dit.StudyRooms.core.model.Person;
 import gr.hua.dit.StudyRooms.core.service.model.CreatePersonRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreatePersonResult;
 
@@ -17,5 +18,7 @@ public interface PersonService {
     String updateEmail(String libraryId, String newEmail);
     String updatePhone(String libraryId, String newPhone);
     String updatePassword(String libraryId, String newPassword);
+    Person getPersonById(String libraryId);
+
 }
 

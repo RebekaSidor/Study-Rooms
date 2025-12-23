@@ -1,8 +1,11 @@
 package gr.hua.dit.StudyRooms.web.ui;
 
+import gr.hua.dit.StudyRooms.core.model.Person;
 import gr.hua.dit.StudyRooms.core.model.Reservation;
+import gr.hua.dit.StudyRooms.core.repository.PersonRepository;
 import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
 import gr.hua.dit.StudyRooms.core.security.ApplicationUserDetails;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,11 +24,14 @@ public class StudentController {
 
     private final PersonService personService;
     private final ReservationRepository reservationRepository;
+    private final PersonRepository personRepository;
 
     public StudentController(PersonService personService,
-                             ReservationRepository reservationRepository) {
+                             ReservationRepository reservationRepository,
+                             PersonRepository personRepository) {
         this.personService = personService;
         this.reservationRepository = reservationRepository;
+        this.personRepository = personRepository;
     }
 
     //show student profil
@@ -34,7 +40,17 @@ public class StudentController {
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
         model.addAttribute("me", user);
 
-        List<Reservation> reservations = reservationRepository.findByStudentId(user.getLibraryId());
+        //find person
+        Person student = personRepository.findByLibraryId(user.getLibraryId()).orElse(null);
+        if (student == null) {
+            // χειρισμός όταν δεν βρεθεί ο χρήστης
+            model.addAttribute("reservations", List.of());
+            model.addAttribute("absences", 0L);
+            return "student_profile";
+        }
+
+        // Τώρα παίρνεις τις κρατήσεις χρησιμοποιώντας το αντικείμενο Person
+        List<Reservation> reservations = reservationRepository.findByStudent(student);
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -53,6 +69,7 @@ public class StudentController {
  * change personal info
  * */
     //show form for changing email
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/profile/change-email")
     public String showEmailForm(Authentication auth, Model model) {
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
@@ -60,6 +77,7 @@ public class StudentController {
         return "student_change_email";
     }
     //make change
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/profile/change-email")
     public String changeEmail(@RequestParam("email") String email, Authentication auth, Model model) {
         //get logged-in user
@@ -77,6 +95,7 @@ public class StudentController {
     }
 
     //show form for changing phone
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/profile/change-phone")
     public String showChangePhoneForm() {return "student_change_phone";}
     //make change
@@ -97,9 +116,11 @@ public class StudentController {
     }
 
     //show form for changing password
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/profile/change-password")
     public String showChangePasswordForm() {return "student_change_password";}
     //make change
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping("/profile/change-password")
     public String changePassword(@RequestParam("password") String password, @RequestParam("confirm") String confirm, Authentication auth, Model model) {
 

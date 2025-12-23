@@ -22,14 +22,14 @@ public class ReservationMapper {
             return null;
         }
 
-        StudySpace space = studySpaceService.getStudySpaceById(reservation.getStudySpaceId());
+        StudySpace space = reservation.getStudySpace();
 
         return new ReservationView(
                 reservation.getId(),
                 reservation.getReservationId(),
-                reservation.getStudentId(),
-                reservation.getStudySpaceId(),
-                space != null ? space.getName() : reservation.getStudySpaceId(),
+                reservation.getStudent().getLibraryId(),
+                space != null ? space.getId().toString() : null,
+                space != null ? space.getName() : null,
                 reservation.getStartTime(),
                 reservation.getEndTime(),
                 reservation.getPresent()

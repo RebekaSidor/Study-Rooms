@@ -17,16 +17,17 @@ spring:
       hibernate.dialect: org.hibernate.dialect.H2Dialect
       hibernate.format_sql: true
 
-  server:
-    error:
-      whitelabel:
-        enabled: false
-      include-message: always
-      include-binding-errors: always
-      include-exception: true
-
   h2:
     console:
       enabled: true
       path: /h2-console
+
+
+server:
+  error:
+    whitelabel:
+      enabled: false
+    include-message: always
+    include-binding-errors: always
+    include-exception: true
 

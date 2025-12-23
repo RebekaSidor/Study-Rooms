@@ -1,42 +1,68 @@
 package gr.hua.dit.StudyRooms.core.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.Instant;
 import java.time.LocalTime;
 
+/**
+ * StudySpace entity.
+ */
 @Entity
-@Table(name = "STUDY_SPACE")
+@Table(
+        name = "STUDY_SPACE",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_study_space_space_id", columnNames = "space_id"),
+                @UniqueConstraint(name = "uk_study_space_name", columnNames = "name")
+        },
+        indexes = {
+                @Index(name = "idx_study_space_type", columnList = "type"),
+                @Index(name = "idx_study_space_capacity", columnList = "capacity")
+        }
+)
 public class StudySpace {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "id")
     private Long id;
 
-    @Column(name="space_id")
+    @NotNull
+    @NotBlank
+    @Size(max = 20)
+    @Column(name="space_id", nullable = false, length = 50)
     private String studySpaceId;
 
-    @Column(name="name")
+    @NotNull
+    @NotBlank
+    @Size(max = 20)
+    @Column(name="name", nullable = false, length = 50)
     private String name;  //ex. R1 (room 1) - S12 (seat 12)
 
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "type")
+    @Column(name = "type", nullable = false, length = 20)
     private StudySpaceType type;
 
     @Column(name="capacity")
-    private Integer capacity;
+    private Integer capacity; //only for rooms
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(name = "opening_time")
+    @NotNull
+    @Future
+    @Column(name = "opening_time", nullable = false)
     private LocalTime openingTime;
 
-    @Column(name = "closing_time")
+    @NotNull
+    @Future
+    @Column(name = "closing_time", nullable = false)
     private LocalTime closingTime;
 
-    public StudySpace() {
-    }
+    public StudySpace() {}
 
     public StudySpace(Long id, String studySpaceId, String name, StudySpaceType type,
                       Integer capacity, Boolean available, Instant createdAt) {

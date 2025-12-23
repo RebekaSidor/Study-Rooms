@@ -11,7 +11,8 @@ import java.util.Map;
 /**
  * Service (contract) for managing reservations.
  */
-public interface ReservationService {
+public interface
+ReservationService {
 
     CreateReservationResult createReservation(final CreateReservationRequest request, final boolean notify);
 
@@ -25,6 +26,7 @@ public interface ReservationService {
     List<ReservationView> getAllReservations();
     List<ReservationView> getReservationsForStudentOnDate(String studentId, LocalDate date);
     List<ReservationView> getReservationsByStudentId(String studentId);
+    List<ReservationView> getMyReservations(String studentId);
 
     long countAllReservations();
     long countActiveUsers(); // users with reservation in last 30 days

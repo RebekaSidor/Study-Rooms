@@ -21,7 +21,7 @@ public class TestController {
     public String testErrorError() {
         return "error/error";
     }
-    */
+
 
     @GetMapping(value = "/test/error/NullPointerException")
     public String testErrorNullPointerException() {
@@ -30,4 +30,6 @@ public class TestController {
         final int c = a + b; // Throws NullPointerException.
         return null; // Unreachable.
     }
+    */
+
 }

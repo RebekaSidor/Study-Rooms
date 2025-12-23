@@ -97,7 +97,7 @@
                 <td th:text="${booking.reservationId}"></td>
                 <td th:text="${#temporals.format(booking.startTime, 'HH:mm dd-MM-yyyy')}"></td>
                 <td th:text="${#temporals.format(booking.endTime, 'HH:mm dd-MM-yyyy')}"></td>
-                <td th:text="${booking.studentId}"></td>
+                <td th:text="${booking.student.libraryId}"></td>
                 <td>
                     <!-- Για παρελθούσες κρατήσεις -->
                     <span th:if="${booking.endTime != null and booking.endTime.isBefore(now)}"

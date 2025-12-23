@@ -11,6 +11,7 @@ import gr.hua.dit.StudyRooms.core.service.StudySpaceService;
 import gr.hua.dit.StudyRooms.core.service.model.NextStudySpaceResponse;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,6 +40,7 @@ public class StaffController {
     }
 
     //show library staff profil
+    @PreAuthorize("hasRole('LIB_STAFF')")
     @GetMapping("/staff/home")
     public String staffHome(Authentication auth, Model model) {
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
@@ -50,6 +52,7 @@ public class StaffController {
 * edit and create new study spaces
 */
     //general edit page for study spaces
+    @PreAuthorize("hasRole('LIB_STAFF')")
     @GetMapping("/staff/studyspaces")
     public String manageStudySpaces(Model model) {
         model.addAttribute("spaces", studySpaceService.getAllStudySpaces());
@@ -57,6 +60,7 @@ public class StaffController {
     }
 
     //edit page for chosen study space
+    @PreAuthorize("hasRole('LIB_STAFF')")
     @GetMapping("/staff/studyspaces/edit/{id}")
     public String editStudySpace(@PathVariable("id") String id, Model model) {
          StudySpace space = studySpaceService.getStudySpaceById(id);
@@ -65,6 +69,7 @@ public class StaffController {
     }
 
     //save changes made to study space
+    @PreAuthorize("hasRole('LIB_STAFF')")
     @PostMapping("/staff/studyspaces/edit")
     public String saveStudySpace(@ModelAttribute("space") StudySpace formSpace, Model model) {
 
@@ -137,6 +142,7 @@ public class StaffController {
     }
 
     //form for creating new study space
+    @PreAuthorize("hasRole('LIB_STAFF')")
     @GetMapping("/staff/studyspaces/create")
     public String createStudySpaceForm(Model model) {
         model.addAttribute("space", new StudySpace());
@@ -144,6 +150,7 @@ public class StaffController {
     }
 
     //save the new studyspace
+    @PreAuthorize("hasRole('LIB_STAFF')")
     @PostMapping("/staff/studyspaces/create")
     public String saveNewStudySpace(@ModelAttribute("space") StudySpace space, Model model) {
         //validate that the study space has ID and name
@@ -168,6 +175,7 @@ public class StaffController {
 /**
  * show statistics for study spaces
  * */
+    @PreAuthorize("hasRole('LIB_STAFF')")
     @GetMapping("/staff/statistics")
     public String showStats(Model model) throws Exception {
          model.addAttribute("totalReservations", reservationService.countAllReservations());
@@ -197,6 +205,7 @@ public class StaffController {
  * check attendance of student
  * */
     //show student reservation and attendances
+    @PreAuthorize("hasRole('LIB_STAFF')")
     @GetMapping("/staff/attendances")
     public String attendances(Model model) {
         List<Reservation> bookings = reservationRepository.findAllByOrderByStartTimeDesc();
@@ -217,6 +226,7 @@ public class StaffController {
     }
 
     //manually change attendance if student came to his reservation
+    @PreAuthorize("hasRole('LIB_STAFF')")
     @GetMapping("/staff/attendances/toggle/{id}")
     public String toggleAttendance(@PathVariable Long id) {
         Reservation reservation = reservationRepository.findById(id).orElseThrow();
@@ -232,6 +242,7 @@ public class StaffController {
  * cancel student reservations
  * */
     //show future student reservations and cancel form
+    @PreAuthorize("hasRole('LIB_STAFF')")
     @GetMapping("/staff/cancel-reservation")
     public String showCancelableReservations(Model model, HttpSession session) {
 
@@ -247,8 +258,9 @@ public class StaffController {
         return "staff_cancel";
     }
 
-    //make cancellation
+    //make cancellation ~ by library staff
     //history only visible for session, if browser closed history lost
+    @PreAuthorize("hasRole('LIB_STAFF')")
     @PostMapping("/staff/cancel-reservation")
     public String cancelReservation(
             @RequestParam Long selectedReservation,
@@ -269,10 +281,11 @@ public class StaffController {
         //create history entry
         String historyEntry =
                 "Reservation " + reservation.getReservationId() +
-                " (Student: " + reservation.getStudentId() +
-                 ", Space: " + reservation.getStudySpaceId() +
-                 ", " + reservation.getStartTime() + " – " + reservation.getEndTime() +
-                 ") was deleted. Reason: " + cancelReason;
+                        " (Student: " + reservation.getStudent().getLibraryId() +
+                        ", Space: " + reservation.getStudySpace().getId() +
+                        ", " + reservation.getStartTime() + " – " + reservation.getEndTime() +
+                        ") was deleted. Reason: " + cancelReason;
+
 
         //get history from session
         List<String> history = (List<String>) session.getAttribute("history");

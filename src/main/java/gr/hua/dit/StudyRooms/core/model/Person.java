@@ -34,19 +34,19 @@ public final class Person {
     @NotNull
     @NotBlank
     @Size(max = 20)
-    @Column(name="library_id")
+    @Column(name="library_id", nullable = false, length = 20)
     private String libraryId;
 
     @NotNull
     @NotBlank
     @Size(max = 100)
-    @Column(name = "first_name")
+    @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
 
     @NotNull
     @NotBlank
     @Size(max = 100)
-    @Column(name = "last_name")
+    @Column(name = "last_name", nullable = false, length = 100)
     private String lastName;
 
     @NotNull

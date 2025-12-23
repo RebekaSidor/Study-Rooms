@@ -1,14 +1,23 @@
 package gr.hua.dit.StudyRooms.core.service.impl;
 
+import gr.hua.dit.StudyRooms.core.model.Person;
+import gr.hua.dit.StudyRooms.core.model.PersonType;
 import gr.hua.dit.StudyRooms.core.model.Reservation;
 import gr.hua.dit.StudyRooms.core.model.StudySpace;
+import gr.hua.dit.StudyRooms.core.repository.PersonRepository;
 import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
+import gr.hua.dit.StudyRooms.core.security.CurrentUser;
+import gr.hua.dit.StudyRooms.core.security.CurrentUserProvider;
+import gr.hua.dit.StudyRooms.core.service.PersonService;
 import gr.hua.dit.StudyRooms.core.service.ReservationService;
 import gr.hua.dit.StudyRooms.core.service.StudySpaceService;
 import gr.hua.dit.StudyRooms.core.service.mapper.ReservationMapper;
 import gr.hua.dit.StudyRooms.core.service.model.CreateReservationRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreateReservationResult;
 import gr.hua.dit.StudyRooms.core.service.model.ReservationView;
+import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,24 +32,39 @@ import java.util.Map;
 @Service
 public class ReservationServiceImpl implements ReservationService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReservationServiceImpl.class);
+
     private final ReservationRepository reservationRepository;
     private final ReservationMapper reservationMapper;
     private final StudySpaceService studySpaceService;
+    private final PersonService personService;
+    private final PersonRepository personRepository;
+    private final CurrentUserProvider currentUserProvider;
 
     public ReservationServiceImpl(ReservationRepository reservationRepository,
                                   ReservationMapper reservationMapper,
-                                  StudySpaceService studySpaceService) {
+                                  StudySpaceService studySpaceService,
+                                  PersonService personService,
+                                  PersonRepository personRepository,
+                                  CurrentUserProvider currentUserProvider) {
 
         if (reservationRepository == null) throw new NullPointerException();
         if (reservationMapper == null) throw new NullPointerException();
         if (studySpaceService == null) throw new NullPointerException();
+        if (personService == null) throw new NullPointerException();
+        if (personRepository == null) throw new NullPointerException();
+        if (currentUserProvider == null) throw new NullPointerException();
 
         this.reservationRepository = reservationRepository;
         this.reservationMapper = reservationMapper;
         this.studySpaceService = studySpaceService;
+        this.personService = personService;
+        this.personRepository = personRepository;
+        this.currentUserProvider = currentUserProvider;
     }
 
-/*create a reservation*/
+    /*create a reservation*/
+    @Transactional
     @Override
     public CreateReservationResult createReservation(CreateReservationRequest request, boolean notify) {
         //find study space
@@ -49,10 +73,28 @@ public class ReservationServiceImpl implements ReservationService {
             return CreateReservationResult.fail("StudySpace not found");
         }
 
+        // Find student
+        Person student = personService.getPersonById(request.studentId());
+        if (student == null) {
+            return CreateReservationResult.fail("Student not found");
+        }
+
+        //Security-------------------------------------------
+        final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
+
+        if (currentUser.type() != PersonType.STUDENT) {
+            throw new SecurityException("Student role required to create reservation");
+        }
+
+        if (!currentUser.libraryId().equals(request.studentId())) {
+            throw new SecurityException("Authenticated student does not match request studentId");
+        }
+
+        //Rules----------------------------------------------
         //check if there is other reservation for the same study space at the same time
         boolean conflict = reservationRepository
-                .existsByStudySpaceIdAndEndTimeAfterAndStartTimeBefore(
-                        studySpace.getStudySpaceId(),
+                .existsByStudySpaceAndEndTimeAfterAndStartTimeBefore(
+                        studySpace,
                         request.startTime(),
                         request.endTime()
                 );
@@ -62,42 +104,46 @@ public class ReservationServiceImpl implements ReservationService {
 
         //check if student has other reservation at the same time
         boolean studentHasOverlap =
-                reservationRepository.existsByStudentIdAndEndTimeAfterAndStartTimeBefore(
-                        request.studentId(),
+                reservationRepository.existsByStudentAndEndTimeAfterAndStartTimeBefore(
+                        student,
                         request.startTime(),
                         request.endTime()
                 );
         if (studentHasOverlap) {
-            throw new IllegalStateException("You already have a reservation at that time.");
+            return CreateReservationResult.fail(
+                    "You already have another reservation during this time."
+            );
         }
 
-        //create Reservation
+        // Create reservation
         Reservation reservation = new Reservation();
         reservation.setReservationId("R" + System.currentTimeMillis());
-        reservation.setStudentId(request.studentId());
-        reservation.setStudySpaceId(studySpace.getStudySpaceId());
+        reservation.setStudent(student);
+        reservation.setStudySpace(studySpace);
         reservation.setStartTime(request.startTime());
         reservation.setEndTime(request.endTime());
+
         //save in DB
         reservation = reservationRepository.save(reservation);
+
         //convert to view
         ReservationView view = reservationMapper.convertReservationToReservationView(reservation);
 
         return CreateReservationResult.success(view);
     }
 
-
     //check if there is other reservation for the same study space at the same time
     @Override
     public boolean existsOverlappingReservation(String studySpaceId, LocalDateTime start, LocalDateTime end) {
+
         //find study-space
         StudySpace studySpace = studySpaceService.getStudySpaceById(studySpaceId);
         if (studySpace == null) {
             return false;
         }
         //check for overlap
-        return reservationRepository.existsByStudySpaceIdAndEndTimeAfterAndStartTimeBefore(
-                studySpace.getStudySpaceId(),
+        return reservationRepository.existsByStudySpaceAndEndTimeAfterAndStartTimeBefore(
+                studySpace,
                 start,
                 end
         );
@@ -111,6 +157,24 @@ public class ReservationServiceImpl implements ReservationService {
                 .map(reservationMapper::convertReservationToReservationView)
                 .toList();
     }
+    @Override
+    public List<ReservationView> getMyReservations(String studentId) {
+        final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
+
+        if (currentUser.type() != PersonType.STUDENT || !currentUser.libraryId().equals(studentId)) {
+            throw new SecurityException("Only the student can view their own reservations");
+        }
+
+        Person student = personService.getPersonById(studentId);
+        if (student == null) return List.of();
+
+        List<Reservation> reservations = reservationRepository.findByStudent(student);
+
+        return reservations.stream()
+                .map(reservationMapper::convertReservationToReservationView)
+                .toList();
+    }
+
 
     //count how many reservations there are
     @Override
@@ -121,13 +185,28 @@ public class ReservationServiceImpl implements ReservationService {
     //count users that used the application in the last 30 days ~ for statistics page
     @Override
     public long countActiveUsers() {
+        //Security-------------------------------------------
+        final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
+
+        if (currentUser.type() != PersonType.LIB_STAFF) {
+            throw new SecurityException("Staff role required");
+        }
+
         LocalDateTime now = LocalDateTime.now().minusDays(30);
-        return reservationRepository.countDistinctStudentIdByStartTimeAfter(now);
+        return reservationRepository.countDistinctStudentsAfter(now);
     }
 
     //count amount of reservations for each study space
     @Override
     public Map<String, Long> getReservationsPerRoom() {
+        //Security-------------------------------------------
+        final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
+
+        if (currentUser.type() != PersonType.LIB_STAFF) {
+            throw new SecurityException("Staff role required");
+        }
+
+
         List<Object[]> results = reservationRepository.countReservationsGroupByStudySpaceId();
         Map<String, Long> map = new HashMap<>();
 
@@ -142,8 +221,17 @@ public class ReservationServiceImpl implements ReservationService {
     //get all reservations for specific student
     @Override
     public List<ReservationView> getReservationsByStudentId(String studentId) {
+        //Security----------------------------------------------
+        final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
 
-        List<Reservation> reservations = reservationRepository.findByStudentId(studentId);
+        if (currentUser.type() != PersonType.LIB_STAFF) {
+            throw new SecurityException("Only staff can view other students' reservations");
+        }
+
+        Person student = personService.getPersonById(studentId);
+        if (student == null) return List.of();
+
+        List<Reservation> reservations = reservationRepository.findByStudent(student);
 
         return reservations.stream()
                 .map(reservationMapper::convertReservationToReservationView)
@@ -153,6 +241,14 @@ public class ReservationServiceImpl implements ReservationService {
     //calculate number of reservations per hour ~ for statistics page chart
     @Override
     public Map<Integer, Long> getReservationsPerHourForToday() {
+
+        //Security-------------------------------------
+        final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
+
+        if (currentUser.type() != PersonType.LIB_STAFF) {
+            throw new SecurityException("Staff role required");
+        }
+
         //map working hours to num of reservations
         Map<Integer, Long> reservationsPerHour = new HashMap<>();
         for (int h = 8; h <= 22; h++) {
@@ -174,6 +270,7 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     //cancel my reservation ~ student
+    @Transactional
     @Override
     public boolean cancelReservation(Long reservationId, String libraryId) {
         //get the reservation
@@ -182,15 +279,32 @@ public class ReservationServiceImpl implements ReservationService {
             return false;
         }
 
+        //Security-------------------------------------------
+
         var reservation = optionalReservation.get();
 
-        //check that it's the students reservation - other students can't cancel
-        if (!reservation.getStudentId().equals(libraryId)) {
-            return false;
+        final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
+
+        if (currentUser.type() == PersonType.STUDENT) { //student only cancels his own reservations
+            if (!reservation.getStudent().getLibraryId().equals(currentUser.libraryId())) {
+                throw new SecurityException("Student cannot cancel another student's reservation");
+            }
         }
+        else if (currentUser.type() == PersonType.LIB_STAFF) { //staff can cancel any reservation
+        }
+        else {
+            throw new SecurityException("Unsupported role");
+        }
+
 
         //delete
         reservationRepository.delete(reservation);
+        LOGGER.info(
+                "Reservation {} cancelled by student {}",
+                reservation.getReservationId(),
+                libraryId
+        );
+
         return true;
     }
 
@@ -200,14 +314,32 @@ public class ReservationServiceImpl implements ReservationService {
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
 
+        //Security------------------------------------
+        final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
+
+        if (currentUser.type() == PersonType.STUDENT) {
+            if (!currentUser.libraryId().equals(studentId)) {
+                throw new SecurityException("Student cannot view another student's reservations");
+            }
+        }
+        else if (currentUser.type() == PersonType.LIB_STAFF) {
+            // OK
+        }
+        else {
+            throw new SecurityException("Unsupported role");
+        }
+
         //get from db
-        List<Reservation> reservations = reservationRepository.findByStudentIdAndStartTimeBetween(
-                studentId, startOfDay, endOfDay
+        Person student = personService.getPersonById(studentId);
+        if (student == null) {
+            return List.of();
+        }
+        List<Reservation> reservations = reservationRepository.findByStudentAndStartTimeBetween(
+                student, startOfDay, endOfDay
         );
 
         return reservations.stream()
                 .map(reservationMapper::convertReservationToReservationView)
                 .toList();
     }
-
 }

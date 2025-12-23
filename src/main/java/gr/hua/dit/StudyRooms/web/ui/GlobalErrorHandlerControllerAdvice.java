@@ -13,6 +13,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 /**
  * Provides global error handling and custom error templates.
  */
+/*
 @ControllerAdvice
 public class GlobalErrorHandlerControllerAdvice {
 
@@ -39,4 +40,4 @@ public class GlobalErrorHandlerControllerAdvice {
         }
         return "error/error";
     }
-}
+}*/

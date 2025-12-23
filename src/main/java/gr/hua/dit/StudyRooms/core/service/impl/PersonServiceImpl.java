@@ -174,6 +174,11 @@ public class PersonServiceImpl implements PersonService {
         return CreatePersonResult.success(personView);
     }
 
+    @Override
+    public Person getPersonById(String libraryId) {
+        return personRepository.findByLibraryId(libraryId).orElse(null);
+    }
+
     //auto generate library id
     private String generateNextLibraryId() {
         Person last = personRepository.findTopByOrderByLibraryIdDesc();

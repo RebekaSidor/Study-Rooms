@@ -147,8 +147,8 @@
                                required />
                     </td>
                     <td th:text="${res.reservationId}"></td>
-                    <td th:text="${res.studentId}"></td>
-                    <td th:text="${res.studySpaceId}"></td>
+                    <td th:text="${res.student.libraryId}"></td>
+                    <td th:text="${res.studySpace.id}"></td>
                     <td th:text="${#temporals.format(res.startTime,'yyyy-MM-dd HH:mm')}"></td>
                     <td th:text="${#temporals.format(res.endTime,'yyyy-MM-dd HH:mm')}"></td>
                 </tr>
