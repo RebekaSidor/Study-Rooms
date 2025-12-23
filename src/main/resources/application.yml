@@ -22,7 +22,6 @@ spring:
       enabled: true
       path: /h2-console
 
-
 server:
   error:
     whitelabel:
@@ -31,3 +30,8 @@ server:
     include-binding-errors: always
     include-exception: true
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
