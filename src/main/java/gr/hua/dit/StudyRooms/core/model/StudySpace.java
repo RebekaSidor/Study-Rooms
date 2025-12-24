@@ -53,12 +53,10 @@ public class StudySpace {
     private Instant createdAt;
 
     @NotNull
-    @Future
     @Column(name = "opening_time", nullable = false)
     private LocalTime openingTime;
 
     @NotNull
-    @Future
     @Column(name = "closing_time", nullable = false)
     private LocalTime closingTime;
 

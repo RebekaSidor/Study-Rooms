@@ -51,11 +51,11 @@ public class Reservation {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Future
+    @NotNull
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
-    @Future
+    @NotNull
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 

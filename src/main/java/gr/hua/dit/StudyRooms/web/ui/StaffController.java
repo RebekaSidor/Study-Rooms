@@ -11,6 +11,7 @@ import gr.hua.dit.StudyRooms.core.service.StudySpaceBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.model.NextStudySpaceResponse;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -204,6 +205,7 @@ public class StaffController {
  * check attendance of student
  * */
     //show student reservation and attendances
+    @Transactional
     @PreAuthorize("hasRole('LIB_STAFF')")
     @GetMapping("/staff/attendances")
     public String attendances(Model model) {
