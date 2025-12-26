@@ -1,6 +1,7 @@
 package gr.hua.dit.StudyRooms.web.ui;
 
 import gr.hua.dit.StudyRooms.core.model.StudySpaceType;
+import gr.hua.dit.StudyRooms.core.port.HolidayService;
 import gr.hua.dit.StudyRooms.core.security.ApplicationUserDetails;
 import gr.hua.dit.StudyRooms.core.service.ReservationBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.StudySpaceBusinessLogicService;
@@ -28,10 +29,12 @@ public class ReservationController {
 
     private final StudySpaceBusinessLogicService studySpaceBusinessLogicService;
     private final ReservationBusinessLogicService reservationBusinessLogicService;
+    private final HolidayService holidayService;
 
-    public ReservationController(StudySpaceBusinessLogicService studySpaceBusinessLogicService, ReservationBusinessLogicService reservationBusinessLogicService) {
+    public ReservationController(StudySpaceBusinessLogicService studySpaceBusinessLogicService, ReservationBusinessLogicService reservationBusinessLogicService, HolidayService holidayService) {
         this.studySpaceBusinessLogicService = studySpaceBusinessLogicService;
         this.reservationBusinessLogicService = reservationBusinessLogicService;
+        this.holidayService = holidayService;
     }
 
     //show the form for making reservations
@@ -137,6 +140,12 @@ public class ReservationController {
             return "redirect:/student/make-reservation?date=" + date + "&studySpaceId=" + studySpaceId;
         }
 
+        // Check if the reservation date is a holiday ~ holidayAPI
+        if (holidayService.isHoliday(date)) {
+            redirectAttributes.addFlashAttribute( "errorMessage", "Reservations cannot be made on holidays: " + date );
+            return "redirect:/student/make-reservation?date=" + date + "&studySpaceId=" + studySpaceId;
+        }
+
         //allow up to 3 reservations per day
         int reservationsCount = reservationBusinessLogicService.getReservationsForStudentOnDate(studentId, date).size();
         if (reservationsCount >= 3) {
@@ -145,7 +154,6 @@ public class ReservationController {
             );
             return "redirect:/student/make-reservation?date=" + date + "&studySpaceId=" + studySpaceId;
         }
-
 
         LocalTime start = LocalTime.parse(startTime);
         LocalDateTime startDateTime = LocalDateTime.of(date, start);

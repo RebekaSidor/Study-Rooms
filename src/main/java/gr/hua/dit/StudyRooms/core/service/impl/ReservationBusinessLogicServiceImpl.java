@@ -4,6 +4,7 @@ import gr.hua.dit.StudyRooms.core.model.Person;
 import gr.hua.dit.StudyRooms.core.model.PersonType;
 import gr.hua.dit.StudyRooms.core.model.Reservation;
 import gr.hua.dit.StudyRooms.core.model.StudySpace;
+import gr.hua.dit.StudyRooms.core.port.HolidayService;
 import gr.hua.dit.StudyRooms.core.repository.PersonRepository;
 import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
 import gr.hua.dit.StudyRooms.core.security.CurrentUser;
@@ -40,13 +41,15 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
     private final PersonBusinessLogicService personBusinessLogicService;
     private final PersonRepository personRepository;
     private final CurrentUserProvider currentUserProvider;
+    private final HolidayService holidayService;
 
     public ReservationBusinessLogicServiceImpl(ReservationRepository reservationRepository,
                                                ReservationMapper reservationMapper,
                                                StudySpaceBusinessLogicService studySpaceBusinessLogicService,
                                                PersonBusinessLogicService personBusinessLogicService,
                                                PersonRepository personRepository,
-                                               CurrentUserProvider currentUserProvider) {
+                                               CurrentUserProvider currentUserProvider,
+                                               HolidayService holidayService) {
 
         if (reservationRepository == null) throw new NullPointerException();
         if (reservationMapper == null) throw new NullPointerException();
@@ -54,6 +57,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         if (personBusinessLogicService == null) throw new NullPointerException();
         if (personRepository == null) throw new NullPointerException();
         if (currentUserProvider == null) throw new NullPointerException();
+        if (holidayService == null) throw new NullPointerException();
 
         this.reservationRepository = reservationRepository;
         this.reservationMapper = reservationMapper;
@@ -61,12 +65,19 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         this.personBusinessLogicService = personBusinessLogicService;
         this.personRepository = personRepository;
         this.currentUserProvider = currentUserProvider;
+        this.holidayService = holidayService;
     }
 
     /*create a reservation*/
     @Transactional
     @Override
     public CreateReservationResult createReservation(CreateReservationRequest request, boolean notify) {
+        //check if date is holiday
+        LocalDate reservationDate = request.startTime().toLocalDate();
+        if (holidayService.isHoliday(reservationDate)) {
+            return CreateReservationResult.fail( "Reservations cannot be made on holidays: " + reservationDate );
+        }
+
         //find study space
         StudySpace studySpace = studySpaceBusinessLogicService.getStudySpaceById(request.studySpaceId());
         if (studySpace == null) {

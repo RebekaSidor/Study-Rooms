@@ -65,8 +65,12 @@ public class SecurityConfig {
     public SecurityFilterChain uiChain(final HttpSecurity http) throws Exception {
         http
                 .securityMatcher("/**")
-                //TODO configure
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**"))
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/h2-console/**") // αγνοούμε CSRF για H2
+                )
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.sameOrigin()) // επιτρέπει iframe για H2
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**","/swagger-ui.html","/swagger-ui/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()

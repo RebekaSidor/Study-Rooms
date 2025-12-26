@@ -3,12 +3,10 @@ package gr.hua.dit.StudyRooms.core.port.impl;
 import gr.hua.dit.StudyRooms.config.RestApiClientConfig;
 import gr.hua.dit.StudyRooms.core.model.PersonType;
 import gr.hua.dit.StudyRooms.core.port.LookupPort;
-
 import gr.hua.dit.StudyRooms.core.port.impl.dto.LookupResult;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
 import java.util.Optional;
 
 /**
