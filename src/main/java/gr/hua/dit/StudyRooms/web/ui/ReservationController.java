@@ -1,7 +1,11 @@
 package gr.hua.dit.StudyRooms.web.ui;
 
+import gr.hua.dit.StudyRooms.core.model.Person;
+import gr.hua.dit.StudyRooms.core.model.Reservation;
 import gr.hua.dit.StudyRooms.core.model.StudySpaceType;
 import gr.hua.dit.StudyRooms.core.port.HolidayService;
+import gr.hua.dit.StudyRooms.core.repository.PersonRepository;
+import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
 import gr.hua.dit.StudyRooms.core.security.ApplicationUserDetails;
 import gr.hua.dit.StudyRooms.core.service.ReservationBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.StudySpaceBusinessLogicService;
@@ -23,18 +27,28 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * UI controller for managing Reservations
+ */
 @Controller
 public class ReservationController {
 
+    private static final Map<String, LocalDateTime> penaltyUntilMap = new ConcurrentHashMap<>();
     private final StudySpaceBusinessLogicService studySpaceBusinessLogicService;
     private final ReservationBusinessLogicService reservationBusinessLogicService;
+    private final PersonRepository personRepository;
+    private final ReservationRepository reservationRepository;
     private final HolidayService holidayService;
 
-    public ReservationController(StudySpaceBusinessLogicService studySpaceBusinessLogicService, ReservationBusinessLogicService reservationBusinessLogicService, HolidayService holidayService) {
+    public ReservationController(StudySpaceBusinessLogicService studySpaceBusinessLogicService, ReservationBusinessLogicService reservationBusinessLogicService, HolidayService holidayService, PersonRepository personRepository, ReservationRepository reservationRepository) {
         this.studySpaceBusinessLogicService = studySpaceBusinessLogicService;
         this.reservationBusinessLogicService = reservationBusinessLogicService;
         this.holidayService = holidayService;
+        this.personRepository = personRepository;
+        this.reservationRepository = reservationRepository;
     }
 
     //show the form for making reservations
@@ -118,18 +132,46 @@ public class ReservationController {
 
         String studentId = getCurrentStudentId();
 
-        //penalty for 3+ absences
-        long absences = reservationBusinessLogicService.getReservationsForStudentOnDate(studentId, LocalDate.now().minusMonths(1))
-                .stream()
-                .filter(r -> r.endTime().isBefore(LocalDateTime.now()))
-                .filter(r -> Boolean.FALSE.equals(r.present()))
-                .count();
-        if (absences >= 3) {
+        Person student = personRepository.findByLibraryId(studentId)
+                .orElseThrow(() -> new IllegalStateException("Student not found"));
+
+        //check penalty
+        LocalDateTime now = LocalDateTime.now();
+        if (student.getPenaltyUntil() != null && now.isBefore(student.getPenaltyUntil())) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+            String formattedTime = student.getPenaltyUntil().format(formatter);
+
             redirectAttributes.addFlashAttribute(
                     "penaltyMessage",
-                    "⚠ Penalty for not attending reservations – unable to make reservation for 2 days."
+                    "⚠ Too many absences. You are blocked until " + formattedTime
             );
             return "redirect:/student/make-reservation?date=" + date + "&studySpaceId=" + studySpaceId;
+        }
+
+        //check absences
+        long absences = reservationBusinessLogicService
+              .getMyReservations(studentId)
+              .stream()
+              .filter(r -> Boolean.FALSE.equals(r.present()))
+              .count();
+
+        //if 3+ absences -> penalty
+        if (absences >= 3) {
+              student.setPenaltyUntil(now.plusHours(1));
+              personRepository.save(student);  // Αποθήκευση στη βάση
+              redirectAttributes.addFlashAttribute(
+              "penaltyMessage",
+              "⚠ Too many absences. You are blocked for 1 hour."
+              );
+              return "redirect:/student/make-reservation?date=" + date + "&studySpaceId=" + studySpaceId;
+        }
+
+        //if penalty has past -> absences = 0
+        if (student.getPenaltyUntil() != null && now.isAfter(student.getPenaltyUntil())) {
+               reservationBusinessLogicService.clearAbsences(studentId);
+               student.setPenaltyUntil(null);
+               personRepository.save(student);
+               absences = 0;
         }
 
         //no reservations on Sundays
@@ -215,7 +257,6 @@ public class ReservationController {
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
         String libraryId = user.getLibraryId();
 
-        // Καλούμε τη νέα μέθοδο για τον ίδιο μαθητή
         List<ReservationView> reservations = reservationBusinessLogicService.getMyReservations(libraryId);
 
         model.addAttribute("reservations", reservations);

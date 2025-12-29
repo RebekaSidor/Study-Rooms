@@ -353,4 +353,18 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
                 .map(reservationMapper::convertReservationToReservationView)
                 .toList();
     }
+
+    @Transactional
+    public void clearAbsences(String studentId) {
+        Person student = personBusinessLogicService.getPersonById(studentId);
+        List<Reservation> reservations = reservationRepository.findByStudent(student);
+
+        for (Reservation r : reservations) {
+            if (Boolean.FALSE.equals(r.getPresent())) {
+                r.setPresent(null);
+                reservationRepository.save(r);
+            }
+        }
+    }
+
 }

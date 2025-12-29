@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
+/**
+ * UI controller for managing Study Spaces
+ */
 @Controller
 public class StudySpaceController {
 

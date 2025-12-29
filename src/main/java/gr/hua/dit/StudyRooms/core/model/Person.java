@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 /**
  * Person entity.
@@ -76,6 +77,9 @@ public final class Person {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    @Column(name = "penalty_until")
+    private LocalDateTime penaltyUntil;
 
     public Person() {}
 
@@ -165,6 +169,10 @@ public final class Person {
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
+
+    public LocalDateTime getPenaltyUntil() {return penaltyUntil;}
+
+    public void setPenaltyUntil(LocalDateTime penaltyUntil) {this.penaltyUntil = penaltyUntil;}
 
     @Override
     public String toString() {

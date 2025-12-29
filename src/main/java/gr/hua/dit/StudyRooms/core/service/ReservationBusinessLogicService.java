@@ -34,4 +34,6 @@ ReservationBusinessLogicService {
     Map<String, Long> getReservationsPerRoom();
     Map<Integer, Long> getReservationsPerHourForToday();
 
+    void clearAbsences(String studentId);
+
 }

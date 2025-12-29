@@ -19,13 +19,13 @@ public class HolidayServiceImpl implements HolidayService {
     @Override
     public boolean isHoliday(LocalDate date) {
         try {
-            // Κάνουμε POST στο holiday-API
+            //POST to holiday-API
             String response = restTemplate.postForObject(holidayApiUrl + date, null, String.class);
 
-            // Αν το response περιέχει ❌, θεωρούμε ότι είναι αργία
+            //if response περιέχει ❌ -> id a holiday
             return response != null && response.contains("❌");
         } catch (Exception e) {
-            // Αν πέσει το API, θεωρούμε ότι δεν είναι αργία
+            //if the API doesn't work consider it not a holiday
             return false;
         }
     }

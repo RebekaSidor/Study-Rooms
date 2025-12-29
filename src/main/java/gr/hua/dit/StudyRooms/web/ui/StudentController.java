@@ -5,6 +5,7 @@ import gr.hua.dit.StudyRooms.core.model.Reservation;
 import gr.hua.dit.StudyRooms.core.repository.PersonRepository;
 import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
 import gr.hua.dit.StudyRooms.core.security.ApplicationUserDetails;
+import gr.hua.dit.StudyRooms.core.service.ReservationBusinessLogicService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -17,21 +18,24 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * UI controller for managing profile.
+ * UI controller for managing Student Profile.
  */
 @Controller
 public class StudentController {
 
     private final PersonBusinessLogicService personBusinessLogicService;
+    private final ReservationBusinessLogicService reservationBusinessLogicService;
     private final ReservationRepository reservationRepository;
     private final PersonRepository personRepository;
 
     public StudentController(PersonBusinessLogicService personBusinessLogicService,
                              ReservationRepository reservationRepository,
-                             PersonRepository personRepository) {
+                             PersonRepository personRepository,
+                             ReservationBusinessLogicService reservationBusinessLogicService) {
         this.personBusinessLogicService = personBusinessLogicService;
         this.reservationRepository = reservationRepository;
         this.personRepository = personRepository;
+        this.reservationBusinessLogicService = reservationBusinessLogicService;
     }
 
     //show student profil
@@ -43,22 +47,27 @@ public class StudentController {
         //find person
         Person student = personRepository.findByLibraryId(user.getLibraryId()).orElse(null);
         if (student == null) {
-            // χειρισμός όταν δεν βρεθεί ο χρήστης
             model.addAttribute("reservations", List.of());
             model.addAttribute("absences", 0L);
             return "student_profile";
         }
 
-        // Τώρα παίρνεις τις κρατήσεις χρησιμοποιώντας το αντικείμενο Person
-        List<Reservation> reservations = reservationRepository.findByStudent(student);
-
         LocalDateTime now = LocalDateTime.now();
 
-        //count reservations that have ended and student didn't attend to find num of absences
-        long absences = reservations.stream()
-                .filter(r -> r.getEndTime() != null && r.getEndTime().isBefore(now))
-                .filter(r -> Boolean.FALSE.equals(r.getPresent()))
-                .count();
+        //if penalty has past absences=0
+                if (student.getPenaltyUntil() != null && now.isAfter(student.getPenaltyUntil())) {
+                    reservationBusinessLogicService.clearAbsences(student.getLibraryId());
+                    student.setPenaltyUntil(null);
+                    personRepository.save(student);
+                }
+
+        //calculate absences
+                List<Reservation> reservations = reservationRepository.findByStudent(student);
+
+                long absences = reservations.stream()
+                        .filter(r -> r.getEndTime() != null && r.getEndTime().isBefore(now))
+                        .filter(r -> Boolean.FALSE.equals(r.getPresent()))
+                        .count();
 
         model.addAttribute("absences", absences);
 

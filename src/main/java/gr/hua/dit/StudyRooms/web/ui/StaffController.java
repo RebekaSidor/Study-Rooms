@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * UI controller for managing Library Staff Profil
+ */
 @Controller
 public class StaffController {
 
