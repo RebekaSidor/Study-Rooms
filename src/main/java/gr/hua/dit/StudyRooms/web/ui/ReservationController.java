@@ -239,6 +239,7 @@ public class ReservationController {
         }
 
         return "redirect:/student/make-reservation?date=" + date + "&studySpaceId=" + studySpaceId;
+
     }
 
     //get current users Id
