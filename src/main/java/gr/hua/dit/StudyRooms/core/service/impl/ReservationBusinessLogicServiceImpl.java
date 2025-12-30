@@ -5,6 +5,8 @@ import gr.hua.dit.StudyRooms.core.model.PersonType;
 import gr.hua.dit.StudyRooms.core.model.Reservation;
 import gr.hua.dit.StudyRooms.core.model.StudySpace;
 import gr.hua.dit.StudyRooms.core.port.HolidayService;
+import gr.hua.dit.StudyRooms.core.port.SmsNotificationPort;
+import gr.hua.dit.StudyRooms.core.port.impl.dto.SendSmsRequest;
 import gr.hua.dit.StudyRooms.core.repository.PersonRepository;
 import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
 import gr.hua.dit.StudyRooms.core.security.CurrentUser;
@@ -27,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 /**
  * Default implementation of {@link ReservationBusinessLogicService}.
  */
@@ -42,6 +45,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
     private final PersonRepository personRepository;
     private final CurrentUserProvider currentUserProvider;
     private final HolidayService holidayService;
+    private final SmsNotificationPort smsNotificationPort;
 
     public ReservationBusinessLogicServiceImpl(ReservationRepository reservationRepository,
                                                ReservationMapper reservationMapper,
@@ -49,7 +53,8 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
                                                PersonBusinessLogicService personBusinessLogicService,
                                                PersonRepository personRepository,
                                                CurrentUserProvider currentUserProvider,
-                                               HolidayService holidayService) {
+                                               HolidayService holidayService,
+                                               SmsNotificationPort smsNotificationPort) {
 
         if (reservationRepository == null) throw new NullPointerException();
         if (reservationMapper == null) throw new NullPointerException();
@@ -58,6 +63,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         if (personRepository == null) throw new NullPointerException();
         if (currentUserProvider == null) throw new NullPointerException();
         if (holidayService == null) throw new NullPointerException();
+        if (smsNotificationPort == null) throw new NullPointerException();
 
         this.reservationRepository = reservationRepository;
         this.reservationMapper = reservationMapper;
@@ -66,6 +72,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         this.personRepository = personRepository;
         this.currentUserProvider = currentUserProvider;
         this.holidayService = holidayService;
+        this.smsNotificationPort = smsNotificationPort;
     }
 
     /*create a reservation*/
@@ -136,6 +143,20 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
 
         //save in DB
         reservation = reservationRepository.save(reservation);
+
+        if (notify) {
+            String message = String.format(
+                    "Η κράτησή σας στη βιβλιοθήκη (%s) καταχωρήθηκε επιτυχώς από %s έως %s.",
+                    studySpace.getName(),
+                    request.startTime(),
+                    request.endTime()
+            );
+
+            smsNotificationPort.sendSms(
+                    student.getMobilePhoneNumber(),
+                    message
+            );
+        }
 
         //convert to view
         ReservationView view = reservationMapper.convertReservationToReservationView(reservation);
@@ -319,6 +340,48 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         return true;
     }
 
+    //cancel reservation ~ staff
+    @Transactional
+    @Override
+    public boolean cancelReservationByStaff(Long reservationId, String cancelReason) {
+
+        // security
+        final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
+        if (currentUser.type() != PersonType.LIB_STAFF) {
+            throw new SecurityException("Only library staff can cancel reservations");
+        }
+
+        // find reservation
+        Reservation reservation = reservationRepository
+                .findById(reservationId)
+                .orElse(null);
+
+        if (reservation == null) {
+            return false;
+        }
+
+        // send SMS to student
+        Person student = reservation.getStudent();
+
+        String message = String.format(
+                "Η κράτησή σας (%s - %s) ακυρώθηκε από τη βιβλιοθήκη. Λόγος: %s",
+                reservation.getStartTime(),
+                reservation.getEndTime(),
+                cancelReason
+        );
+
+        smsNotificationPort.sendSms(
+                student.getMobilePhoneNumber(),
+                message
+        );
+
+        // delete reservation
+        reservationRepository.delete(reservation);
+
+        return true;
+    }
+
+
     //get all student's reservations for specific day
     @Override
     public List<ReservationView> getReservationsForStudentOnDate(String studentId, LocalDate date) {
@@ -365,6 +428,20 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
                 reservationRepository.save(r);
             }
         }
+    }
+
+    @Transactional
+    public void applyPenalty(String studentId) {
+        Person student = personBusinessLogicService.getPersonById(studentId);
+        if (student == null) {
+            throw new IllegalArgumentException("Student not found: " + studentId);
+        }
+
+        // Στέλνουμε SMS για penalty
+        smsNotificationPort.sendSms(
+                student.getMobilePhoneNumber(),
+                "Σας επιβλήθηκε ποινή λόγω μη τήρησης κράτησης."
+        );
     }
 
 }

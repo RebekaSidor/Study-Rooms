@@ -230,7 +230,7 @@ public class ReservationController {
                 null, studentId, studySpaceId, startDateTime, endDateTime
         );
 
-        CreateReservationResult result = reservationBusinessLogicService.createReservation(request);
+        CreateReservationResult result = reservationBusinessLogicService.createReservation(request, true);
 
         if (result.created()) {
             redirectAttributes.addFlashAttribute("successMessage", "Reservation created successfully!");
@@ -282,4 +282,6 @@ public class ReservationController {
 
         return "redirect:/my-reservations";
     }
+
+
 }

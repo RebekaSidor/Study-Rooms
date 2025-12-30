@@ -22,6 +22,7 @@ ReservationBusinessLogicService {
 
     boolean existsOverlappingReservation(String studySpaceId, LocalDateTime startTime, LocalDateTime endTime);
     boolean cancelReservation(Long reservationId, String libraryId);
+    boolean cancelReservationByStaff(Long reservationId, String cancelReason);
 
     List<ReservationView> getAllReservations();
     List<ReservationView> getReservationsForStudentOnDate(String studentId, LocalDate date);
@@ -35,5 +36,5 @@ ReservationBusinessLogicService {
     Map<Integer, Long> getReservationsPerHourForToday();
 
     void clearAbsences(String studentId);
-
+    void applyPenalty(String studentId);
 }

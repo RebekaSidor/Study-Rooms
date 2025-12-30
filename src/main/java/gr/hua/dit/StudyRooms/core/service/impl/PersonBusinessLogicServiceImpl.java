@@ -113,7 +113,15 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
             return CreatePersonResult.fail("Mobile Phone number must be unique");
         }
 
-        final String libraryId = generateNextLibraryId();
+        final String libraryId;
+        if (type == PersonType.STUDENT) {
+            libraryId = generateNextStudentId(); // νέα μέθοδος για φοιτητές (lib2025xxx)
+        } else if (type == PersonType.LIB_STAFF) {
+            libraryId = generateNextStaffId();   // νέα μέθοδος για προσωπικό (s0001, s0002...)
+        } else {
+            throw new IllegalArgumentException("Unsupported person type: " + type);
+        }
+
 
         // --------------------------------------------------
 
@@ -173,6 +181,27 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         final PersonView personView = this.personMapper.convertPersonToPersonView(person);
         return CreatePersonResult.success(personView);
     }
+
+    private String generateNextStudentId() {
+        Person last = personRepository.findTopByOrderByLibraryIdDescForStudents();
+        if (last == null) return "lib2025001";
+
+        String oldId = last.getLibraryId(); // πχ "lib2025003"
+        int num = Integer.parseInt(oldId.substring(3));
+        num++;
+        return "lib" + num;
+    }
+
+    private String generateNextStaffId() {
+        Person last = personRepository.findTopByOrderByLibraryIdDescForStaff();
+        if (last == null) return "s0001";
+
+        String oldId = last.getLibraryId(); // πχ "s0004"
+        int num = Integer.parseInt(oldId.substring(1));
+        num++;
+        return "s" + String.format("%04d", num);
+    }
+
 
     @Override
     public Person getPersonById(String libraryId) {

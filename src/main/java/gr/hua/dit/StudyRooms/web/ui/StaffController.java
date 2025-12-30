@@ -272,38 +272,51 @@ public class StaffController {
             RedirectAttributes redirectAttributes,
             HttpSession session) {
 
-        //find reservation
-        Reservation reservation = reservationRepository.findById(selectedReservation).orElse(null);
-        if (reservation == null || cancelReason.isBlank()) {
+        if (cancelReason == null || cancelReason.isBlank()) {
             redirectAttributes.addFlashAttribute(
                     "errorMessage",
-                    "Failed to delete reservation. Reason is required."
+                    "Cancellation reason is required."
             );
             return "redirect:/staff/cancel-reservation";
         }
 
-        //create history entry
-        String historyEntry =
-                "Reservation " + reservation.getReservationId() +
-                        " (Student: " + reservation.getStudent().getLibraryId() +
-                        ", Space: " + reservation.getStudySpace().getId() +
-                        ", " + reservation.getStartTime() + " – " + reservation.getEndTime() +
-                        ") was deleted. Reason: " + cancelReason;
+        boolean success = reservationBusinessLogicService
+                .cancelReservationByStaff(selectedReservation, cancelReason);
 
+        if (!success) {
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "Reservation not found or could not be cancelled."
+            );
+            return "redirect:/staff/cancel-reservation";
+        }
 
-        //get history from session
+        // -------- HISTORY (UI concern → σωστά εδώ)
         List<String> history = (List<String>) session.getAttribute("history");
+        if (history == null) {
+            history = new ArrayList<>();
+        }
 
-        if (history == null) {history = new ArrayList<>();}
+        history.add(0,
+                "Reservation ID " + selectedReservation +
+                        " was cancelled. Reason: " + cancelReason
+        );
 
-        history.add(0, historyEntry); // newest on top
         session.setAttribute("history", history);
 
-        //delete from DB
-        reservationRepository.delete(reservation);
+        redirectAttributes.addFlashAttribute(
+                "successMessage",
+                "Reservation cancelled successfully."
+        );
 
-        redirectAttributes.addFlashAttribute("successMessage", "Reservation deleted successfully.");
         return "redirect:/staff/cancel-reservation";
+    }
+    @PostMapping("/staff/apply-penalty")
+    @PreAuthorize("hasRole('LIB_STAFF')")
+    public String applyPenalty(@RequestParam String studentId, RedirectAttributes redirectAttributes) {
+        reservationBusinessLogicService.applyPenalty(studentId);
+        redirectAttributes.addFlashAttribute("successMessage", "Penalty sent to student " + studentId);
+        return "redirect:/staff/attendances"; // ή σε όποια σελίδα θέλεις
     }
 
 }

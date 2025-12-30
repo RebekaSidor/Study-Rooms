@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html
-    xmlns:th="https://www.thymeleaf.org"
-    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{base}">
+        xmlns:th="https://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+        layout:decorate="~{base}">
 
 <head>
     <title>Register</title>
@@ -44,65 +44,59 @@
 </head>
 
 <body>
-    <section layout:fragment="main">
+<section layout:fragment="main">
 
-        <h2 class="center-text">Study Rooms/ Student Registration</h2>
+    <h2 class="center-text">Study Rooms/ Student Registration</h2>
 
-        <form th:action="@{/register}" method="post" th:object="${createPersonRequest}">
+    <form th:action="@{/register}" method="post" th:object="${createPersonRequest}">
 
-            <!-- ERROR MESSAGE -->
-            <div class="text-center mb-3" th:if="${errorMessage != null}">
-                <p class="text-danger m-0 p-0" th:text="${errorMessage}"></p>
-            </div>
+        <!-- ERROR MESSAGE -->
+        <div class="text-center mb-3" th:if="${errorMessage != null}">
+            <p class="text-danger m-0 p-0" th:text="${errorMessage}"></p>
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">I am:</label>
-                <select name="type" th:field="*{type}" class="form-select">
-                    <option value="LIB_STAFF">Library Staff</option>
-                    <option value="STUDENT">Student</option>
-                </select>
-                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('type')}" th:errors="*{type}"></div>
-            </div>
+        <div class="mb-3">
+            <label class="form-label">I am:</label>
+            <select name="type" th:field="*{type}" class="form-select">
+                <option value="LIB_STAFF">Library Staff</option>
+                <option value="STUDENT">Student</option>
+            </select>
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">First Name</label>
-                <input type="text" name="firstName" th:field="*{firstName}" class="form-control" required />
-                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></div>
-            </div>
+        <div class="mb-3">
+            <label class="form-label">First Name</label>
+            <input type="text" name="firstName" th:field="*{firstName}" class="form-control" required />
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">Last Name</label>
-                <input type="text" name="lastName" th:field="*{lastName}" class="form-control" required />
-                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></div>
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Last Name</label>
+            <input type="text" name="lastName" th:field="*{lastName}" class="form-control" required />
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">Email Address</label>
-                <input type="email" name="emailAddress" th:field="*{emailAddress}" class="form-control" required />
-                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('emailAddress')}" th:errors="*{emailAddress}"></div>
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Email Address</label>
+            <input type="email" name="emailAddress" th:field="*{emailAddress}" class="form-control" required />
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">Mobile Phone Number</label>
-                <input type="tel" name="mobilePhoneNumber" th:field="*{mobilePhoneNumber}" class="form-control" required />
-                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('mobilePhoneNumber')}" th:errors="*{mobilePhoneNumber}"></div>
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Mobile Phone Number</label>
+            <input type="tel" name="mobilePhoneNumber" th:field="*{mobilePhoneNumber}" class="form-control" required />
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input type="password" name="rawPassword" th:field="*{rawPassword}" class="form-control" required />
-                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('rawPassword')}" th:errors="*{rawPassword}"></div>
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input type="password" name="rawPassword" th:field="*{rawPassword}" class="form-control" required />
+        </div>
 
-            <div class="mb-4">
-                <button type="submit" class="btn btn-primary">Register</button>
-            </div>
+        <div class="mb-4">
+            <button type="submit" class="btn btn-primary">Register</button>
+        </div>
 
-            <p class="m-0 p-0">
-                <a th:href="@{/login}" class="register-link">Already have an account? Log in</a>
-            </p>
+        <p class="m-0 p-0">
+            <a th:href="@{/login}" class="register-link">Already have an account? Log in</a>
+        </p>
 
-        </form>
-    </section>
+    </form>
+</section>
 </body>
 </html>
