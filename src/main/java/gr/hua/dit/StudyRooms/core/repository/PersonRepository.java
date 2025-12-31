@@ -16,12 +16,10 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
     boolean existsByEmailAddressIgnoreCase(final String emailAddress);
     boolean existsByMobilePhoneNumber(final String mobilePhoneNumber);
 
-    // τελευταία εγγραφή προσωπικού
-    @Query("SELECT p FROM Person p WHERE p.libraryId LIKE 's%' ORDER BY p.libraryId DESC")
-    Person findTopByOrderByLibraryIdDescForStaff();
+    // Last student registration
+    Person findTopStudentByLibraryIdStartingWithOrderByLibraryIdDesc(String prefix);
 
-    // τελευταία εγγραφή φοιτητή
-    @Query("SELECT p FROM Person p WHERE p.libraryId LIKE 'lib%' ORDER BY p.libraryId DESC")
-    Person findTopByOrderByLibraryIdDescForStudents();
+    // Last staff registration
+    Person findTopStaffByLibraryIdStartingWithOrderByLibraryIdDesc(String prefix);
 
 }

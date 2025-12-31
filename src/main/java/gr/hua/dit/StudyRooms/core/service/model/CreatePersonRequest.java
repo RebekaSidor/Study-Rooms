@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Size;
  */
 public record CreatePersonRequest(
         @NotNull PersonType type,
-        @NotNull @NotBlank @Size(max = 20) String libraryId,
+                           @Size(max = 20) String libraryId,
         @NotNull @NotBlank @Size(max = 100) String firstName,
         @NotNull @NotBlank @Size(max = 100) String lastName,
         @NotNull @NotBlank @Size(max = 100) @Email String emailAddress,

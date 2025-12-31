@@ -81,6 +81,9 @@ public final class Person {
     @Column(name = "penalty_until")
     private LocalDateTime penaltyUntil;
 
+    @Column(name = "last_penalty_at")
+    private LocalDateTime lastPenaltyAt;
+
     public Person() {}
 
     public Person(Long id, String libraryId,
@@ -173,6 +176,10 @@ public final class Person {
     public LocalDateTime getPenaltyUntil() {return penaltyUntil;}
 
     public void setPenaltyUntil(LocalDateTime penaltyUntil) {this.penaltyUntil = penaltyUntil;}
+
+    public LocalDateTime getLastPenaltyAt() {return lastPenaltyAt;}
+
+    public void setLastPenaltyAt(LocalDateTime lastPenaltyAt) {this.lastPenaltyAt = lastPenaltyAt;}
 
     @Override
     public String toString() {

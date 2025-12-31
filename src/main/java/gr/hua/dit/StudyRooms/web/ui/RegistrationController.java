@@ -49,26 +49,39 @@ public class RegistrationController {
     //handle POST request when form is submited
     @PostMapping("/register")
     public String handleFormSubmission(
-            final Authentication authentication,
-            @Valid @ModelAttribute("createPersonRequest") final CreatePersonRequest createPersonRequest,
-            final BindingResult bindingResult,
-            final Model model
+            Authentication authentication,
+            @Valid @ModelAttribute("createPersonRequest") CreatePersonRequest createPersonRequest,
+            BindingResult bindingResult,
+            Model model
     ) {
         if (AuthUtils.isAuthenticated(authentication)) {
-            return "redirect:/profile"; // already logged in.
+            return "redirect:/profile";
         }
+
+        // Log για debugging
+        System.out.println("Received registration request:");
+        System.out.println("Type: " + createPersonRequest.type());
+        System.out.println("FirstName: " + createPersonRequest.firstName());
+        System.out.println("LastName: " + createPersonRequest.lastName());
+        System.out.println("Email: " + createPersonRequest.emailAddress());
+        System.out.println("Phone: " + createPersonRequest.mobilePhoneNumber());
+
         if (bindingResult.hasErrors()) {
+            bindingResult.getAllErrors().forEach(error -> System.out.println("Binding error: " + error));
             return "register";
         }
-        //try creating new Person, return CreatePersonResult
-        final CreatePersonResult createPersonResult = this.personBusinessLogicService.createPerson(createPersonRequest);
-        //if success: take new id created and add to Person model
-        if (createPersonResult.created()) {
-            return "registration_success";// <-- SUCCESS PAGE
+
+        CreatePersonResult result =
+                personBusinessLogicService.createPerson(createPersonRequest, true);
+
+        if (result.created()) {
+            model.addAttribute("newLibraryId", result.personView().libraryId());
+            return "registration_success";
         }
-        //if failed: pass the same form data, error
-        model.addAttribute("createPersonRequest", createPersonRequest);
-        model.addAttribute("errorMessage", createPersonResult.reason());
+
+        System.out.println("Registration failed: " + result.reason());
+        model.addAttribute("errorMessage", result.reason());
         return "register";
     }
+
 }

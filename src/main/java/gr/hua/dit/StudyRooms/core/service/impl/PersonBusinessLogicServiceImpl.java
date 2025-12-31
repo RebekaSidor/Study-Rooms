@@ -93,12 +93,16 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         String mobilePhoneNumber = createPersonRequest.mobilePhoneNumber().strip();
         final String rawPassword = createPersonRequest.rawPassword();
 
+        LOGGER.info("Creating person: {} {}, type={}", firstName, lastName, type);
+        LOGGER.info("Email: {}, Phone: {}", emailAddress, mobilePhoneNumber);
         // Advanced mobile phone number validation.
         // --------------------------------------------------
+
 
         final PhoneNumberValidationResult phoneNumberValidationResult
                 = this.phoneNumberPort.validate(mobilePhoneNumber);
         if (!phoneNumberValidationResult.isValidMobile()) {
+            LOGGER.warn("Invalid mobile number: {}", mobilePhoneNumber);
             return CreatePersonResult.fail("Mobile Phone Number is not valid");
         }
         mobilePhoneNumber = phoneNumberValidationResult.e164();
@@ -106,10 +110,12 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         // --------------------------------------------------
 
         //validation
-        if (this.personRepository.existsByEmailAddressIgnoreCase(emailAddress)){
+        if (this.personRepository.existsByEmailAddressIgnoreCase(emailAddress)) {
+            LOGGER.warn("Email already exists: {}", emailAddress);
             return CreatePersonResult.fail("Email address must be unique");
         }
-        if (this.personRepository.existsByMobilePhoneNumber(mobilePhoneNumber)){
+        if (this.personRepository.existsByMobilePhoneNumber(mobilePhoneNumber)) {
+            LOGGER.warn("Phone already exists: {}", mobilePhoneNumber);
             return CreatePersonResult.fail("Mobile Phone number must be unique");
         }
 
@@ -120,17 +126,6 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
             libraryId = generateNextStaffId();   // νέα μέθοδος για προσωπικό (s0001, s0002...)
         } else {
             throw new IllegalArgumentException("Unsupported person type: " + type);
-        }
-
-
-        // --------------------------------------------------
-
-        final PersonType personType_lookup = this.lookupPort.lookup(libraryId).orElse(null);
-        if (personType_lookup == null) {
-            return CreatePersonResult.fail("Invalid LIBRARY ID");
-        }
-        if (personType_lookup != type) {
-            return CreatePersonResult.fail("The provided person type does not match the actual one");
         }
 
         // --------------------------------------------------
@@ -162,15 +157,16 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
 
         // Persist person (save/insert to database)
         // --------------------------------------------------
-
         person = this.personRepository.save(person);
+        LOGGER.info("Person saved with ID: {}", person.getLibraryId());
 
         // --------------------------------------------------
 
+        // Send SMS notification if requested
         if (notify) {
             final String content = String.format(
-                    "You have successfully registered for the Office Hours application. " +
-                            "Use your email (%s) to log in.", emailAddress);
+                    "Registration successful! Your Library ID is %s. Use it for log-in!",
+                    libraryId, emailAddress);
             final boolean sent = this.smsNotificationPort.sendSms(mobilePhoneNumber, content);
             if (!sent) {
                 LOGGER.warn("SMS send to {} failed!", mobilePhoneNumber);
@@ -183,25 +179,27 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
     }
 
     private String generateNextStudentId() {
-        Person last = personRepository.findTopByOrderByLibraryIdDescForStudents();
-        if (last == null) return "lib2025001";
+        String prefix = "lib";
+        Person last = personRepository.findTopStudentByLibraryIdStartingWithOrderByLibraryIdDesc(prefix);
+        if (last == null) return prefix + "2025001"; // αρχικό ID
 
         String oldId = last.getLibraryId(); // πχ "lib2025003"
-        int num = Integer.parseInt(oldId.substring(3));
+        int num = Integer.parseInt(oldId.substring(prefix.length()));
         num++;
-        return "lib" + num;
+        // Εξασφαλίζουμε ότι το αριθμητικό μέρος είναι πάντα 7 ψηφία
+        return prefix + String.format("%07d", num);
     }
 
     private String generateNextStaffId() {
-        Person last = personRepository.findTopByOrderByLibraryIdDescForStaff();
-        if (last == null) return "s0001";
+       String prefix = "s";
+        Person last = personRepository.findTopStaffByLibraryIdStartingWithOrderByLibraryIdDesc(prefix);
+       if (last == null) return prefix + "0001"; // αρχικό ID
 
         String oldId = last.getLibraryId(); // πχ "s0004"
-        int num = Integer.parseInt(oldId.substring(1));
+        int num = Integer.parseInt(oldId.substring(prefix.length()));
         num++;
-        return "s" + String.format("%04d", num);
+        return prefix + String.format("%04d", num);
     }
-
 
     @Override
     public Person getPersonById(String libraryId) {
@@ -223,7 +221,7 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         return "lib" + num;
     }
 
-/*change personal information*/
+    /*change personal information*/
     @Override
     public String updateEmail(String libraryId, String newEmail) {
         if (newEmail == null || newEmail.isBlank()) {

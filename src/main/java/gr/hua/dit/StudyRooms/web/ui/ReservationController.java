@@ -131,16 +131,14 @@ public class ReservationController {
                                   @RequestParam String startTime,RedirectAttributes redirectAttributes){
 
         String studentId = getCurrentStudentId();
-
         Person student = personRepository.findByLibraryId(studentId)
                 .orElseThrow(() -> new IllegalStateException("Student not found"));
 
-        //check penalty
         LocalDateTime now = LocalDateTime.now();
-        if (student.getPenaltyUntil() != null && now.isBefore(student.getPenaltyUntil())) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-            String formattedTime = student.getPenaltyUntil().format(formatter);
 
+        //check penalty
+        if (student.getPenaltyUntil() != null && now.isBefore(student.getPenaltyUntil())) {
+            String formattedTime = student.getPenaltyUntil().format(DateTimeFormatter.ofPattern("HH:mm"));
             redirectAttributes.addFlashAttribute(
                     "penaltyMessage",
                     "⚠ Too many absences. You are blocked until " + formattedTime
@@ -148,30 +146,27 @@ public class ReservationController {
             return "redirect:/student/make-reservation?date=" + date + "&studySpaceId=" + studySpaceId;
         }
 
-        //check absences
+        //count absences only if there isn't a penalty
+        LocalDateTime resetPoint = student.getLastPenaltyAt() != null ? student.getLastPenaltyAt() : LocalDateTime.MIN;
+
         long absences = reservationBusinessLogicService
-              .getMyReservations(studentId)
-              .stream()
-              .filter(r -> Boolean.FALSE.equals(r.present()))
-              .count();
+                .getMyReservations(studentId)
+                .stream()
+                .filter(r -> Boolean.FALSE.equals(r.present()))
+                .filter(r -> r.endTime().isAfter(resetPoint))
+                .count();
 
         //if 3+ absences -> penalty
         if (absences >= 3) {
-              student.setPenaltyUntil(now.plusHours(1));
-              personRepository.save(student);  // Αποθήκευση στη βάση
-              redirectAttributes.addFlashAttribute(
-              "penaltyMessage",
-              "⚠ Too many absences. You are blocked for 1 hour."
-              );
-              return "redirect:/student/make-reservation?date=" + date + "&studySpaceId=" + studySpaceId;
-        }
+            student.setPenaltyUntil(now.plusHours(1));
+            student.setLastPenaltyAt(now);
+            personRepository.save(student);
 
-        //if penalty has past -> absences = 0
-        if (student.getPenaltyUntil() != null && now.isAfter(student.getPenaltyUntil())) {
-               reservationBusinessLogicService.clearAbsences(studentId);
-               student.setPenaltyUntil(null);
-               personRepository.save(student);
-               absences = 0;
+            redirectAttributes.addFlashAttribute(
+                    "penaltyMessage",
+                    "⚠ Too many absences. You are blocked for 1 hour."
+            );
+            return "redirect:/student/make-reservation?date=" + date + "&studySpaceId=" + studySpaceId;
         }
 
         //no reservations on Sundays
@@ -283,6 +278,5 @@ public class ReservationController {
 
         return "redirect:/my-reservations";
     }
-
 
 }

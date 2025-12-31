@@ -70,8 +70,11 @@
                 <li>Email: <span th:text="${me.emailAddress}"></span></li>
                 <li>Type: <span th:text="${me.type}"></span></li>
                 <li>
-                    Absences: <span th:text="${absences}"></span>
-                    <span th:if="${absences >= 3}" style="color: orange;">-penalty</span>
+                    Absences:
+                    <span th:if="${!hasPenalty}" th:text="${absenceMessage}"></span>
+                    <span th:if="${hasPenalty}" style="color: orange; font-weight: bold;">
+                        penalty – made 3 absences
+                    </span>
                 </li>
             </ul>
         </div>

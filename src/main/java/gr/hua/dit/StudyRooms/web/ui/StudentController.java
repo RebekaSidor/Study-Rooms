@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import gr.hua.dit.StudyRooms.core.service.PersonBusinessLogicService;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -53,23 +54,28 @@ public class StudentController {
         }
 
         LocalDateTime now = LocalDateTime.now();
+        List<Reservation> reservations = reservationRepository.findByStudent(student);
 
-        //if penalty has past absences=0
-                if (student.getPenaltyUntil() != null && now.isAfter(student.getPenaltyUntil())) {
-                    reservationBusinessLogicService.clearAbsences(student.getLibraryId());
-                    student.setPenaltyUntil(null);
-                    personRepository.save(student);
-                }
+        // Μέτρα όλες τις απουσίες μέχρι τώρα
+        long absences = reservations.stream()
+                .filter(r -> r.getEndTime() != null)
+                .filter(r -> r.getEndTime().isBefore(now))
+                .filter(r -> Boolean.FALSE.equals(r.getPresent()))
+                .count();
 
-        //calculate absences
-                List<Reservation> reservations = reservationRepository.findByStudent(student);
+        boolean hasPenalty = student.getPenaltyUntil() != null && now.isBefore(student.getPenaltyUntil());
 
-                long absences = reservations.stream()
-                        .filter(r -> r.getEndTime() != null && r.getEndTime().isBefore(now))
-                        .filter(r -> Boolean.FALSE.equals(r.getPresent()))
-                        .count();
+        // Δημιουργία μηνύματος
+        String absenceMessage;
+        if (absences >= 3 || hasPenalty) {
+            absenceMessage = "⚠ Too many absences. You are blocked until " +
+                    (student.getPenaltyUntil() != null ? student.getPenaltyUntil().format(DateTimeFormatter.ofPattern("HH:mm")) : "N/A");
+        } else {
+            absenceMessage = "You have " + absences + " absence" + (absences == 1 ? "" : "s") + ".";
+        }
 
-        model.addAttribute("absences", absences);
+        model.addAttribute("absenceMessage", absenceMessage);
+        model.addAttribute("hasPenalty", hasPenalty);
 
         return "student_profile";
     }

@@ -6,7 +6,6 @@ import gr.hua.dit.StudyRooms.core.model.Reservation;
 import gr.hua.dit.StudyRooms.core.model.StudySpace;
 import gr.hua.dit.StudyRooms.core.port.HolidayService;
 import gr.hua.dit.StudyRooms.core.port.SmsNotificationPort;
-import gr.hua.dit.StudyRooms.core.port.impl.dto.SendSmsRequest;
 import gr.hua.dit.StudyRooms.core.repository.PersonRepository;
 import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
 import gr.hua.dit.StudyRooms.core.security.CurrentUser;
@@ -418,30 +417,25 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
     }
 
     @Transactional
-    public void clearAbsences(String studentId) {
-        Person student = personBusinessLogicService.getPersonById(studentId);
-        List<Reservation> reservations = reservationRepository.findByStudent(student);
-
-        for (Reservation r : reservations) {
-            if (Boolean.FALSE.equals(r.getPresent())) {
-                r.setPresent(null);
-                reservationRepository.save(r);
-            }
-        }
-    }
-
-    @Transactional
+    @Override
     public void applyPenalty(String studentId) {
         Person student = personBusinessLogicService.getPersonById(studentId);
         if (student == null) {
             throw new IllegalArgumentException("Student not found: " + studentId);
         }
+        LocalDateTime now = LocalDateTime.now();
 
-        // Στέλνουμε SMS για penalty
+        // penalty 1 hour
+        student.setPenaltyUntil(now.plusHours(1));
+
+        student.setLastPenaltyAt(now);
+
+        personRepository.save(student);
+
+        // SMS
         smsNotificationPort.sendSms(
                 student.getMobilePhoneNumber(),
-                "Σας επιβλήθηκε ποινή λόγω μη τήρησης κράτησης."
+                "You have penalty for not attending 3 reservations ~ duration: 1 hour."
         );
     }
-
 }
