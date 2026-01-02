@@ -4,7 +4,7 @@ spring:
     name: Study Rooms
 
   datasource:
-    url: jdbc:postgresql://dpg-d5bro7je5dus73fujq1g-a.frankfurt-postgres.render.com:5432/studyroomsdb_8jgd
+    url: jdbc:postgresql://localhost:5432/studyroomsdb
     username: studyroomsusr
     password: dKOm22tAwQ2TB8ap9mXnkrmcqod27aPL
     driver-class-name: org.postgresql.Driver
@@ -14,7 +14,6 @@ spring:
       ddl-auto: update
     open-in-view: false
     properties:
-      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
       hibernate.format_sql: true
 
 server:
