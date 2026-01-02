@@ -8,15 +8,12 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class RestApiClientConfig {
 
-    @Value("${app.api.base-url}")
-    private String baseUrl;
+    // @future Get me from application properties!
+    public static final String BASE_URL = "http://localhost:8081";
 
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
 
-    public String getBaseUrl() {
-        return baseUrl;
-    }
 }

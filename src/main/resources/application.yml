@@ -4,23 +4,18 @@ spring:
     name: Study Rooms
 
   datasource:
-    url: jdbc:h2:file:./LOCAL_DATA/h2/app;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
-    username: sa
-    password: changeme
-    driver-class-name: org.h2.Driver
+    url: jdbc:postgresql://dpg-d5bro7je5dus73fujq1g-a.frankfurt-postgres.render.com:5432/studyroomsdb_8jgd
+    username: studyroomsusr
+    password: dKOm22tAwQ2TB8ap9mXnkrmcqod27aPL
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update   # krataei tous xrhstes
+      ddl-auto: update
     open-in-view: false
     properties:
-      hibernate.dialect: org.hibernate.dialect.H2Dialect
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
       hibernate.format_sql: true
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
 
 server:
   error:
