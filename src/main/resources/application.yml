@@ -37,3 +37,7 @@ app:
     audience: "external-systems"
     secret: "${JWT_SECRET:CZdgSym1G85S2lG3LFd3dufas53SakV3kXEqxTgy1vY=}" # openssl rand -base64 32
     ttl-minutes: 60
+  api:
+    base-url: http://localhost:8081   #SmsNotification, PhoneNumber, Lookup
+    holiday-api:
+      base-url: http://localhost:8082   #HolidayAPI

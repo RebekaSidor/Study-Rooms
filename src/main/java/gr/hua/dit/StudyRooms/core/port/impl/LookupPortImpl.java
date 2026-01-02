@@ -1,9 +1,9 @@
 package gr.hua.dit.StudyRooms.core.port.impl;
 
-import gr.hua.dit.StudyRooms.config.RestApiClientConfig;
 import gr.hua.dit.StudyRooms.core.model.PersonType;
 import gr.hua.dit.StudyRooms.core.port.LookupPort;
 import gr.hua.dit.StudyRooms.core.port.impl.dto.LookupResult;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -17,26 +17,35 @@ import java.util.Optional;
 public class LookupPortImpl implements LookupPort {
 
     private final RestTemplate restTemplate;
+    private final String baseUrl;
 
-    public LookupPortImpl(final RestTemplate restTemplate) {
+    public LookupPortImpl(
+            RestTemplate restTemplate,
+            @Value("${app.api.base-url}") String baseUrl
+    ) {
         if (restTemplate == null) throw new NullPointerException();
+        if (baseUrl == null) throw new NullPointerException();
         this.restTemplate = restTemplate;
+        this.baseUrl = baseUrl;
     }
 
     @Override
     public Optional<PersonType> lookup(final String libraryId) {
         if (libraryId == null) throw new NullPointerException();
-        if(libraryId.isBlank()) throw new IllegalArgumentException();
+        if (libraryId.isBlank()) throw new IllegalArgumentException();
 
-        final String baseUrl = RestApiClientConfig.BASE_URL;
         final String url = baseUrl + "/api/v1/lookups/" + libraryId;
-        final ResponseEntity<LookupResult> response = this.restTemplate.getForEntity(url, LookupResult.class);
+        final ResponseEntity<LookupResult> response =
+                this.restTemplate.getForEntity(url, LookupResult.class);
 
         if (response.getStatusCode().is2xxSuccessful()) {
             final LookupResult lookupResult = response.getBody();
             if (lookupResult == null) throw new NullPointerException();
             return Optional.ofNullable(lookupResult.type());
         }
-        throw new RuntimeException("FExternal service responded with " + response.getStatusCode());
+
+        throw new RuntimeException(
+                "External service responded with " + response.getStatusCode()
+        );
     }
 }
