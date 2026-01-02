@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * Default implementation of {@link ReservationBusinessLogicService}.
  */
@@ -131,6 +130,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
                     "You already have another reservation during this time."
             );
         }
+        //-----------------------------------------------------
 
         // Create reservation
         Reservation reservation = new Reservation();
@@ -143,9 +143,10 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         //save in DB
         reservation = reservationRepository.save(reservation);
 
+        //notify by SMS about the reservation
         if (notify) {
             String message = String.format(
-                    "Η κράτησή σας στη βιβλιοθήκη (%s) καταχωρήθηκε επιτυχώς από %s έως %s.",
+                    "Your library reservation (%s) has been successfully booked from %s to %s.",
                     studySpace.getName(),
                     request.startTime(),
                     request.endTime()
@@ -180,18 +181,11 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         );
     }
 
-    //retrieve all reservations
-    @Override
-    public List<ReservationView> getAllReservations() {
-        return reservationRepository.findAll()
-                .stream()
-                .map(reservationMapper::convertReservationToReservationView)
-                .toList();
-    }
+    //get all student's reservations
     @Override
     public List<ReservationView> getMyReservations(String studentId) {
+        //Security-------------------------------------------
         final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
-
         if (currentUser.type() != PersonType.STUDENT || !currentUser.libraryId().equals(studentId)) {
             throw new SecurityException("Only the student can view their own reservations");
         }
@@ -205,7 +199,6 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
                 .map(reservationMapper::convertReservationToReservationView)
                 .toList();
     }
-
 
     //count how many reservations there are
     @Override
@@ -232,11 +225,9 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
     public Map<String, Long> getReservationsPerRoom() {
         //Security-------------------------------------------
         final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
-
         if (currentUser.type() != PersonType.LIB_STAFF) {
             throw new SecurityException("Staff role required");
         }
-
 
         List<Object[]> results = reservationRepository.countReservationsGroupByStudySpaceId();
         Map<String, Long> map = new HashMap<>();
@@ -249,33 +240,12 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         return map;
     }
 
-    //get all reservations for specific student
-    @Override
-    public List<ReservationView> getReservationsByStudentId(String studentId) {
-        //Security----------------------------------------------
-        final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
-
-        if (currentUser.type() != PersonType.LIB_STAFF) {
-            throw new SecurityException("Only staff can view other students' reservations");
-        }
-
-        Person student = personBusinessLogicService.getPersonById(studentId);
-        if (student == null) return List.of();
-
-        List<Reservation> reservations = reservationRepository.findByStudent(student);
-
-        return reservations.stream()
-                .map(reservationMapper::convertReservationToReservationView)
-                .toList();
-    }
 
     //calculate number of reservations per hour ~ for statistics page chart
     @Override
     public Map<Integer, Long> getReservationsPerHourForToday() {
-
         //Security-------------------------------------
         final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
-
         if (currentUser.type() != PersonType.LIB_STAFF) {
             throw new SecurityException("Staff role required");
         }
@@ -311,11 +281,8 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         }
 
         //Security-------------------------------------------
-
         var reservation = optionalReservation.get();
-
         final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
-
         if (currentUser.type() == PersonType.STUDENT) { //student only cancels his own reservations
             if (!reservation.getStudent().getLibraryId().equals(currentUser.libraryId())) {
                 throw new SecurityException("Student cannot cancel another student's reservation");
@@ -327,7 +294,6 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
             throw new SecurityException("Unsupported role");
         }
 
-
         //delete
         reservationRepository.delete(reservation);
         LOGGER.info(
@@ -335,7 +301,6 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
                 reservation.getReservationId(),
                 libraryId
         );
-
         return true;
     }
 
@@ -343,7 +308,6 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
     @Transactional
     @Override
     public boolean cancelReservationByStaff(Long reservationId, String cancelReason) {
-
         // security
         final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
         if (currentUser.type() != PersonType.LIB_STAFF) {
@@ -361,14 +325,12 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
 
         // send SMS to student
         Person student = reservation.getStudent();
-
         String message = String.format(
-                "Η κράτησή σας (%s - %s) ακυρώθηκε από τη βιβλιοθήκη. Λόγος: %s",
+                "Your reservation (%s - %s) has been canceled, we apologize. Reason: %s",
                 reservation.getStartTime(),
                 reservation.getEndTime(),
                 cancelReason
         );
-
         smsNotificationPort.sendSms(
                 student.getMobilePhoneNumber(),
                 message
@@ -389,7 +351,6 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
 
         //Security------------------------------------
         final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
-
         if (currentUser.type() == PersonType.STUDENT) {
             if (!currentUser.libraryId().equals(studentId)) {
                 throw new SecurityException("Student cannot view another student's reservations");
@@ -416,6 +377,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
                 .toList();
     }
 
+    //penalty application to student
     @Transactional
     @Override
     public void applyPenalty(String studentId) {
@@ -427,12 +389,11 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
 
         // penalty 1 hour
         student.setPenaltyUntil(now.plusHours(1));
-
         student.setLastPenaltyAt(now);
 
         personRepository.save(student);
 
-        // SMS
+        //send SMS
         smsNotificationPort.sendSms(
                 student.getMobilePhoneNumber(),
                 "You have penalty for not attending 3 reservations ~ duration: 1 hour."

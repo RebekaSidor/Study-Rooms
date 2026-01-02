@@ -21,8 +21,8 @@ import java.time.LocalTime;
                 @Index(name = "idx_study_space_capacity", columnList = "capacity")
         }
 )
-public class StudySpace {
 
+public class StudySpace {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id")

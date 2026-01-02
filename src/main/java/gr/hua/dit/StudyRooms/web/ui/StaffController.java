@@ -218,7 +218,7 @@ public class StaffController {
         //for past reservations that staff didn't mark, set present=false
         for (Reservation r : bookings) {
             if (r.getEndTime() != null && r.getEndTime().isBefore(now) && r.getPresent() == null) {
-                r.setPresent(false); // Δεν τσέκαρε το staff → false
+                r.setPresent(false);
                 reservationRepository.save(r);
             }
         }
@@ -291,7 +291,7 @@ public class StaffController {
             return "redirect:/staff/cancel-reservation";
         }
 
-        // -------- HISTORY (UI concern → σωστά εδώ)
+        //history
         List<String> history = (List<String>) session.getAttribute("history");
         if (history == null) {
             history = new ArrayList<>();
@@ -316,7 +316,6 @@ public class StaffController {
     public String applyPenalty(@RequestParam String studentId, RedirectAttributes redirectAttributes) {
         reservationBusinessLogicService.applyPenalty(studentId);
         redirectAttributes.addFlashAttribute("successMessage", "Penalty sent to student " + studentId);
-        return "redirect:/staff/attendances"; // ή σε όποια σελίδα θέλεις
+        return "redirect:/staff/attendances";
     }
-
 }

@@ -24,9 +24,7 @@ ReservationBusinessLogicService {
     boolean cancelReservation(Long reservationId, String libraryId);
     boolean cancelReservationByStaff(Long reservationId, String cancelReason);
 
-    List<ReservationView> getAllReservations();
     List<ReservationView> getReservationsForStudentOnDate(String studentId, LocalDate date);
-    List<ReservationView> getReservationsByStudentId(String studentId);
     List<ReservationView> getMyReservations(String studentId);
 
     long countAllReservations();

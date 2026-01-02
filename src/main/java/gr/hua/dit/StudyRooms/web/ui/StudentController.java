@@ -42,43 +42,55 @@ public class StudentController {
     //show student profil
     @GetMapping("/profile")
     public String showProfile(Authentication auth, Model model) {
+        //retrieve the logged-in user's details
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
         model.addAttribute("me", user);
 
-        //find person
         Person student = personRepository.findByLibraryId(user.getLibraryId()).orElse(null);
+
         if (student == null) {
-            model.addAttribute("reservations", List.of());
             model.addAttribute("absences", 0L);
+            model.addAttribute("hasPenalty", false);
+            model.addAttribute("penaltyUntil", null);
             return "student_profile";
         }
 
         LocalDateTime now = LocalDateTime.now();
-        List<Reservation> reservations = reservationRepository.findByStudent(student);
+        List<Reservation> reservations = reservationRepository.findByStudent(student); //get all reservations for student
 
-        // Μέτρα όλες τις απουσίες μέχρι τώρα
+        //count absences from last penalty if it exists
+        LocalDateTime absenceStart =
+                student.getLastPenaltyAt() != null
+                        ? student.getLastPenaltyAt()
+                        : LocalDateTime.MIN;
+
         long absences = reservations.stream()
                 .filter(r -> r.getEndTime() != null)
                 .filter(r -> r.getEndTime().isBefore(now))
+                .filter(r -> r.getEndTime().isAfter(absenceStart))
                 .filter(r -> Boolean.FALSE.equals(r.getPresent()))
                 .count();
+        //determine if the student currently has a penalty
+        boolean hasPenalty =
+                student.getPenaltyUntil() != null &&
+                        now.isBefore(student.getPenaltyUntil());
 
-        boolean hasPenalty = student.getPenaltyUntil() != null && now.isBefore(student.getPenaltyUntil());
-
-        // Δημιουργία μηνύματος
-        String absenceMessage;
-        if (absences >= 3 || hasPenalty) {
-            absenceMessage = "⚠ Too many absences. You are blocked until " +
-                    (student.getPenaltyUntil() != null ? student.getPenaltyUntil().format(DateTimeFormatter.ofPattern("HH:mm")) : "N/A");
-        } else {
-            absenceMessage = "You have " + absences + " absence" + (absences == 1 ? "" : "s") + ".";
+        //apply a new penalty if the student has 3 or more absences and no active penalty
+        if (absences >= 3 && !hasPenalty) {
+            student.setPenaltyUntil(now.plusHours(1));
+            student.setLastPenaltyAt(now);
+            personRepository.save(student);
+            hasPenalty = true;
+            absences = 3;
         }
 
-        model.addAttribute("absenceMessage", absenceMessage);
+        model.addAttribute("absences", absences);
         model.addAttribute("hasPenalty", hasPenalty);
+        model.addAttribute("penaltyUntil", student.getPenaltyUntil());
 
         return "student_profile";
     }
+
 
 /**
  * change personal info

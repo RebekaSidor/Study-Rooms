@@ -24,8 +24,8 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_reservation_start_time", columnList = "start_time")
         }
 )
-public class Reservation {
 
+public class Reservation {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id")

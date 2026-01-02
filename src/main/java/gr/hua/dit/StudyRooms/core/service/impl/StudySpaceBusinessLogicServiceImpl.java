@@ -103,6 +103,7 @@ public class StudySpaceBusinessLogicServiceImpl implements StudySpaceBusinessLog
         //update hours
         existing.setOpeningTime(updatedSpace.getOpeningTime());
         existing.setClosingTime(updatedSpace.getClosingTime());
+
         //update capacity if it's a room
         if (existing.getType() == StudySpaceType.ROOM && updatedSpace.getCapacity() != null) {
             existing.setCapacity(updatedSpace.getCapacity());
@@ -111,7 +112,7 @@ public class StudySpaceBusinessLogicServiceImpl implements StudySpaceBusinessLog
         studySpaceRepository.save(existing);
     }
 
-    //create study space ~ html
+    //create study space ~ HTML
     @Override
     public void createStudySpace(StudySpace space) {
         //Security-----------------------

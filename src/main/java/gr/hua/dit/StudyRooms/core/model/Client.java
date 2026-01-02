@@ -23,8 +23,8 @@ import java.util.Objects;
                 @UniqueConstraint(name = "uk_client_name", columnNames = "name")
         }
 )
-public class Client {
 
+public class Client {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;

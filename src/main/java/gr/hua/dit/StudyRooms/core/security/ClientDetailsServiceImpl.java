@@ -2,17 +2,10 @@ package gr.hua.dit.StudyRooms.core.security;
 
 import gr.hua.dit.StudyRooms.core.model.Client;
 import gr.hua.dit.StudyRooms.core.repository.ClientRepository;
-
 import org.springframework.stereotype.Service;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * Default implementation of {@link ClientDetailsService}.
@@ -21,10 +14,13 @@ import java.util.stream.Collectors;
 public class ClientDetailsServiceImpl implements ClientDetailsService {
 
     private final ClientRepository clientRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public ClientDetailsServiceImpl(final ClientRepository clientRepository) {
+    public ClientDetailsServiceImpl(final ClientRepository clientRepository,final PasswordEncoder passwordEncoder) {
         if (clientRepository == null) throw new NullPointerException();
+        if (passwordEncoder == null) throw new NullPointerException();
         this.clientRepository = clientRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -34,26 +30,30 @@ public class ClientDetailsServiceImpl implements ClientDetailsService {
         if (secret == null) throw new NullPointerException();
         if (secret.isBlank()) throw new IllegalArgumentException();
 
-        final Client client = this.clientRepository.findByName(id).orElse(null);
-        if (client == null) {
-            return Optional.empty(); // client does not exist.
+        return clientRepository.findByName(id)
+                .filter(client -> passwordEncoder.matches(secret, client.getSecret()))
+                .map(this::mapToClientDetails);
         }
 
-        if (Objects.equals(client.getSecret(), secret)) {
-            // TODO better and more secure implementation. For now, it's just fine!
-            // ClientDetails.id     - map - Client.name
-            // ClientDetails.secret - map - Client.secret
-            // ClientDetails.roles  - map - Client.permissionsCsv (comma separated values)
-            final ClientDetails clientDetails = new ClientDetails(
-                    client.getName(),
-                    client.getSecret(),
-                    Arrays.stream(client.getRolesCsv().split(","))
-                            .map(String::strip)
-                            .map(String::toUpperCase)
-                            .collect(Collectors.toSet()));
-            return Optional.of(clientDetails);
-        } else {
-            return Optional.empty();
-        }
+    private ClientDetails mapToClientDetails(final Client client) {
+        final Set<String> roles = parseRoles(client.getRolesCsv());
+
+        return new ClientDetails(
+                client.getName(),
+                client.getSecret(),
+                roles
+        );
     }
+
+    private Set<String> parseRoles(final String rolesCsv) {
+        if (rolesCsv == null || rolesCsv.isBlank()) {
+            return Collections.emptySet();
+        }
+
+        return Arrays.stream(rolesCsv.split(","))
+                .map(String::trim)
+                .map(String::toUpperCase)
+                .collect(Collectors.toSet());
+    }
+
 }

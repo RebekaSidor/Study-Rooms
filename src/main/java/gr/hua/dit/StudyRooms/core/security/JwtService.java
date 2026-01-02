@@ -15,8 +15,6 @@ import java.util.Date;
 
 /**
  * JWT (JSON Web Token) service.
- *
- * <p>TODO fix deprecated methods
  */
 @Service
 public class JwtService {

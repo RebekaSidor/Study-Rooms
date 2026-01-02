@@ -61,14 +61,13 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         this.smsNotificationPort = smsNotificationPort;
     }
 
+    //create new person
     @Transactional
     @Override
     public CreatePersonResult createPerson(final CreatePersonRequest createPersonRequest, final boolean notify) {
         if (createPersonRequest == null) throw new NullPointerException();
 
         // `CreatePersonRequest` validation.
-        // --------------------------------------------------
-
         final Set<ConstraintViolation<CreatePersonRequest>> requestViolations
                 = this.validator.validate(createPersonRequest);
         if (!requestViolations.isEmpty()) {
@@ -84,8 +83,6 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         }
 
         // Unpack (we assume valid `CreatePersonRequest` instance)
-        // --------------------------------------------------
-
         final PersonType type = createPersonRequest.type();
         final String firstName = createPersonRequest.firstName().strip();
         final String lastName = createPersonRequest.lastName().strip();
@@ -95,10 +92,8 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
 
         LOGGER.info("Creating person: {} {}, type={}", firstName, lastName, type);
         LOGGER.info("Email: {}, Phone: {}", emailAddress, mobilePhoneNumber);
+
         // Advanced mobile phone number validation.
-        // --------------------------------------------------
-
-
         final PhoneNumberValidationResult phoneNumberValidationResult
                 = this.phoneNumberPort.validate(mobilePhoneNumber);
         if (!phoneNumberValidationResult.isValidMobile()) {
@@ -106,8 +101,6 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
             return CreatePersonResult.fail("Mobile Phone Number is not valid");
         }
         mobilePhoneNumber = phoneNumberValidationResult.e164();
-
-        // --------------------------------------------------
 
         //validation
         if (this.personRepository.existsByEmailAddressIgnoreCase(emailAddress)) {
@@ -119,21 +112,20 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
             return CreatePersonResult.fail("Mobile Phone number must be unique");
         }
 
+        //generate library id for each person type
         final String libraryId;
         if (type == PersonType.STUDENT) {
-            libraryId = generateNextStudentId(); // νέα μέθοδος για φοιτητές (lib2025xxx)
+            libraryId = generateNextStudentId(); //(lib2025xxx)
         } else if (type == PersonType.LIB_STAFF) {
-            libraryId = generateNextStaffId();   // νέα μέθοδος για προσωπικό (s0001, s0002...)
+            libraryId = generateNextStaffId();   //(s0001, s0002...)
         } else {
             throw new IllegalArgumentException("Unsupported person type: " + type);
         }
 
-        // --------------------------------------------------
         //encode password
         final String hashedPassword = this.passwordEncoder.encode(rawPassword);
 
         // Instantiate person.
-        // --------------------------------------------------
         Person person = new Person();
         person.setId(null); //auto generated
         person.setLibraryId(libraryId);
@@ -144,25 +136,19 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         person.setMobilePhoneNumber(mobilePhoneNumber);
         person.setPasswordHash(hashedPassword);
         person.setCreatedAt(null); // auto generated
-
         // --------------------------------------------------
 
         final Set<ConstraintViolation<Person>> personViolations = this.validator.validate(person);
         if (!personViolations.isEmpty()) {
-            // Throw an exception instead of returning an instance, i.e. `CreatePersonResult.fail`.
-            // At this point, errors/violations on the `Person` instance
-            // indicate a programmer error, not a client error.
-            throw new RuntimeException("invalid Person instance");
+            throw new RuntimeException("invalid Person instance"); //indicate a programmer error, not a client error
         }
 
-        // Persist person (save/insert to database)
-        // --------------------------------------------------
+        //save/insert to database
         person = this.personRepository.save(person);
         LOGGER.info("Person saved with ID: {}", person.getLibraryId());
-
         // --------------------------------------------------
 
-        // Send SMS notification if requested
+        // Send SMS notification
         if (notify) {
             final String content = String.format(
                     "Registration successful! Your Library ID is %s. Use it for log-in!",
@@ -178,24 +164,23 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         return CreatePersonResult.success(personView);
     }
 
+    //id generation based on person type
     private String generateNextStudentId() {
         String prefix = "lib";
         Person last = personRepository.findTopStudentByLibraryIdStartingWithOrderByLibraryIdDesc(prefix);
-        if (last == null) return prefix + "2025001"; // αρχικό ID
+        if (last == null) return prefix + "2025001"; //first ID
 
-        String oldId = last.getLibraryId(); // πχ "lib2025003"
+        String oldId = last.getLibraryId(); //"lib2025003"
         int num = Integer.parseInt(oldId.substring(prefix.length()));
         num++;
-        // Εξασφαλίζουμε ότι το αριθμητικό μέρος είναι πάντα 7 ψηφία
         return prefix + String.format("%07d", num);
     }
-
     private String generateNextStaffId() {
        String prefix = "s";
         Person last = personRepository.findTopStaffByLibraryIdStartingWithOrderByLibraryIdDesc(prefix);
-       if (last == null) return prefix + "0001"; // αρχικό ID
+       if (last == null) return prefix + "0001"; //first ID
 
-        String oldId = last.getLibraryId(); // πχ "s0004"
+        String oldId = last.getLibraryId(); //"s0004"
         int num = Integer.parseInt(oldId.substring(prefix.length()));
         num++;
         return prefix + String.format("%04d", num);
@@ -206,22 +191,8 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         return personRepository.findByLibraryId(libraryId).orElse(null);
     }
 
-    //auto generate library id
-    private String generateNextLibraryId() {
-        Person last = personRepository.findTopByOrderByLibraryIdDesc();
 
-        if (last == null || last.getLibraryId() == null) {
-            return "lib2025000";
-        }
-
-        String oldId = last.getLibraryId(); // Example: lib2025003
-        int num = Integer.parseInt(oldId.substring(3)); // → 2025003
-        num++; // → 2025004
-
-        return "lib" + num;
-    }
-
-    /*change personal information*/
+/*change personal information*/
     @Override
     public String updateEmail(String libraryId, String newEmail) {
         if (newEmail == null || newEmail.isBlank()) {

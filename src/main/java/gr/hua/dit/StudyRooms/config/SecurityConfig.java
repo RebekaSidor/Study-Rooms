@@ -66,10 +66,10 @@ public class SecurityConfig {
         http
                 .securityMatcher("/**")
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/h2-console/**") // αγνοούμε CSRF για H2
+                        .ignoringRequestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/h2-console/**") //ignore CSRF for H2
                 )
                 .headers(headers -> headers
-                        .frameOptions(frame -> frame.sameOrigin()) // επιτρέπει iframe για H2
+                        .frameOptions(frame -> frame.sameOrigin()) //allows iframe for H2
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**","/swagger-ui.html","/swagger-ui/**").permitAll()

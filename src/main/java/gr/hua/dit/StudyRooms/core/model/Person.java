@@ -25,8 +25,8 @@ import java.time.LocalDateTime;
         @Index(name = "idx_person_last_name", columnList = "last_name")
     }
 )
-public final class Person {
 
+public final class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id")

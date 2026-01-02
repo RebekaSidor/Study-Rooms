@@ -71,11 +71,13 @@
                 <li>Type: <span th:text="${me.type}"></span></li>
                 <li>
                     Absences:
-                    <span th:if="${!hasPenalty}" th:text="${absenceMessage}"></span>
+                    <span th:if="${!hasPenalty}" th:text="${absences} + ' / 3'"></span>
                     <span th:if="${hasPenalty}" style="color: orange; font-weight: bold;">
-                        penalty – made 3 absences
+                    ⚠ Penalty until
+                    <span th:text="${penaltyUntil != null ? #temporals.format(penaltyUntil, 'HH:mm') : ''}"></span>
                     </span>
                 </li>
+
             </ul>
         </div>
     </div>

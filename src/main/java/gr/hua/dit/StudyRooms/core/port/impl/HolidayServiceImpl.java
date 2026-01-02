@@ -22,7 +22,7 @@ public class HolidayServiceImpl implements HolidayService {
             //POST to holiday-API
             String response = restTemplate.postForObject(holidayApiUrl + date, null, String.class);
 
-            //if response περιέχει ❌ -> id a holiday
+            //if response is ❌ -> id a holiday
             return response != null && response.contains("❌");
         } catch (Exception e) {
             //if the API doesn't work consider it not a holiday
