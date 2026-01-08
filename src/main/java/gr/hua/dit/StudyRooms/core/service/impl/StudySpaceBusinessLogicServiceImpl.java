@@ -11,6 +11,7 @@ import gr.hua.dit.StudyRooms.core.service.mapper.StudySpaceMapper;
 import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceResult;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
+import jakarta.validation.ValidationException;
 import org.springframework.stereotype.Service;
 import java.time.LocalTime;
 import java.util.HashMap;
@@ -143,5 +144,30 @@ public class StudySpaceBusinessLogicServiceImpl implements StudySpaceBusinessLog
 
         return result;
     }
+
+    public void validateAndUpdateStudySpace(StudySpace existing, StudySpace updated) throws ValidationException {
+        // keep existing fields if not changed
+        if (updated.getOpeningTime() != null) existing.setOpeningTime(updated.getOpeningTime());
+        if (updated.getClosingTime() != null) existing.setClosingTime(updated.getClosingTime());
+        if (existing.getType() == StudySpaceType.ROOM && updated.getCapacity() != null) {
+            existing.setCapacity(updated.getCapacity());
+        }
+
+        LocalTime earliest = LocalTime.of(8, 0);
+        LocalTime latest = LocalTime.of(22, 0);
+
+        if (existing.getOpeningTime() != null && existing.getClosingTime() != null) {
+            if (existing.getClosingTime().isBefore(existing.getOpeningTime())) {
+                throw new ValidationException("Closing time cannot be before opening time!");
+            }
+            if (existing.getOpeningTime().isBefore(earliest) || existing.getClosingTime().isAfter(latest)) {
+                throw new ValidationException("Time must be between 08:00 and 22:00!");
+            }
+        }
+
+        // save to repository
+        studySpaceRepository.save(existing);
+    }
+
 
 }

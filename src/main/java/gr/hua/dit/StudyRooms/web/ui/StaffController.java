@@ -12,6 +12,7 @@ import gr.hua.dit.StudyRooms.core.service.model.NextStudySpaceResponse;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ValidationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -72,47 +73,22 @@ public class StaffController {
     }
 
     //save changes made to study space
-    @PreAuthorize("hasRole('LIB_STAFF')")
     @PostMapping("/staff/studyspaces/edit")
+    @PreAuthorize("hasRole('LIB_STAFF')")
     public String saveStudySpace(@ModelAttribute("space") StudySpace formSpace, Model model) {
-
-        //retrieve from db
         StudySpace existing = studySpaceBusinessLogicService.getStudySpaceById(formSpace.getStudySpaceId());
         if (existing == null) {
             throw new IllegalArgumentException("Study space not found");
         }
-        //keep existing fields if there is no change
-        if (formSpace.getOpeningTime() != null) {
-            existing.setOpeningTime(formSpace.getOpeningTime());
-        }
-        if (formSpace.getClosingTime() != null) {
-            existing.setClosingTime(formSpace.getClosingTime());
-        }
-        if (existing.getType() == StudySpaceType.ROOM && formSpace.getCapacity() != null) {
-            existing.setCapacity(formSpace.getCapacity());
+
+        try {
+            studySpaceBusinessLogicService.validateAndUpdateStudySpace(existing, formSpace);
+        } catch (ValidationException e) {
+            model.addAttribute("space", existing);
+            model.addAttribute("errorMessage", e.getMessage());
+            return "staff_edit_studyspace";
         }
 
-        //define valid time range
-        LocalTime earliest = LocalTime.of(8, 0);
-        LocalTime latest = LocalTime.of(22, 0);
-
-        if (existing.getOpeningTime() != null && existing.getClosingTime() != null) {
-
-            if (existing.getClosingTime().isBefore(existing.getOpeningTime())) {
-                model.addAttribute("space", existing);
-                model.addAttribute("errorMessage", "Closing time cannot be before opening time!");
-                return "staff_edit_studyspace";
-            }
-
-            if (existing.getOpeningTime().isBefore(earliest) ||
-                    existing.getClosingTime().isAfter(latest)) {
-                model.addAttribute("space", existing);
-                model.addAttribute("errorMessage", "Time must be between 08:00 and 22:00!");
-                return "staff_edit_studyspace";
-            }
-        }
-        //save
-        studySpaceBusinessLogicService.updateStudySpace(existing);
         return "redirect:/staff/studyspaces?updated";
     }
 

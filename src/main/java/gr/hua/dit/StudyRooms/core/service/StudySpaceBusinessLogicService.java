@@ -4,6 +4,8 @@ import gr.hua.dit.StudyRooms.core.model.StudySpace;
 import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceResult;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
+import jakarta.validation.ValidationException;
+
 import java.util.List;
 import java.util.Map;
 
@@ -22,4 +24,6 @@ public interface StudySpaceBusinessLogicService {
     long countAll();
 
     Map<String, List<StudySpaceView>> getRoomsAndSeats();
+
+    void validateAndUpdateStudySpace(StudySpace existing, StudySpace updated) throws ValidationException;
 }
