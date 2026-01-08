@@ -61,17 +61,17 @@ public class InitializationService {
         //create initial StudySpaces ---
         List<CreateStudySpaceRequest> spaces = List.of(
                 new CreateStudySpaceRequest(StudySpaceType.ROOM, "r001", "R1", 6, true,
-                        LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                        LocalTime.of(8, 0), LocalTime.of(21, 0)),
                 new CreateStudySpaceRequest(StudySpaceType.ROOM, "r002", "R2", 5, true,
-                        LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                        LocalTime.of(8, 0), LocalTime.of(21, 0)),
                 new CreateStudySpaceRequest(StudySpaceType.ROOM, "r003", "R3", 8, true,
-                        LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                        LocalTime.of(8, 0), LocalTime.of(21, 0)),
                 new CreateStudySpaceRequest(StudySpaceType.SEAT, "s001", "S1", null, true,
-                        LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                        LocalTime.of(8, 0), LocalTime.of(22, 0)),
                 new CreateStudySpaceRequest(StudySpaceType.SEAT, "s002", "S2", null, true,
-                        LocalTime.of(8, 0), LocalTime.of(20, 0)),
+                        LocalTime.of(8, 0), LocalTime.of(22, 0)),
                 new CreateStudySpaceRequest(StudySpaceType.SEAT, "s003", "S3", null, true,
-                        LocalTime.of(8, 0), LocalTime.of(20, 0))
+                        LocalTime.of(8, 0), LocalTime.of(22, 0))
         );
 
         for (CreateStudySpaceRequest req : spaces) {

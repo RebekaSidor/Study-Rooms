@@ -1,6 +1,7 @@
 package gr.hua.dit.StudyRooms.web.ui;
 
 import gr.hua.dit.StudyRooms.core.port.LibraryDirections;
+import gr.hua.dit.StudyRooms.core.port.impl.LibraryDirectionsImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,13 +20,16 @@ public class HomepageController {
     }
 
     @GetMapping("/")
-    public String showHomepage(final Authentication authentication, Model model) {
+    public String showHomepage(Authentication authentication, Model model) {
         if (AuthUtils.isAuthenticated(authentication)) {
             return "redirect:/profile";
         }
 
-        model.addAttribute("directionsUrl", libraryDirections.getDirectionsUrl());
+        LibraryDirectionsImpl.MapResponse response = libraryDirections.getDirections();
+        model.addAttribute("directionsUrl", response.getDirectionsUrl());
+        model.addAttribute("destination", response.getDestination());
 
         return "homepage";
     }
+
 }

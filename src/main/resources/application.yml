@@ -41,3 +41,5 @@ app:
     base-url: http://localhost:8081   #SmsNotification, PhoneNumber, Lookup
     holiday-api:
       base-url: http://localhost:8082   #HolidayAPI
+    directions:
+      base-url: http://localhost:8083/api/map/directions
