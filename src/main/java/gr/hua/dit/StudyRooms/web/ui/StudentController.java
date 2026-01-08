@@ -27,16 +27,11 @@ public class StudentController {
 
     private final PersonBusinessLogicService personBusinessLogicService;
     private final ReservationBusinessLogicService reservationBusinessLogicService;
-    private final ReservationRepository reservationRepository;
-    private final PersonRepository personRepository;
+
 
     public StudentController(PersonBusinessLogicService personBusinessLogicService,
-                             ReservationRepository reservationRepository,
-                             PersonRepository personRepository,
                              ReservationBusinessLogicService reservationBusinessLogicService) {
         this.personBusinessLogicService = personBusinessLogicService;
-        this.reservationRepository = reservationRepository;
-        this.personRepository = personRepository;
         this.reservationBusinessLogicService = reservationBusinessLogicService;
     }
 
