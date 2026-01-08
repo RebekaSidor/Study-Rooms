@@ -10,6 +10,7 @@ import gr.hua.dit.StudyRooms.core.service.StudySpaceBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.mapper.StudySpaceMapper;
 import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceResult;
+import gr.hua.dit.StudyRooms.core.service.model.NextStudySpaceResponse;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import jakarta.validation.ValidationException;
 import org.springframework.stereotype.Service;
@@ -169,5 +170,43 @@ public class StudySpaceBusinessLogicServiceImpl implements StudySpaceBusinessLog
         studySpaceRepository.save(existing);
     }
 
+    public void validateAndCreateStudySpace(StudySpace space) throws ValidationException {
+        if (space.getStudySpaceId() == null || space.getName() == null) {
+            throw new ValidationException("Invalid study space data");
+        }
+
+        if (space.getClosingTime().isBefore(space.getOpeningTime())) {
+            throw new ValidationException("Closing time cannot be before opening time!");
+        }
+
+        if (space.getType() == StudySpaceType.SEAT) {
+            space.setCapacity(null);
+        }
+
+        //security
+        final CurrentUser currentUser = currentUserProvider.requireCurrentUser();
+        if (currentUser.type() != PersonType.LIB_STAFF) {
+            throw new SecurityException("Only staff can create study spaces");
+        }
+
+        studySpaceRepository.save(space);
+    }
+
+    public NextStudySpaceResponse getNextStudySpace(StudySpaceType type) {
+        List<StudySpaceView> all = getAllStudySpaces();
+        int max = all.stream()
+                .filter(s -> s.type() == type)
+                .mapToInt(s -> {
+                    try { return Integer.parseInt(s.name().substring(1)); }
+                    catch (Exception e) { return 0; }
+                })
+                .max()
+                .orElse(0);
+        int next = max + 1;
+        String name = (type == StudySpaceType.ROOM ? "R" : "S") + next;
+        String id   = (type == StudySpaceType.ROOM ? "r" : "s") + String.format("%03d", next);
+
+        return new NextStudySpaceResponse(name, id);
+    }
 
 }

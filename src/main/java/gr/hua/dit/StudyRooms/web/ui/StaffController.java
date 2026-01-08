@@ -96,28 +96,7 @@ public class StaffController {
     @GetMapping("/staff/studyspaces/next")
     @ResponseBody
     public NextStudySpaceResponse getNext(@RequestParam("type") StudySpaceType type) {
-
-        List<StudySpaceView> all = studySpaceBusinessLogicService.getAllStudySpaces();
-
-        //find the maximum number currently used for the given type
-        int max = all.stream()
-              .filter(s -> s.type() == type) //filter by type (ROOM or SEAT)
-              .mapToInt(s -> {
-              try {
-                   return Integer.parseInt(s.name().substring(1)); //extract numeric part of name
-              } catch (Exception e) {
-                   return 0;
-              }
-              })
-              .max()
-              .orElse(0); //if none found, start from 0
-
-        int next = max + 1;
-        //generate next name and ID
-        String name = (type == StudySpaceType.ROOM ? "R" : "S") + next;
-        String id   = (type == StudySpaceType.ROOM ? "r" : "s") + String.format("%03d", next);
-
-        return new NextStudySpaceResponse(name, id);
+        return studySpaceBusinessLogicService.getNextStudySpace(type);
     }
 
     //form for creating new study space
@@ -129,29 +108,20 @@ public class StaffController {
     }
 
     //save the new studyspace
-    @PreAuthorize("hasRole('LIB_STAFF')")
     @PostMapping("/staff/studyspaces/create")
+    @PreAuthorize("hasRole('LIB_STAFF')")
     public String saveNewStudySpace(@ModelAttribute("space") StudySpace space, Model model) {
-        //validate that the study space has ID and name
-        if (space.getStudySpaceId() == null || space.getName() == null) {
-            model.addAttribute("errorMessage", "Invalid study space data");
+        try {
+            studySpaceBusinessLogicService.validateAndCreateStudySpace(space);
+        } catch (ValidationException e) {
+            model.addAttribute("space", space);
+            model.addAttribute("errorMessage", e.getMessage());
             return "staff_add_newstudyspace";
         }
-        //validate opening and closing times
-        if (space.getClosingTime().isBefore(space.getOpeningTime())) {
-            model.addAttribute("errorMessage", "Closing time cannot be before opening time!");
-            return "staff_add_newstudyspace";
-        }
-        //if the space is a SEAT, capacity is not applicable
-        if (space.getType() == StudySpaceType.SEAT) {
-            space.setCapacity(null);
-        }
-        //save
-        studySpaceBusinessLogicService.createStudySpace(space);
         return "redirect:/staff/studyspaces?created";
     }
 
-/**
+    /**
  * show statistics for study spaces
  * */
     @PreAuthorize("hasRole('LIB_STAFF')")

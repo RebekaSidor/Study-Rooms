@@ -1,8 +1,10 @@
 package gr.hua.dit.StudyRooms.core.service;
 
 import gr.hua.dit.StudyRooms.core.model.StudySpace;
+import gr.hua.dit.StudyRooms.core.model.StudySpaceType;
 import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceResult;
+import gr.hua.dit.StudyRooms.core.service.model.NextStudySpaceResponse;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import jakarta.validation.ValidationException;
 
@@ -25,5 +27,7 @@ public interface StudySpaceBusinessLogicService {
 
     Map<String, List<StudySpaceView>> getRoomsAndSeats();
 
+    void validateAndCreateStudySpace(StudySpace space) throws ValidationException;
+    NextStudySpaceResponse getNextStudySpace(StudySpaceType type);
     void validateAndUpdateStudySpace(StudySpace existing, StudySpace updated) throws ValidationException;
 }
