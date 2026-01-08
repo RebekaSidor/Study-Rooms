@@ -68,7 +68,7 @@ public class StudentController {
                 .filter(r -> r.getEndTime() != null)
                 .filter(r -> r.getEndTime().isBefore(now))
                 .filter(r -> r.getEndTime().isAfter(absenceStart))
-                .filter(r -> Boolean.FALSE.equals(r.getPresent()))
+                .filter(r -> r.getPresent() == null || !r.getPresent())
                 .count();
         //determine if the student currently has a penalty
         boolean hasPenalty =

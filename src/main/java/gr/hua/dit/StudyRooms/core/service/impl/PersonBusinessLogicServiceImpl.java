@@ -2,7 +2,6 @@ package gr.hua.dit.StudyRooms.core.service.impl;
 
 import gr.hua.dit.StudyRooms.core.model.Person;
 import gr.hua.dit.StudyRooms.core.model.PersonType;
-import gr.hua.dit.StudyRooms.core.port.LookupPort;
 import gr.hua.dit.StudyRooms.core.port.PhoneNumberPort;
 import gr.hua.dit.StudyRooms.core.port.SmsNotificationPort;
 import gr.hua.dit.StudyRooms.core.port.impl.dto.PhoneNumberValidationResult;
@@ -34,7 +33,6 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
     private final PersonRepository personRepository;
     private final PersonMapper personMapper;
     private final PhoneNumberPort phoneNumberPort;
-    private final LookupPort lookupPort;
     private final SmsNotificationPort smsNotificationPort;
 
     public PersonBusinessLogicServiceImpl(final Validator validator,
@@ -42,14 +40,12 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
                                           final PersonRepository personRepository,
                                           final PersonMapper personMapper,
                                           final PhoneNumberPort phoneNumberPort,
-                                          final LookupPort lookupPort,
                                           final SmsNotificationPort smsNotificationPort) {
         if (validator == null) throw new NullPointerException();
         if (passwordEncoder == null) throw new NullPointerException();
         if (personRepository == null) throw new NullPointerException();
         if (personMapper == null) throw new NullPointerException();
         if (phoneNumberPort == null) throw new NullPointerException();
-        if (lookupPort == null) throw new NullPointerException();
         if (smsNotificationPort == null) throw new NullPointerException();
 
         this.validator = validator;
@@ -57,7 +53,6 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         this.personRepository = personRepository;
         this.personMapper = personMapper;
         this.phoneNumberPort = phoneNumberPort;
-        this.lookupPort = lookupPort;
         this.smsNotificationPort = smsNotificationPort;
     }
 
