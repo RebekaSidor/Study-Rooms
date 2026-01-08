@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
+import java.util.Map;
 
 /**
  * UI controller for managing Study Spaces
@@ -26,19 +27,8 @@ public class StudySpaceController {
             @RequestParam(value = "from", required = false, defaultValue = "mainpage") String from,
             Model model) {
 
-        List<StudySpaceView> all = studySpaceBusinessLogicService.getAllStudySpaces();
-
-        //separate to rooms and seats
-        List<StudySpaceView> rooms = all.stream()
-                .filter(s -> s.type().name().equals("ROOM"))
-                .toList();
-
-        List<StudySpaceView> seats = all.stream()
-                .filter(s -> s.type().name().equals("SEAT"))
-                .toList();
-
-        model.addAttribute("rooms", rooms);
-        model.addAttribute("seats", seats);
+        Map<String, List<StudySpaceView>> data = studySpaceBusinessLogicService.getRoomsAndSeats();
+        model.addAllAttributes(data);
         model.addAttribute("from", from);
 
         return "anonymous_studyspaces";

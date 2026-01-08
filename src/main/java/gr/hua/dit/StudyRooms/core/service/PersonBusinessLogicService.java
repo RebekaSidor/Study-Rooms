@@ -3,6 +3,7 @@ package gr.hua.dit.StudyRooms.core.service;
 import gr.hua.dit.StudyRooms.core.model.Person;
 import gr.hua.dit.StudyRooms.core.service.model.CreatePersonRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreatePersonResult;
+import gr.hua.dit.StudyRooms.core.service.model.StudentStatus;
 
 /**
  * Service (contract) for managing students/staff.
@@ -19,6 +20,5 @@ public interface PersonBusinessLogicService {
     String updatePhone(String libraryId, String newPhone);
     String updatePassword(String libraryId, String newPassword);
     Person getPersonById(String libraryId);
-
+    StudentStatus calculateStudentStatus(Person student);
 }
-

@@ -6,6 +6,7 @@ import gr.hua.dit.StudyRooms.core.repository.PersonRepository;
 import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
 import gr.hua.dit.StudyRooms.core.security.ApplicationUserDetails;
 import gr.hua.dit.StudyRooms.core.service.ReservationBusinessLogicService;
+import gr.hua.dit.StudyRooms.core.service.model.StudentStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -42,11 +43,10 @@ public class StudentController {
     //show student profil
     @GetMapping("/profile")
     public String showProfile(Authentication auth, Model model) {
-        //retrieve the logged-in user's details
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
         model.addAttribute("me", user);
 
-        Person student = personRepository.findByLibraryId(user.getLibraryId()).orElse(null);
+        Person student = personBusinessLogicService.getPersonById(user.getLibraryId());
 
         if (student == null) {
             model.addAttribute("absences", 0L);
@@ -55,46 +55,18 @@ public class StudentController {
             return "student_profile";
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        List<Reservation> reservations = reservationRepository.findByStudent(student); //get all reservations for student
+        StudentStatus status = personBusinessLogicService.calculateStudentStatus(student);
 
-        //count absences from last penalty if it exists
-        LocalDateTime absenceStart =
-                student.getLastPenaltyAt() != null
-                        ? student.getLastPenaltyAt()
-                        : LocalDateTime.MIN;
-
-        long absences = reservations.stream()
-                .filter(r -> r.getEndTime() != null)
-                .filter(r -> r.getEndTime().isBefore(now))
-                .filter(r -> r.getEndTime().isAfter(absenceStart))
-                .filter(r -> r.getPresent() == null || !r.getPresent())
-                .count();
-        //determine if the student currently has a penalty
-        boolean hasPenalty =
-                student.getPenaltyUntil() != null &&
-                        now.isBefore(student.getPenaltyUntil());
-
-        //apply a new penalty if the student has 3 or more absences and no active penalty
-        if (absences >= 3 && !hasPenalty) {
-            student.setPenaltyUntil(now.plusHours(1));
-            student.setLastPenaltyAt(now);
-            personRepository.save(student);
-            hasPenalty = true;
-            absences = 3;
-        }
-
-        model.addAttribute("absences", absences);
-        model.addAttribute("hasPenalty", hasPenalty);
-        model.addAttribute("penaltyUntil", student.getPenaltyUntil());
+        model.addAttribute("absences", status.absences());
+        model.addAttribute("hasPenalty", status.hasPenalty());
+        model.addAttribute("penaltyUntil", status.penaltyUntil());
 
         return "student_profile";
     }
 
-
-/**
- * change personal info
- * */
+    /**
+     * change personal info
+     * */
     //show form for changing email
     @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/profile/change-email")

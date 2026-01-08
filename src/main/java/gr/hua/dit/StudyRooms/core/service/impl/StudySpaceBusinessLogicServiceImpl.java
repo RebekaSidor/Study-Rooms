@@ -13,7 +13,9 @@ import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceResult;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import org.springframework.stereotype.Service;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Default implementation of {@link StudySpaceBusinessLogicService}.
@@ -122,4 +124,24 @@ public class StudySpaceBusinessLogicServiceImpl implements StudySpaceBusinessLog
         }
         studySpaceRepository.save(space);
     }
+
+    //show available study spaces for guest user
+    public Map<String, List<StudySpaceView>> getRoomsAndSeats() {
+        List<StudySpaceView> all = getAllStudySpaces();
+
+        List<StudySpaceView> rooms = all.stream()
+                .filter(s -> s.type().name().equals("ROOM"))
+                .toList();
+
+        List<StudySpaceView> seats = all.stream()
+                .filter(s -> s.type().name().equals("SEAT"))
+                .toList();
+
+        Map<String, List<StudySpaceView>> result = new HashMap<>();
+        result.put("rooms", rooms);
+        result.put("seats", seats);
+
+        return result;
+    }
+
 }

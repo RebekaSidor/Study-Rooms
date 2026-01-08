@@ -2,15 +2,18 @@ package gr.hua.dit.StudyRooms.core.service.impl;
 
 import gr.hua.dit.StudyRooms.core.model.Person;
 import gr.hua.dit.StudyRooms.core.model.PersonType;
+import gr.hua.dit.StudyRooms.core.model.Reservation;
 import gr.hua.dit.StudyRooms.core.port.PhoneNumberPort;
 import gr.hua.dit.StudyRooms.core.port.SmsNotificationPort;
 import gr.hua.dit.StudyRooms.core.port.impl.dto.PhoneNumberValidationResult;
 import gr.hua.dit.StudyRooms.core.repository.PersonRepository;
+import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
 import gr.hua.dit.StudyRooms.core.service.PersonBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.mapper.PersonMapper;
 import gr.hua.dit.StudyRooms.core.service.model.CreatePersonRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreatePersonResult;
 import gr.hua.dit.StudyRooms.core.service.model.PersonView;
+import gr.hua.dit.StudyRooms.core.service.model.StudentStatus;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
@@ -18,6 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -31,6 +37,7 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
     private final Validator validator;
     private  final PasswordEncoder passwordEncoder;
     private final PersonRepository personRepository;
+    private final ReservationRepository reservationRepository;
     private final PersonMapper personMapper;
     private final PhoneNumberPort phoneNumberPort;
     private final SmsNotificationPort smsNotificationPort;
@@ -38,12 +45,14 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
     public PersonBusinessLogicServiceImpl(final Validator validator,
                                           final PasswordEncoder passwordEncoder,
                                           final PersonRepository personRepository,
+                                          final ReservationRepository reservationRepository,
                                           final PersonMapper personMapper,
                                           final PhoneNumberPort phoneNumberPort,
                                           final SmsNotificationPort smsNotificationPort) {
         if (validator == null) throw new NullPointerException();
         if (passwordEncoder == null) throw new NullPointerException();
         if (personRepository == null) throw new NullPointerException();
+        if (reservationRepository == null) throw new NullPointerException();
         if (personMapper == null) throw new NullPointerException();
         if (phoneNumberPort == null) throw new NullPointerException();
         if (smsNotificationPort == null) throw new NullPointerException();
@@ -51,6 +60,7 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         this.validator = validator;
         this.passwordEncoder = passwordEncoder;
         this.personRepository = personRepository;
+        this.reservationRepository = reservationRepository;
         this.personMapper = personMapper;
         this.phoneNumberPort = phoneNumberPort;
         this.smsNotificationPort = smsNotificationPort;
@@ -171,9 +181,9 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         return prefix + String.format("%07d", num);
     }
     private String generateNextStaffId() {
-       String prefix = "s";
+        String prefix = "s";
         Person last = personRepository.findTopStaffByLibraryIdStartingWithOrderByLibraryIdDesc(prefix);
-       if (last == null) return prefix + "0001"; //first ID
+        if (last == null) return prefix + "0001"; //first ID
 
         String oldId = last.getLibraryId(); //"s0004"
         int num = Integer.parseInt(oldId.substring(prefix.length()));
@@ -186,8 +196,7 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         return personRepository.findByLibraryId(libraryId).orElse(null);
     }
 
-
-/*change personal information*/
+    /*change personal information*/
     @Override
     public String updateEmail(String libraryId, String newEmail) {
         if (newEmail == null || newEmail.isBlank()) {
@@ -251,4 +260,34 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
 
         return null;
     }
+
+    @Override
+    public StudentStatus calculateStudentStatus(Person student) {
+        LocalDateTime now = LocalDateTime.now();
+        List<Reservation> reservations = reservationRepository.findByStudent(student);
+
+        LocalDateTime absenceStart = student.getLastPenaltyAt() != null
+                ? student.getLastPenaltyAt()
+                : LocalDateTime.MIN;
+
+        long absences = reservations.stream()
+                .filter(r -> r.getEndTime() != null)
+                .filter(r -> r.getEndTime().isBefore(now))
+                .filter(r -> r.getEndTime().isAfter(absenceStart))
+                .filter(r -> r.getPresent() == null || !r.getPresent())
+                .count();
+
+        boolean hasPenalty = student.getPenaltyUntil() != null && now.isBefore(student.getPenaltyUntil());
+
+        if (absences >= 3 && !hasPenalty) {
+            student.setPenaltyUntil(now.plusHours(1));
+            student.setLastPenaltyAt(now);
+            personRepository.save(student);
+            hasPenalty = true;
+            absences = 3;
+        }
+
+        return new StudentStatus(absences, hasPenalty, student.getPenaltyUntil());
+    }
+
 }

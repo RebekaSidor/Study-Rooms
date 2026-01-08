@@ -5,6 +5,7 @@ import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceResult;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service (contract) for managing rooms/seats.
@@ -19,4 +20,6 @@ public interface StudySpaceBusinessLogicService {
     void createStudySpace(StudySpace space);
 
     long countAll();
+
+    Map<String, List<StudySpaceView>> getRoomsAndSeats();
 }

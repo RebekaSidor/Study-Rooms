@@ -5,6 +5,8 @@ import gr.hua.dit.StudyRooms.core.service.PersonBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.model.CreatePersonRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreatePersonResult;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
  */
 @Controller
 public class RegistrationController {
+    private static final Logger logger = LoggerFactory.getLogger(RegistrationController.class);
 
     private final PersonBusinessLogicService personBusinessLogicService;
 
@@ -58,28 +61,28 @@ public class RegistrationController {
             return "redirect:/profile";
         }
 
-        // Log για debugging
-        System.out.println("Received registration request:");
-        System.out.println("Type: " + createPersonRequest.type());
-        System.out.println("FirstName: " + createPersonRequest.firstName());
-        System.out.println("LastName: " + createPersonRequest.lastName());
-        System.out.println("Email: " + createPersonRequest.emailAddress());
-        System.out.println("Phone: " + createPersonRequest.mobilePhoneNumber());
+        // Log for debugging before calling service
+        logger.debug("Received registration request: type={}, firstName={}, lastName={}, email={}, phone={}",
+                createPersonRequest.type(),
+                createPersonRequest.firstName(),
+                createPersonRequest.lastName(),
+                createPersonRequest.emailAddress(),
+                createPersonRequest.mobilePhoneNumber());
 
         if (bindingResult.hasErrors()) {
-            bindingResult.getAllErrors().forEach(error -> System.out.println("Binding error: " + error));
+            bindingResult.getAllErrors().forEach(error -> logger.warn("Binding error: {}", error));
             return "register";
         }
 
-        CreatePersonResult result =
-                personBusinessLogicService.createPerson(createPersonRequest, true);
+        CreatePersonResult result = personBusinessLogicService.createPerson(createPersonRequest, true);
 
         if (result.created()) {
             model.addAttribute("newLibraryId", result.personView().libraryId());
             return "registration_success";
         }
 
-        System.out.println("Registration failed: " + result.reason());
+        // Logging failure
+        logger.info("Registration failed: {}", result.reason());
         model.addAttribute("errorMessage", result.reason());
         return "register";
     }
