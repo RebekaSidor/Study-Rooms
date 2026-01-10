@@ -1,11 +1,10 @@
 package gr.hua.dit.StudyRooms.core.service;
 
 import gr.hua.dit.StudyRooms.core.model.Reservation;
-import gr.hua.dit.StudyRooms.core.service.model.CreateReservationRequest;
-import gr.hua.dit.StudyRooms.core.service.model.CreateReservationResult;
-import gr.hua.dit.StudyRooms.core.service.model.ReservationView;
+import gr.hua.dit.StudyRooms.core.service.model.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -38,9 +37,13 @@ ReservationBusinessLogicService {
 
     List<Reservation> getReservationsForAttendanceAndAutoMarkAbsents();
 
+
     void toggleAttendance(Long reservationId);
 
     List<Reservation> getFutureReservations();
     LocalDateTime getCurrentTime();
+
+    CreateReservationResult makeReservation(String studentId, String studySpaceId, LocalDate date, LocalTime startTime);
+    List<HourOption> getAvailableHours(String studySpaceId, LocalDate date);
 
 }

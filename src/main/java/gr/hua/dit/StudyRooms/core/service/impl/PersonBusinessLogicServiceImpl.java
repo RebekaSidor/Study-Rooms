@@ -230,14 +230,20 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         if (newPhone.length() != 10) {
             return "Phone number must be exactly 10 digits.";
         }
-        if (personRepository.existsByMobilePhoneNumber(newPhone)) {
-            return "This phone number already belongs to another user.";
-        }
+
         Person person = personRepository.findByLibraryId(libraryId).orElse(null);
         if (person == null) {
             return "User not found.";
         }
-        person.setMobilePhoneNumber(newPhone);
+
+        //add +30
+        String formattedPhone = "+30" + newPhone;
+
+        if (personRepository.existsByMobilePhoneNumber(formattedPhone)) {
+            return "This phone number already belongs to another user.";
+        }
+
+        person.setMobilePhoneNumber(formattedPhone);
         personRepository.save(person);
 
         return null;

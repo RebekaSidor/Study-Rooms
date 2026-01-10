@@ -15,6 +15,7 @@ import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import jakarta.validation.ValidationException;
 import org.springframework.stereotype.Service;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -209,4 +210,17 @@ public class StudySpaceBusinessLogicServiceImpl implements StudySpaceBusinessLog
         return new NextStudySpaceResponse(name, id);
     }
 
+    @Override
+    public StudySpaceLists getAllStudySpacesGrouped() {
+        List<StudySpaceView> allSpaces = getAllStudySpaces();
+        List<StudySpaceView> rooms = new ArrayList<>();
+        List<StudySpaceView> seats = new ArrayList<>();
+
+        for (StudySpaceView space : allSpaces) {
+            if (space.type() == StudySpaceType.ROOM) rooms.add(space);
+            else if (space.type() == StudySpaceType.SEAT) seats.add(space);
+        }
+
+        return new StudySpaceLists(rooms, seats);
+    }
 }

@@ -30,4 +30,8 @@ public interface StudySpaceBusinessLogicService {
     void validateAndCreateStudySpace(StudySpace space) throws ValidationException;
     NextStudySpaceResponse getNextStudySpace(StudySpaceType type);
     void validateAndUpdateStudySpace(StudySpace existing, StudySpace updated) throws ValidationException;
+
+    StudySpaceLists getAllStudySpacesGrouped();
+
+    public record StudySpaceLists(List<StudySpaceView> rooms, List<StudySpaceView> seats) {}
 }

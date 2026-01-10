@@ -1,9 +1,6 @@
 package gr.hua.dit.StudyRooms.core.service.impl;
 
-import gr.hua.dit.StudyRooms.core.model.Person;
-import gr.hua.dit.StudyRooms.core.model.PersonType;
-import gr.hua.dit.StudyRooms.core.model.Reservation;
-import gr.hua.dit.StudyRooms.core.model.StudySpace;
+import gr.hua.dit.StudyRooms.core.model.*;
 import gr.hua.dit.StudyRooms.core.port.HolidayService;
 import gr.hua.dit.StudyRooms.core.port.SmsNotificationPort;
 import gr.hua.dit.StudyRooms.core.repository.PersonRepository;
@@ -14,16 +11,17 @@ import gr.hua.dit.StudyRooms.core.service.PersonBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.ReservationBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.StudySpaceBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.mapper.ReservationMapper;
-import gr.hua.dit.StudyRooms.core.service.model.CreateReservationRequest;
-import gr.hua.dit.StudyRooms.core.service.model.CreateReservationResult;
-import gr.hua.dit.StudyRooms.core.service.model.ReservationView;
+import gr.hua.dit.StudyRooms.core.service.model.*;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -434,6 +432,96 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
     @Override
     public LocalDateTime getCurrentTime() {
         return LocalDateTime.now();
+    }
+
+    @Transactional
+    public CreateReservationResult makeReservation(
+            String studentId,
+            String studySpaceId,
+            LocalDate date,
+            LocalTime startTime
+    ) {
+        LocalDateTime start = LocalDateTime.of(date, startTime);
+        LocalDateTime end = start.plusHours(1);
+
+        //sunday
+        if (date.getDayOfWeek() == DayOfWeek.SUNDAY) {
+            return CreateReservationResult.fail("Reservations cannot be made on Sundays.");
+        }
+
+        //holiday
+        if (holidayService.isHoliday(date)) {
+            return CreateReservationResult.fail("Reservations cannot be made on holidays.");
+        }
+
+        //penalty
+        Person student = personBusinessLogicService.getPersonById(studentId);
+        if (student.getPenaltyUntil() != null &&
+                LocalDateTime.now().isBefore(student.getPenaltyUntil())) {
+
+            return CreateReservationResult.fail(
+                    "You are blocked until " + student.getPenaltyUntil()
+            );
+        }
+
+        //daily limit
+        if (getReservationsForStudentOnDate(studentId, date).size() >= 3) {
+            return CreateReservationResult.fail(
+                    "You can only make up to 3 reservations per day."
+            );
+        }
+
+        //overlap checks
+        if (existsOverlappingReservation(studySpaceId, start, end)) {
+            return CreateReservationResult.fail("Timeslot already reserved.");
+        }
+
+        boolean studentOverlap =
+                reservationRepository.existsByStudentAndEndTimeAfterAndStartTimeBefore(
+                        student, start, end
+                );
+        if (studentOverlap) {
+            return CreateReservationResult.fail(
+                    "You already have another reservation at this time."
+            );
+        }
+
+        //delegate to existing createReservation
+        return createReservation(
+                new CreateReservationRequest(null, studentId, studySpaceId, start, end),
+                true
+        );
+    }
+
+    @Override
+    public List<HourOption> getAvailableHours(String studySpaceId, LocalDate date) {
+        StudySpace studySpace = studySpaceBusinessLogicService.getStudySpaceById(studySpaceId);
+        if (studySpace == null) return List.of();
+
+        List<HourOption> hours = new ArrayList<>();
+        LocalTime start = studySpace.getOpeningTime();
+        LocalTime end = studySpace.getClosingTime();
+
+        LocalTime now = LocalTime.now();
+
+        while (!start.isAfter(end.minusHours(1))) {
+            boolean available = !existsOverlappingReservation(
+                    studySpaceId,
+                    LocalDateTime.of(date, start),
+                    LocalDateTime.of(date, start.plusHours(1))
+            );
+
+            boolean pastHour = false;
+            if (date.equals(LocalDate.now()) && start.isBefore(now.plusMinutes(1))) {
+                available = false;
+                pastHour = true;
+            }
+
+            hours.add(new HourOption(start.format(DateTimeFormatter.ofPattern("HH:mm")), available, pastHour));
+            start = start.plusHours(1);
+        }
+
+        return hours;
     }
 
 }
