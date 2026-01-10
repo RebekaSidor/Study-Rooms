@@ -60,7 +60,7 @@ public final class Person {
     @NotBlank
     @Size(max = 100)
     @Email
-    @Column(name = "email_address", nullable = false, length = 100)
+    @Column(name = "email_address", nullable = false, length = 100, unique = true)
     private String emailAddress;
 
     @NotNull

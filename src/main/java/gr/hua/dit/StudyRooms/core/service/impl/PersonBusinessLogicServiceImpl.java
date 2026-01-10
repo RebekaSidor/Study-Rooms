@@ -72,7 +72,7 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
     public CreatePersonResult createPerson(final CreatePersonRequest createPersonRequest, final boolean notify) {
         if (createPersonRequest == null) throw new NullPointerException();
 
-        // `CreatePersonRequest` validation.
+        //CreatePersonRequest validation.
         final Set<ConstraintViolation<CreatePersonRequest>> requestViolations
                 = this.validator.validate(createPersonRequest);
         if (!requestViolations.isEmpty()) {
