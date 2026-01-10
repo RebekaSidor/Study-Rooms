@@ -4,14 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gr.hua.dit.StudyRooms.core.model.Reservation;
 import gr.hua.dit.StudyRooms.core.model.StudySpace;
 import gr.hua.dit.StudyRooms.core.model.StudySpaceType;
-import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
 import gr.hua.dit.StudyRooms.core.security.ApplicationUserDetails;
 import gr.hua.dit.StudyRooms.core.service.ReservationBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.StudySpaceBusinessLogicService;
 import gr.hua.dit.StudyRooms.core.service.model.NextStudySpaceResponse;
-import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import jakarta.servlet.http.HttpSession;
-import jakarta.transaction.Transactional;
 import jakarta.validation.ValidationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -20,7 +17,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,14 +29,11 @@ public class StaffController {
 
     private final ReservationBusinessLogicService reservationBusinessLogicService;
     private final StudySpaceBusinessLogicService studySpaceBusinessLogicService;
-    private final ReservationRepository reservationRepository;
 
     public StaffController(ReservationBusinessLogicService reservationBusinessLogicService,
-                           StudySpaceBusinessLogicService studySpaceBusinessLogicService,
-                           ReservationRepository reservationRepository) {
+                           StudySpaceBusinessLogicService studySpaceBusinessLogicService) {
         this.reservationBusinessLogicService = reservationBusinessLogicService;
         this.studySpaceBusinessLogicService = studySpaceBusinessLogicService;
-        this.reservationRepository = reservationRepository;
     }
 
     //show library staff profil
@@ -154,41 +147,30 @@ public class StaffController {
  * check attendance of student
  * */
     //show student reservation and attendances
-    @Transactional
     @PreAuthorize("hasRole('LIB_STAFF')")
     @GetMapping("/staff/attendances")
     public String attendances(Model model) {
-        List<Reservation> bookings = reservationRepository.findAllByOrderByStartTimeDesc();
-        LocalDateTime now = LocalDateTime.now();
 
-        //for past reservations that staff didn't mark, set present=false
-        for (Reservation r : bookings) {
-            if (r.getEndTime() != null && r.getEndTime().isBefore(now) && r.getPresent() == null) {
-                r.setPresent(false);
-                reservationRepository.save(r);
-            }
-        }
+        List<Reservation> bookings =
+                reservationBusinessLogicService.getReservationsForAttendanceAndAutoMarkAbsents();
 
         model.addAttribute("bookings", bookings);
-        model.addAttribute("now", now);
+        model.addAttribute("now", LocalDateTime.now());
 
         return "staff_attendance";
     }
+
 
     //manually change attendance if student came to his reservation
     @PreAuthorize("hasRole('LIB_STAFF')")
     @GetMapping("/staff/attendances/toggle/{id}")
     public String toggleAttendance(@PathVariable Long id) {
-        Reservation reservation = reservationRepository.findById(id).orElseThrow();
-
-        //change presence status attended/absent
-        reservation.setPresent(Boolean.TRUE.equals(reservation.getPresent()) ? false : true);
-
-        reservationRepository.save(reservation); //save
+        reservationBusinessLogicService.toggleAttendance(id);
         return "redirect:/staff/attendances";
     }
 
-/**
+
+    /**
  * cancel student reservations
  * */
     //show future student reservations and cancel form
@@ -197,9 +179,8 @@ public class StaffController {
     public String showCancelableReservations(Model model, HttpSession session) {
 
         List<Reservation> futureReservations =
-                reservationRepository.findByStartTimeAfterOrderByStartTimeAsc(LocalDateTime.now());
+                reservationBusinessLogicService.getFutureReservations();
 
-        //get cancellation history from session
         List<String> history = (List<String>) session.getAttribute("history");
 
         model.addAttribute("futureReservations", futureReservations);

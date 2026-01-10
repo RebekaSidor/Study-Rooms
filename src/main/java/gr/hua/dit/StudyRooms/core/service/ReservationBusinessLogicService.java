@@ -1,5 +1,6 @@
 package gr.hua.dit.StudyRooms.core.service;
 
+import gr.hua.dit.StudyRooms.core.model.Reservation;
 import gr.hua.dit.StudyRooms.core.service.model.CreateReservationRequest;
 import gr.hua.dit.StudyRooms.core.service.model.CreateReservationResult;
 import gr.hua.dit.StudyRooms.core.service.model.ReservationView;
@@ -34,4 +35,10 @@ ReservationBusinessLogicService {
     Map<Integer, Long> getReservationsPerHourForToday();
 
     void applyPenalty(String studentId);
+
+    List<Reservation> getReservationsForAttendanceAndAutoMarkAbsents();
+
+    void toggleAttendance(Long reservationId);
+
+    List<Reservation> getFutureReservations();
 }

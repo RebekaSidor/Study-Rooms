@@ -399,4 +399,36 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
                 "You have penalty for not attending 3 reservations ~ duration: 1 hour."
         );
     }
+
+    @Transactional
+    public List<Reservation> getReservationsForAttendanceAndAutoMarkAbsents() {
+        List<Reservation> bookings = reservationRepository.findAllByOrderByStartTimeDesc();
+        LocalDateTime now = LocalDateTime.now();
+
+        for (Reservation r : bookings) {
+            if (r.getEndTime() != null && r.getEndTime().isBefore(now) && r.getPresent() == null) {
+                r.setPresent(false);
+                reservationRepository.save(r);
+            }
+        }
+        return bookings;
+    }
+    @Transactional
+    public void toggleAttendance(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow();
+
+        reservation.setPresent(!Boolean.TRUE.equals(reservation.getPresent()));
+    }
+
+    public List<Reservation> getFutureReservations() {
+        final CurrentUser user = currentUserProvider.requireCurrentUser();
+        if (user.type() != PersonType.LIB_STAFF) {
+            throw new SecurityException("Staff role required");
+        }
+
+        return reservationRepository
+                .findByStartTimeAfterOrderByStartTimeAsc(LocalDateTime.now());
+    }
+
 }
