@@ -75,9 +75,13 @@
     <p th:if="${error}" th:text="${error}" class="message error"></p>
     <p th:if="${success}" th:text="${success}" class="message success"></p>
 
-    <form method="post">
+    <form th:action="@{/profile/change-phone}" method="post">
+        <input type="hidden"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}">
+
         <label>New Phone Number:</label>
-        <input type="text" name="phone" th:value="${phone}" required>
+        <input type="text" name="phone" required>
 
         <button type="submit" class="update-btn">Update Phone</button>
     </form>

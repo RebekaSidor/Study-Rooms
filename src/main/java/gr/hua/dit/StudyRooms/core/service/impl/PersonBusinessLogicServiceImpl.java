@@ -248,8 +248,8 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         if (newPassword == null || newPassword.isBlank()) {
             return "Password cannot be empty.";
         }
-        if (newPassword.length() < 6) {
-            return "Password must be at least 6 characters.";
+        if (newPassword.length() < 4) {
+            return "Password must be at least 4 characters.";
         }
         Person person = personRepository.findByLibraryId(libraryId).orElse(null);
         if (person == null) {

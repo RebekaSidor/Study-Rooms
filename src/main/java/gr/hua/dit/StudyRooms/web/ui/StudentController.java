@@ -77,7 +77,8 @@ public class StudentController {
         //get logged-in user
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
         //call service
-        String error = personBusinessLogicService.updateEmail(user.getUsername(), email);
+        String error = personBusinessLogicService.updateEmail(user.getLibraryId(), email);
+
 
         if (error != null) {
             model.addAttribute("error", error); //fail
@@ -98,7 +99,7 @@ public class StudentController {
         //get logged-in user
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
         //call service
-        String error = personBusinessLogicService.updatePhone(user.getUsername(), phone);
+        String error = personBusinessLogicService.updatePhone(user.getLibraryId(), phone);
 
         if (error != null) {
             model.addAttribute("error", error); //fail
@@ -125,7 +126,7 @@ public class StudentController {
         //get logged-in user
         ApplicationUserDetails user = (ApplicationUserDetails) auth.getPrincipal();
         //call service
-        String error = personBusinessLogicService.updatePassword(user.getUsername(), password);
+        String error = personBusinessLogicService.updatePassword(user.getLibraryId(), password);
 
         if (error != null) {
             model.addAttribute("error", error); //fail
