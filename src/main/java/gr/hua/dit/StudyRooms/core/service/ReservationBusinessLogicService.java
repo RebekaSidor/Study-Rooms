@@ -41,4 +41,6 @@ ReservationBusinessLogicService {
     void toggleAttendance(Long reservationId);
 
     List<Reservation> getFutureReservations();
+    LocalDateTime getCurrentTime();
+
 }

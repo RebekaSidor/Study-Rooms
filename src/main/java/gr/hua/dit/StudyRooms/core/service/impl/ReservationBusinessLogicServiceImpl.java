@@ -431,4 +431,9 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
                 .findByStartTimeAfterOrderByStartTimeAsc(LocalDateTime.now());
     }
 
+    @Override
+    public LocalDateTime getCurrentTime() {
+        return LocalDateTime.now();
+    }
+
 }

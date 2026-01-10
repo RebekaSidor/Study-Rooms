@@ -16,7 +16,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -155,7 +154,7 @@ public class StaffController {
                 reservationBusinessLogicService.getReservationsForAttendanceAndAutoMarkAbsents();
 
         model.addAttribute("bookings", bookings);
-        model.addAttribute("now", LocalDateTime.now());
+        model.addAttribute("now", reservationBusinessLogicService.getCurrentTime());
 
         return "staff_attendance";
     }
@@ -168,7 +167,6 @@ public class StaffController {
         reservationBusinessLogicService.toggleAttendance(id);
         return "redirect:/staff/attendances";
     }
-
 
     /**
  * cancel student reservations
