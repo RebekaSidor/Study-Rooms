@@ -37,7 +37,7 @@ public class OpenApiConfig {
     public GroupedOpenApi groupedOpenApi() {
         return GroupedOpenApi.builder()
                 .group("api")
-                .packagesToScan("gr.hua.dit.officehours.web.rest")
+                .packagesToScan("gr.hua.dit.StudyRooms.web.rest")
                 .pathsToMatch("/api/v1/**")
                 .build();
     }
