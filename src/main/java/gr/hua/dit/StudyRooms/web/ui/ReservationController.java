@@ -29,7 +29,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Controller
 public class ReservationController {
 
-    private static final Map<String, LocalDateTime> penaltyUntilMap = new ConcurrentHashMap<>();
     private final StudySpaceBusinessLogicService studySpaceBusinessLogicService;
     private final ReservationBusinessLogicService reservationBusinessLogicService;
     private final HolidayService holidayService;
