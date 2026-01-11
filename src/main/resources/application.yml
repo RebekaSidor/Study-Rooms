@@ -38,8 +38,8 @@ app:
     secret: "${JWT_SECRET:CZdgSym1G85S2lG3LFd3dufas53SakV3kXEqxTgy1vY=}" # openssl rand -base64 32
     ttl-minutes: 60
   api:
-    base-url: http://localhost:8081   #SmsNotification, PhoneNumber, Lookup
+    base-url: http://localhost:8081   #SmsNotification, PhoneNumber
     holiday-api:
       base-url: http://localhost:8082   #HolidayAPI
     directions:
-      base-url: http://localhost:8083/api/map/directions
+      base-url: http://localhost:8083/api/map/directions #Library Directions

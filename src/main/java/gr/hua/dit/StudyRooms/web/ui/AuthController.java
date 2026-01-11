@@ -23,7 +23,7 @@ public class AuthController {
 
         // Spring Security appends ?error or ?logout; show friendly messages.
         if (request.getParameter("error") != null) {
-            model.addAttribute("error", "Invalid email or password.");
+            model.addAttribute("error", "Invalid library ID or password.");
         }
         if (request.getParameter("logout") != null) {
             model.addAttribute("message", "You have been logged out.");

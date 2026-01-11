@@ -224,20 +224,19 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         if (newPhone == null || newPhone.isBlank()) {
             return "Phone number cannot be empty.";
         }
-        if (!newPhone.matches("\\d+")) {
-            return "Phone number must contain only digits.";
+
+        // validate using external service
+        PhoneNumberValidationResult validationResult = phoneNumberPort.validate(newPhone);
+        if (!validationResult.isValidMobile()) {
+            return "Mobile Phone Number is not valid";
         }
-        if (newPhone.length() != 10) {
-            return "Phone number must be exactly 10 digits.";
-        }
+
+        String formattedPhone = validationResult.e164();
 
         Person person = personRepository.findByLibraryId(libraryId).orElse(null);
         if (person == null) {
             return "User not found.";
         }
-
-        //add +30
-        String formattedPhone = "+30" + newPhone;
 
         if (personRepository.existsByMobilePhoneNumber(formattedPhone)) {
             return "This phone number already belongs to another user.";
@@ -295,5 +294,4 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
 
         return new StudentStatus(absences, hasPenalty, student.getPenaltyUntil());
     }
-
 }
