@@ -290,6 +290,19 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
             personRepository.save(student);
             hasPenalty = true;
             absences = 3;
+
+            //SMS notification for penalty
+            String content = String.format(
+                    "You have received a penalty! You cannot reserve a study room until %s.",
+                    student.getPenaltyUntil()
+            );
+            boolean sent = smsNotificationPort.sendSms(student.getMobilePhoneNumber(), content);
+            if (!sent) {
+                LOGGER.warn("SMS notification for penalty to {} failed!", student.getMobilePhoneNumber());
+            }
+
+            hasPenalty = true;
+            absences = 3;
         }
 
         return new StudentStatus(absences, hasPenalty, student.getPenaltyUntil());
