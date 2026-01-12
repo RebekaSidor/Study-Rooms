@@ -1,17 +1,21 @@
 package gr.hua.dit.StudyRooms.core.service;
 
+import gr.hua.dit.StudyRooms.core.model.Client;
 import gr.hua.dit.StudyRooms.core.model.PersonType;
 import gr.hua.dit.StudyRooms.core.model.StudySpaceType;
+import gr.hua.dit.StudyRooms.core.repository.ClientRepository;
 import gr.hua.dit.StudyRooms.core.security.ApplicationUserDetails;
 import gr.hua.dit.StudyRooms.core.service.model.CreateStudySpaceRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Populates the database with initial study spaces.
@@ -21,42 +25,75 @@ public class InitializationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InitializationService.class);
 
+    private final ClientRepository clientRepository;
     private final StudySpaceBusinessLogicService studySpaceBusinessLogicService;
     private final PersonBusinessLogicService personBusinessLogicService;
     private final ReservationBusinessLogicService reservationBusinessLogicService;
+    private final AtomicBoolean initialized;
+    private final PasswordEncoder passwordEncoder;
 
     public InitializationService(
+            final ClientRepository clientRepository,
             PersonBusinessLogicService personBusinessLogicService,
             StudySpaceBusinessLogicService studySpaceBusinessLogicService,
-            ReservationBusinessLogicService reservationBusinessLogicService
+            ReservationBusinessLogicService reservationBusinessLogicService,
+            PasswordEncoder passwordEncoder
     ) {
+        if (clientRepository == null) throw new NullPointerException();
+        if (personBusinessLogicService == null) throw new NullPointerException();
+        if (studySpaceBusinessLogicService == null) throw new NullPointerException();
+        if (reservationBusinessLogicService == null) throw new NullPointerException();
+        this.clientRepository = clientRepository;
         this.personBusinessLogicService = personBusinessLogicService;
         this.studySpaceBusinessLogicService = studySpaceBusinessLogicService;
         this.reservationBusinessLogicService = reservationBusinessLogicService;
+        this.initialized = new AtomicBoolean(false);
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostConstruct
     public void populateDatabase() {
-        long count = studySpaceBusinessLogicService.countAll();
-        if (count > 0) {
-            LOGGER.info("Database already initialized — skipping initial data load.");
+        boolean alreadyInitialized = initialized.getAndSet(true);
+        if (alreadyInitialized) {
+            LOGGER.warn("Database initialization skipped: already initialized.");
             return;
         }
 
-        LOGGER.info("Database empty — populating initial study spaces...");
+        LOGGER.info("Starting database initialization...");
 
-        // --- Βάζουμε system user στο SecurityContext ---
-        var systemUserDetails = new ApplicationUserDetails(
-                0L,          // personId
-                "SYSTEM",            // libraryId
-                "system@init",       // email
-                PersonType.LIB_STAFF,// type
-                "SYSTEM"             // password placeholder
-        );
+        /* ---------- CLIENTS ---------- */
+        if (clientRepository.count() == 0) {
+            LOGGER.info("Creating initial clients...");
 
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(systemUserDetails, null, systemUserDetails.getAuthorities())
-        );
+            List<Client> clients = List.of(
+                    new Client(
+                            null,
+                            "client01",
+                            passwordEncoder.encode("s3cr3t"),
+                            "INTEGRATION_READ,INTEGRATION_WRITE"
+                    ),
+                    new Client(
+                            null,
+                            "client02",
+                            passwordEncoder.encode("s3cr3t"),
+                            "INTEGRATION_READ"
+                    )
+            );
+
+            clientRepository.saveAll(clients);
+        } else {
+            LOGGER.info("Clients already exist — skipping client initialization.");
+        }
+
+        /* ---------- STUDY SPACES ---------- */
+        long studySpaceCount = studySpaceBusinessLogicService.countAll();
+        if (studySpaceCount > 0) {
+            LOGGER.info("Study spaces already exist — skipping study space initialization.");
+            return;
+        }
+
+        LOGGER.info("Creating initial study spaces...");
+
 
         //create initial StudySpaces ---
         List<CreateStudySpaceRequest> spaces = List.of(
@@ -78,7 +115,7 @@ public class InitializationService {
             studySpaceBusinessLogicService.createStudySpace(req);
         }
 
-        LOGGER.info("Study spaces created successfully!");
+        LOGGER.info("Study spaces initialization completed successfully");
 
         SecurityContextHolder.clearContext();
     }

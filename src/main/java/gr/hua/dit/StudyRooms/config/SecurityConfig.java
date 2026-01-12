@@ -66,14 +66,13 @@ public class SecurityConfig {
         http
                 .securityMatcher("/**")
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**", "/h2-console/**") //ignore CSRF for H2
+                        .ignoringRequestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**")
                 )
                 .headers(headers -> headers
                         .frameOptions(frame -> frame.sameOrigin()) //allows iframe for H2
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/v3/api-docs/**","/swagger-ui.html","/swagger-ui/**").permitAll()
-                        .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/", "/login", "/register", "/anonymous/**", "/availability/**", "/showstudyspaces").permitAll()
                         .requestMatchers("/reservation/**").hasRole("STUDENT")
                         .requestMatchers("/profile", "/logout").authenticated()

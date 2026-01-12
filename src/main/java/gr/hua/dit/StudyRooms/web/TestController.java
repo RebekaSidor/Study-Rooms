@@ -1,35 +1,20 @@
 package gr.hua.dit.StudyRooms.web;
 
-import org.springframework.stereotype.Controller;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Controller for <strong>Testing</strong>.
- */
-@Controller
+@RestController
+@RequestMapping("/api/v1/test")
 public class TestController {
 
-    public TestController() {}
-
-    /*
-    @GetMapping(value = "/test/error/404")
-    public String test() {
-        return "error/404";
+    @GetMapping("/admin-only")
+    @PreAuthorize("hasRole('ADMIN')") // κανένας δεν έχει ADMIN
+    public String adminOnly() {
+        return "This should never be visible";
     }
-
-    @GetMapping(value = "/test/error/error")
-    public String testErrorError() {
-        return "error/error";
-    }
-
-
-    @GetMapping(value = "/test/error/NullPointerException")
-    public String testErrorNullPointerException() {
-        final Integer a = null;
-        final int b = 0;
-        final int c = a + b; // Throws NullPointerException.
-        return null; // Unreachable.
-    }
-    */
-
 }
+
