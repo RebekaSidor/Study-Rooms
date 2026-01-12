@@ -43,5 +43,3 @@ public class LibraryDirectionsImpl implements LibraryDirections {
         public void setProvider(String provider) { this.provider = provider; }
     }
 }
-
-
