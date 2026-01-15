@@ -25,6 +25,7 @@ public class PersonDataServiceImpl implements PersonDataService {
         this.personMapper = personMapper;
     }
 
+    //Retrieve all registered people (students and staff)
     @Override
     public List<PersonView> getAllPeople() {
         final List<Person> personList = this.personRepository.findAll();

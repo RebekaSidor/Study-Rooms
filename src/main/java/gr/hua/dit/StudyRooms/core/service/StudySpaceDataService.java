@@ -1,5 +1,6 @@
 package gr.hua.dit.StudyRooms.core.service;
 
+import gr.hua.dit.StudyRooms.core.service.model.ReservationView;
 import gr.hua.dit.StudyRooms.core.service.model.StudySpaceView;
 import java.util.List;
 
@@ -8,4 +9,6 @@ import java.util.List;
  */
 public interface StudySpaceDataService {
     List<StudySpaceView> getAllStudySpaces();
+
+    List<ReservationView> getAvailability(Long studySpaceId, String date);
 }

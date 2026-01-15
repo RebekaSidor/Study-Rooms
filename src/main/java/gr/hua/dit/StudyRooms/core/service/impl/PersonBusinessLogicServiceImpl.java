@@ -169,7 +169,7 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         return CreatePersonResult.success(personView);
     }
 
-    //id generation based on person type
+    //Generate next student ID
     private String generateNextStudentId() {
         String prefix = "lib";
         Person last = personRepository.findTopStudentByLibraryIdStartingWithOrderByLibraryIdDesc(prefix);
@@ -180,6 +180,7 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         num++;
         return prefix + String.format("%07d", num);
     }
+    //Generate next staff ID
     private String generateNextStaffId() {
         String prefix = "s";
         Person last = personRepository.findTopStaffByLibraryIdStartingWithOrderByLibraryIdDesc(prefix);
@@ -191,81 +192,13 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         return prefix + String.format("%04d", num);
     }
 
+    //Get person by library ID
     @Override
     public Person getPersonById(String libraryId) {
         return personRepository.findByLibraryId(libraryId).orElse(null);
     }
 
-    /*change personal information*/
-    @Override
-    public String updateEmail(String libraryId, String newEmail) {
-        if (newEmail == null || newEmail.isBlank()) {
-            return "Email cannot be empty.";
-        }
-        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
-        if (!newEmail.matches(emailRegex)) {
-            return "Invalid email format.";
-        }
-        if (personRepository.existsByEmailAddressIgnoreCase(newEmail)) {
-            return "This email is already used.";
-        }
-        Person person = personRepository.findByLibraryId(libraryId).orElse(null);
-        if (person == null) {
-            return "User not found.";
-        }
-        person.setEmailAddress(newEmail);
-        personRepository.save(person);
-
-        return null;
-    }
-
-    @Override
-    public String updatePhone(String libraryId, String newPhone) {
-        if (newPhone == null || newPhone.isBlank()) {
-            return "Phone number cannot be empty.";
-        }
-
-        // validate using external service
-        PhoneNumberValidationResult validationResult = phoneNumberPort.validate(newPhone);
-        if (!validationResult.isValidMobile()) {
-            return "Mobile Phone Number is not valid";
-        }
-
-        String formattedPhone = validationResult.e164();
-
-        Person person = personRepository.findByLibraryId(libraryId).orElse(null);
-        if (person == null) {
-            return "User not found.";
-        }
-
-        if (personRepository.existsByMobilePhoneNumber(formattedPhone)) {
-            return "This phone number already belongs to another user.";
-        }
-
-        person.setMobilePhoneNumber(formattedPhone);
-        personRepository.save(person);
-
-        return null;
-    }
-
-    @Override
-    public String updatePassword(String libraryId, String newPassword) {
-        if (newPassword == null || newPassword.isBlank()) {
-            return "Password cannot be empty.";
-        }
-        if (newPassword.length() < 4) {
-            return "Password must be at least 4 characters.";
-        }
-        Person person = personRepository.findByLibraryId(libraryId).orElse(null);
-        if (person == null) {
-            return "User not found.";
-        }
-        person.setPasswordHash(passwordEncoder.encode(newPassword));
-        personRepository.save(person);
-
-        return null;
-    }
-
+    //Calculate student attendance status and penalties
     @Override
     public StudentStatus calculateStudentStatus(Person student) {
         LocalDateTime now = LocalDateTime.now();
@@ -306,5 +239,76 @@ public class PersonBusinessLogicServiceImpl implements PersonBusinessLogicServic
         }
 
         return new StudentStatus(absences, hasPenalty, student.getPenaltyUntil());
+    }
+
+/*change personal information*/
+    //Update email
+    @Override
+    public String updateEmail(String libraryId, String newEmail) {
+        if (newEmail == null || newEmail.isBlank()) {
+            return "Email cannot be empty.";
+        }
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        if (!newEmail.matches(emailRegex)) {
+            return "Invalid email format.";
+        }
+        if (personRepository.existsByEmailAddressIgnoreCase(newEmail)) {
+            return "This email is already used.";
+        }
+        Person person = personRepository.findByLibraryId(libraryId).orElse(null);
+        if (person == null) {
+            return "User not found.";
+        }
+        person.setEmailAddress(newEmail);
+        personRepository.save(person);
+
+        return null;
+    }
+    //Update phone number
+    @Override
+    public String updatePhone(String libraryId, String newPhone) {
+        if (newPhone == null || newPhone.isBlank()) {
+            return "Phone number cannot be empty.";
+        }
+
+        // validate using external service
+        PhoneNumberValidationResult validationResult = phoneNumberPort.validate(newPhone);
+        if (!validationResult.isValidMobile()) {
+            return "Mobile Phone Number is not valid";
+        }
+
+        String formattedPhone = validationResult.e164();
+
+        Person person = personRepository.findByLibraryId(libraryId).orElse(null);
+        if (person == null) {
+            return "User not found.";
+        }
+
+        if (personRepository.existsByMobilePhoneNumber(formattedPhone)) {
+            return "This phone number already belongs to another user.";
+        }
+
+        person.setMobilePhoneNumber(formattedPhone);
+        personRepository.save(person);
+
+        return null;
+    }
+    //Update password
+    @Override
+    public String updatePassword(String libraryId, String newPassword) {
+        if (newPassword == null || newPassword.isBlank()) {
+            return "Password cannot be empty.";
+        }
+        if (newPassword.length() < 4) {
+            return "Password must be at least 4 characters.";
+        }
+        Person person = personRepository.findByLibraryId(libraryId).orElse(null);
+        if (person == null) {
+            return "User not found.";
+        }
+        person.setPasswordHash(passwordEncoder.encode(newPassword));
+        personRepository.save(person);
+
+        return null;
     }
 }

@@ -40,7 +40,7 @@ public class StudySpaceBusinessLogicServiceImpl implements StudySpaceBusinessLog
         this.currentUserProvider = currentUserProvider;
     }
 
-/*create study space ~ APIs & JSON*/
+    //create study space
     @Override
     public CreateStudySpaceResult createStudySpace(final CreateStudySpaceRequest request) {
         //Security-----------------------------------
@@ -85,7 +85,7 @@ public class StudySpaceBusinessLogicServiceImpl implements StudySpaceBusinessLog
                 .orElse(null);
     }
 
-    //count how many study spaces there are
+    //count all study spaces
     @Override
     public long countAll() {
         return studySpaceRepository.count();
@@ -117,7 +117,7 @@ public class StudySpaceBusinessLogicServiceImpl implements StudySpaceBusinessLog
         studySpaceRepository.save(existing);
     }
 
-    //create study space ~ HTML
+    //Create study space via HTML form
     @Override
     public void createStudySpace(StudySpace space) {
         //Security-----------------------
@@ -128,7 +128,7 @@ public class StudySpaceBusinessLogicServiceImpl implements StudySpaceBusinessLog
         studySpaceRepository.save(space);
     }
 
-    //show available study spaces for guest user
+    // Show available study spaces grouped as rooms and seats
     public Map<String, List<StudySpaceView>> getRoomsAndSeats() {
         List<StudySpaceView> all = getAllStudySpaces();
 
@@ -147,6 +147,7 @@ public class StudySpaceBusinessLogicServiceImpl implements StudySpaceBusinessLog
         return result;
     }
 
+    //Validate and update a study space
     public void validateAndUpdateStudySpace(StudySpace existing, StudySpace updated) throws ValidationException {
         // keep existing fields if not changed
         if (updated.getOpeningTime() != null) existing.setOpeningTime(updated.getOpeningTime());
@@ -171,6 +172,7 @@ public class StudySpaceBusinessLogicServiceImpl implements StudySpaceBusinessLog
         studySpaceRepository.save(existing);
     }
 
+    //Validate and create a study space
     public void validateAndCreateStudySpace(StudySpace space) throws ValidationException {
         if (space.getStudySpaceId() == null || space.getName() == null) {
             throw new ValidationException("Invalid study space data");
@@ -193,6 +195,7 @@ public class StudySpaceBusinessLogicServiceImpl implements StudySpaceBusinessLog
         studySpaceRepository.save(space);
     }
 
+    // Generate the next available study space name and ID
     public NextStudySpaceResponse getNextStudySpace(StudySpaceType type) {
         List<StudySpaceView> all = getAllStudySpaces();
         int max = all.stream()
@@ -210,6 +213,7 @@ public class StudySpaceBusinessLogicServiceImpl implements StudySpaceBusinessLog
         return new NextStudySpaceResponse(name, id);
     }
 
+    //Get all study spaces grouped by type (rooms and seats)
     @Override
     public StudySpaceLists getAllStudySpacesGrouped() {
         List<StudySpaceView> allSpaces = getAllStudySpaces();
@@ -220,7 +224,6 @@ public class StudySpaceBusinessLogicServiceImpl implements StudySpaceBusinessLog
             if (space.type() == StudySpaceType.ROOM) rooms.add(space);
             else if (space.type() == StudySpaceType.SEAT) seats.add(space);
         }
-
         return new StudySpaceLists(rooms, seats);
     }
 }

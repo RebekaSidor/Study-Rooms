@@ -71,7 +71,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         this.smsNotificationPort = smsNotificationPort;
     }
 
-    /*create a reservation*/
+    //create a reservation
     @Transactional
     @Override
     public CreateReservationResult createReservation(CreateReservationRequest request, boolean notify) {
@@ -162,7 +162,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         return CreateReservationResult.success(view);
     }
 
-    //check if there is other reservation for the same study space at the same time
+    //Check if overlapping reservation exists for a study space
     @Override
     public boolean existsOverlappingReservation(String studySpaceId, LocalDateTime start, LocalDateTime end) {
 
@@ -198,13 +198,13 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
                 .toList();
     }
 
-    //count how many reservations there are
+    //count all reservations
     @Override
     public long countAllReservations() {
         return reservationRepository.count();
     }
 
-    //count users that used the application in the last 30 days ~ for statistics page
+    //Count active users in last 30 days
     @Override
     public long countActiveUsers() {
         //Security-------------------------------------------
@@ -218,7 +218,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         return reservationRepository.countDistinctStudentsAfter(now);
     }
 
-    //count amount of reservations for each study space
+    //Get number of reservations per study space
     @Override
     public Map<String, Long> getReservationsPerRoom() {
         //Security-------------------------------------------
@@ -238,8 +238,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         return map;
     }
 
-
-    //calculate number of reservations per hour ~ for statistics page chart
+    //Get number of reservations per hour for today ~ for statistics page chart
     @Override
     public Map<Integer, Long> getReservationsPerHourForToday() {
         //Security-------------------------------------
@@ -268,7 +267,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         return reservationsPerHour;
     }
 
-    //cancel my reservation ~ student
+    //Cancel reservation ~ student
     @Transactional
     @Override
     public boolean cancelReservation(Long reservationId, String libraryId) {
@@ -302,7 +301,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         return true;
     }
 
-    //cancel reservation ~ staff
+    //Cancel reservation ~ staff
     @Transactional
     @Override
     public boolean cancelReservationByStaff(Long reservationId, String cancelReason) {
@@ -340,8 +339,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         return true;
     }
 
-
-    //get all student's reservations for specific day
+    //Get all reservations for a student on a specific date
     @Override
     public List<ReservationView> getReservationsForStudentOnDate(String studentId, LocalDate date) {
         LocalDateTime startOfDay = date.atStartOfDay();
@@ -375,7 +373,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
                 .toList();
     }
 
-    //penalty application to student
+    //Apply penalty to a student
     @Transactional
     @Override
     public void applyPenalty(String studentId) {
@@ -398,6 +396,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         );
     }
 
+    //Get all reservations and mark absences automatically
     @Transactional
     public List<Reservation> getReservationsForAttendanceAndAutoMarkAbsents() {
         List<Reservation> bookings = reservationRepository.findAllByOrderByStartTimeDesc();
@@ -411,6 +410,8 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         }
         return bookings;
     }
+
+    //Toggle attendance status for a reservation
     @Transactional
     public void toggleAttendance(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
@@ -419,6 +420,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         reservation.setPresent(!Boolean.TRUE.equals(reservation.getPresent()));
     }
 
+    //Get future reservations (staff only)
     public List<Reservation> getFutureReservations() {
         final CurrentUser user = currentUserProvider.requireCurrentUser();
         if (user.type() != PersonType.LIB_STAFF) {
@@ -429,11 +431,13 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
                 .findByStartTimeAfterOrderByStartTimeAsc(LocalDateTime.now());
     }
 
+    //Get current system time
     @Override
     public LocalDateTime getCurrentTime() {
         return LocalDateTime.now();
     }
 
+    //Make a reservation
     @Transactional
     public CreateReservationResult makeReservation(
             String studentId,
@@ -493,6 +497,7 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
         );
     }
 
+    //Get available hours for a study space on a date
     @Override
     public List<HourOption> getAvailableHours(String studySpaceId, LocalDate date) {
         StudySpace studySpace = studySpaceBusinessLogicService.getStudySpaceById(studySpaceId);
@@ -523,5 +528,4 @@ public class ReservationBusinessLogicServiceImpl implements ReservationBusinessL
 
         return hours;
     }
-
 }

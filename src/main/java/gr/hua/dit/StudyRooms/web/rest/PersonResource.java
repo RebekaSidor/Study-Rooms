@@ -25,9 +25,10 @@ public class PersonResource {
         this.personDataService = personDataService;
     }
 
+    //Get all registered people (for staff/integration)
     @PreAuthorize("hasRole('INTEGRATION_READ')")
     @GetMapping("")
-    public List<PersonView> people() {
+    public List<PersonView> getAllPeople() {
         final List<PersonView> personViewList = this.personDataService.getAllPeople();
         return personViewList;
     }
