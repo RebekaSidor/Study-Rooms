@@ -1,6 +1,7 @@
 package gr.hua.dit.StudyRooms.core.port.impl;
 
 import gr.hua.dit.StudyRooms.core.port.LibraryDirections;
+import gr.hua.dit.StudyRooms.core.port.impl.dto.LibraryDirectionsDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -18,12 +19,15 @@ public class LibraryDirectionsImpl implements LibraryDirections {
     }
 
     @Override
-    public MapResponse getDirections() {
+    public LibraryDirectionsDto getDirections() {
         try {
-            MapResponse response = restTemplate.getForObject(baseUrl, MapResponse.class);
-            return response != null ? response : new MapResponse();
+            LibraryDirectionsDto response =
+                    restTemplate.getForObject(baseUrl, LibraryDirectionsDto.class);
+            return response != null ? response : new LibraryDirectionsDto(
+                    null, null, null, null, null, null
+            );
         } catch (Exception e) {
-            return new MapResponse();
+            return new LibraryDirectionsDto(null, null, null, null, null, null);
         }
     }
 

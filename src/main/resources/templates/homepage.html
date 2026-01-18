@@ -95,8 +95,46 @@
     <br>
     <br>
 
-    <p th:text="'Library location: ' + ${destination}"></p>
-    <a th:href="${directionsUrl}" target="_blank" class="directions-link">🗺️Open Library Directions </a>
+    <a href="#" id="directions-link" class="directions-link">
+        🗺️Open Library Directions
+    </a>
+
+    <script th:inline="javascript">
+        const destination = /*[[${destination}]]*/ "";
+
+        document.getElementById("directions-link").addEventListener("click", function (e) {
+            e.preventDefault();
+
+            if (!navigator.geolocation) {
+                alert("Geolocation not supported");
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    console.log("Accuracy (meters):", position.coords.accuracy);
+
+                    const url =
+                        "https://www.google.com/maps/dir/?api=1"
+                        + "&origin=" + lat + "," + lng
+                        + "&destination=" + encodeURIComponent(destination);
+
+                    window.open(url, "_blank");
+                },
+                function (err) {
+                    alert("Cannot get accurate location");
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        });
+    </script>
 
 </section>
 

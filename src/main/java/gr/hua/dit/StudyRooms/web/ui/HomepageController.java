@@ -2,6 +2,7 @@ package gr.hua.dit.StudyRooms.web.ui;
 
 import gr.hua.dit.StudyRooms.core.port.LibraryDirections;
 import gr.hua.dit.StudyRooms.core.port.impl.LibraryDirectionsImpl;
+import gr.hua.dit.StudyRooms.core.port.impl.dto.LibraryDirectionsDto;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,11 +26,10 @@ public class HomepageController {
             return "redirect:/profile";
         }
 
-        LibraryDirectionsImpl.MapResponse response = libraryDirections.getDirections();
-        model.addAttribute("directionsUrl", response.getDirectionsUrl());
-        model.addAttribute("destination", response.getDestination());
+        LibraryDirectionsDto response = libraryDirections.getDirections();
+        model.addAttribute("directionsUrl", response.directionsUrl());
+        model.addAttribute("destination", response.destination());
 
         return "homepage";
     }
-
 }

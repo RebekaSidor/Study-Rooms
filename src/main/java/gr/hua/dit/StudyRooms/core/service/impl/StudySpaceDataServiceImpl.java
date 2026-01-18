@@ -1,6 +1,5 @@
 package gr.hua.dit.StudyRooms.core.service.impl;
 
-import gr.hua.dit.StudyRooms.core.model.Reservation;
 import gr.hua.dit.StudyRooms.core.model.StudySpace;
 import gr.hua.dit.StudyRooms.core.repository.ReservationRepository;
 import gr.hua.dit.StudyRooms.core.repository.StudySpaceRepository;
